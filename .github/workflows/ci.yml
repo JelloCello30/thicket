@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Unit + API tests
+        run: pnpm test
+
+      - name: Build (web + extension + packages)
+        run: pnpm build
+
+      - name: Extension e2e (real Chromium, store screenshots)
+        run: |
+          pnpm exec playwright install chromium --with-deps
+          node scripts/extension-e2e.mjs
+
+      - name: Upload store screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: store-screenshots
+          path: apps/extension/release/screenshots/

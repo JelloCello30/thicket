@@ -1,5 +1,5 @@
 import { createHash, randomUUID } from "node:crypto";
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { syncPagesRequest } from "@tabmind/types";
 import { normalizeUrl, sanitizeForStorage, allowedOffDevice } from "@tabmind/core";
 import { RATE_LIMITS } from "@tabmind/config";

@@ -54,6 +54,7 @@ export interface LocalState {
   pendingWorkspaceSync: { upsertIds: string[]; deleteIds: string[] };
   onboarded: boolean;
   installedAt: number;
+  firstAnalyzedAt: number;
   appUrlOverride?: string;
 }
 
@@ -70,6 +71,7 @@ export const DEFAULT_LOCAL_STATE: LocalState = {
   pendingWorkspaceSync: { upsertIds: [], deleteIds: [] },
   onboarded: false,
   installedAt: 0,
+  firstAnalyzedAt: 0,
 };
 
 export async function readState<K extends keyof LocalState>(

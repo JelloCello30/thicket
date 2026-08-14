@@ -10,7 +10,7 @@ import { executeCommand, focusGroup } from "./commands";
 import { recordClosed, recordVisit, pruneHistory } from "./history";
 import { unmirrorAll } from "./mirror";
 import { runSearch } from "./search";
-import { flushSync, markWorkspacesDirty, pullWorkspaces } from "./sync";
+import { flushSync, pullWorkspaces } from "./sync";
 import { noteActivated, noteRemoved } from "./tabs";
 import {
   closeTabs,

@@ -74,7 +74,6 @@ export function ConnectFlow({ extensionIds }: { extensionIds: string[] }) {
 
   useEffect(() => {
     void start();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (phase === "requesting" || phase === "trying" || phase === "idle") {

@@ -62,16 +62,31 @@ export const POST = handled(async (request) => {
   const { upserts, deletes } = parsed.data;
   const database = await db();
 
+  // Ownership first: nobody writes another account's workspace, whatever
+  // their plan. One batched lookup serves the cap check + conflict logic too.
+  const upsertIds = upserts.map((w) => w.id);
+  const existingRows = upsertIds.length
+    ? await database
+        .select({ id: workspace.id, updatedAt: workspace.updatedAt, userId: workspace.userId })
+        .from(workspace)
+        .where(inArray(workspace.id, upsertIds))
+    : [];
+  for (const row of existingRows) {
+    if (row.userId !== user.id) {
+      throw new HttpError(403, "forbidden", "Workspace belongs to another account.");
+    }
+  }
+  const existingById = new Map(existingRows.map((r) => [r.id, r]));
+
   // Server-side cap: free accounts keep 3 workspaces. Count what the account
   // would have after this sync and reject additions beyond the cap.
   if (user.entitlements.maxWorkspaces != null && upserts.length > 0) {
-    const existing = await database
+    const mine = await database
       .select({ id: workspace.id })
       .from(workspace)
       .where(eq(workspace.userId, user.id));
-    const existingIds = new Set(existing.map((r) => r.id));
     const deleteSet = new Set(deletes);
-    const finalIds = new Set([...existingIds].filter((id) => !deleteSet.has(id)));
+    const finalIds = new Set(mine.map((r) => r.id).filter((id) => !deleteSet.has(id)));
     for (const w of upserts) finalIds.add(w.id);
     if (finalIds.size > user.entitlements.maxWorkspaces) {
       throw new HttpError(
@@ -83,15 +98,7 @@ export const POST = handled(async (request) => {
   }
 
   for (const w of upserts) {
-    const existing = await database
-      .select({ id: workspace.id, updatedAt: workspace.updatedAt, userId: workspace.userId })
-      .from(workspace)
-      .where(eq(workspace.id, w.id))
-      .limit(1);
-    const record = existing[0];
-    if (record && record.userId !== user.id) {
-      throw new HttpError(403, "forbidden", "Workspace belongs to another account.");
-    }
+    const record = existingById.get(w.id);
     if (record && record.updatedAt.getTime() >= w.updatedAt) continue; // server copy newer
 
     await database

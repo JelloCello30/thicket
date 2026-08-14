@@ -1,4 +1,4 @@
-import { eq, isNull, and } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { device } from "@tabmind/db/schema";
 import { db } from "@/lib/db";
 import { handled, json } from "@/lib/http";

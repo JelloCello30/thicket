@@ -6,9 +6,10 @@ import {
 } from "@tabmind/core";
 import { TIMING } from "@tabmind/config";
 import { api } from "../shared/api";
-import { readState, updateState, writeState } from "../shared/storage";
+import { readState, writeState } from "../shared/storage";
 import { collectTabs } from "./tabs";
 import { mirrorGroups } from "./mirror";
+import { track } from "./analytics";
 
 /**
  * The analysis loop. Debounced against tab churn, stable across re-runs,
@@ -77,6 +78,14 @@ async function doAnalyze(): Promise<AnalysisResult> {
 
   lastAnalyzedAt = Date.now();
   await chrome.storage.session.set({ analysis: result });
+
+  if (result.totalTabs > 0) {
+    const { firstAnalyzedAt } = await readState("firstAnalyzedAt");
+    if (!firstAnalyzedAt) {
+      await writeState({ firstAnalyzedAt: Date.now() });
+      track("first_analysis", { tabs: result.totalTabs, groups: result.groups.length });
+    }
+  }
   await persistGroupMemory(result, state.groupMemory);
 
   if (state.prefs.mirrorTabGroups && !state.prefs.paused) {

@@ -1,6 +1,6 @@
 import { buildCleanupPlan, normalizeUrl, parseCommand } from "@tabmind/core";
 import type { AnalysisResult, CommandIntent } from "@tabmind/types";
-import { api, ApiError } from "../shared/api";
+import { api } from "../shared/api";
 import { readState, writeState } from "../shared/storage";
 import type { CommandOutcome } from "../shared/messages";
 import { getAnalysis, notifyUi, runAnalysis } from "./analyzer";

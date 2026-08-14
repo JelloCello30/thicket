@@ -106,7 +106,7 @@ export function clusterTabs(tabs: AnalyzedTab[], ctx: SimilarityContext = {}): C
     }
   }
 
-  let groups = new Map<number, number[]>();
+  const groups = new Map<number, number[]>();
   for (const i of eligible) {
     const root = uf.find(i);
     const arr = groups.get(root) ?? [];
