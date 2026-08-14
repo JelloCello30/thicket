@@ -1,0 +1,81 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<style>
+  @font-face {
+    font-family: "General Sans";
+    src: url("../packages/ui/src/fonts/GeneralSans-Variable.woff2") format("woff2");
+    font-weight: 200 700;
+  }
+  * { margin: 0; box-sizing: border-box; }
+  body {
+    width: 1200px; height: 630px; overflow: hidden;
+    font-family: "General Sans", sans-serif;
+    background: #faf9f7; color: #1c1b18;
+    display: flex; flex-direction: column;
+    padding: 56px 64px 48px;
+  }
+  .top { display: flex; align-items: center; gap: 14px; }
+  .word { font-size: 26px; font-weight: 600; letter-spacing: -0.02em; }
+  h1 { font-size: 76px; font-weight: 600; letter-spacing: -0.03em; line-height: 1.02; margin-top: 44px; }
+  h1 .quiet { color: #8d897d; }
+  .stage { display: flex; align-items: center; gap: 36px; margin-top: 52px; flex: 1; }
+  .mess { width: 470px; display: flex; flex-wrap: wrap; gap: 7px; }
+  .chip {
+    height: 30px; border: 1px solid rgba(28,27,24,0.13); border-radius: 7px;
+    background: #ffffff; display: flex; align-items: center; padding: 0 10px;
+    font-size: 12.5px; color: #5d5a51; white-space: nowrap; overflow: hidden;
+  }
+  .chip i { width: 7px; height: 7px; border-radius: 99px; background: rgba(28,27,24,0.18); margin-right: 7px; flex: none; }
+  .arrow { font-size: 44px; color: #8d897d; flex: none; }
+  .groups { flex: 1; display: flex; flex-direction: column; gap: 13px; }
+  .group {
+    display: flex; align-items: center; gap: 12px;
+    background: #ffffff; border: 1px solid rgba(28,27,24,0.13); border-radius: 11px;
+    padding: 15px 20px; box-shadow: 0 1px 2px rgba(28,27,24,0.05);
+  }
+  .group b { font-size: 21px; font-weight: 600; letter-spacing: -0.01em; }
+  .group span { margin-left: auto; font-size: 18px; color: #8d897d; font-variant-numeric: tabular-nums; }
+  .dot { width: 10px; height: 10px; border-radius: 99px; flex: none; }
+</style>
+</head>
+<body>
+  <div class="top">
+    <svg width="34" height="34" viewBox="0 0 32 32" fill="none">
+      <rect width="32" height="32" rx="8" fill="#2f6b4f"/>
+      <rect x="8" y="9.5" width="16" height="3" rx="1.5" fill="#fff" fill-opacity="0.95"/>
+      <rect x="8" y="14.5" width="9" height="3" rx="1.5" fill="#fff" fill-opacity="0.55"/>
+      <rect x="8" y="19.5" width="13" height="3" rx="1.5" fill="#fff" fill-opacity="0.95"/>
+    </svg>
+    <div class="word">TabMind</div>
+  </div>
+  <h1>42 tabs. <span class="quiet">4 actual things.</span></h1>
+  <div class="stage">
+    <div class="mess" id="mess"></div>
+    <div class="arrow">→</div>
+    <div class="groups">
+      <div class="group"><i class="dot" style="background:#2f6b4f"></i><b>Apartment Hunt</b><span>9</span></div>
+      <div class="group"><i class="dot" style="background:#33707e"></i><b>Japan Trip</b><span>12</span></div>
+      <div class="group"><i class="dot" style="background:#4a6b96"></i><b>Pricing Launch</b><span>14</span></div>
+      <div class="group"><i class="dot" style="background:#ab5c2b"></i><b>Camera Research</b><span>7</span></div>
+    </div>
+  </div>
+  <script>
+    const labels = [
+      "Zillow","Kayak","Figma","Linear","DPReview","Booking","Reddit","Sheets","Airbnb","GitHub",
+      "Slack","B&H","Notion","japan-guide","NerdWallet","Stripe","Tabelog","RTINGS","Docs","Vercel",
+      "Tripadvisor","Walk Score","YouTube","PostHog","Adorama","Time Out","Wikipedia","Apartments",
+      "Google","Zillow","Linear","Slack","Kayak","GitHub","Zillow","Linear","Booking","DPReview",
+      "Figma","Reddit","Sheets","Docs"
+    ];
+    const mess = document.getElementById("mess");
+    for (const label of labels) {
+      const chip = document.createElement("div");
+      chip.className = "chip";
+      chip.innerHTML = "<i></i>" + label;
+      mess.appendChild(chip);
+    }
+  </script>
+</body>
+</html>

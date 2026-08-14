@@ -160,8 +160,14 @@ export function pairScore(fa: TabFeatures, fb: TabFeatures, ctx: SimilarityConte
     score += 0.2;
   }
 
-  // One tab opened from the other.
-  if (a.openerTabId === b.tabId || b.openerTabId === a.tabId) score += 0.5;
+  // One tab opened from the other. A real click-through is strong evidence,
+  // but browsers also assign openers to tabs that merely opened next to each
+  // other — so a bare opener edge is persuasive (0.3), decisive only when the
+  // categories agree (+0.2). Uncorroborated cross-context edges stay below
+  // the union threshold instead of daisy-chaining unrelated activities.
+  if (a.openerTabId === b.tabId || b.openerTabId === a.tabId) {
+    score += categoriesIncompatible(a.category, b.category) ? 0.3 : 0.5;
+  }
 
   // Same search intent: overlapping queries, or a query matching a page title
   // (the search that led to this session of tabs).

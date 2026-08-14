@@ -24,6 +24,7 @@
     "@playwright/test": "^1.49.0",
     "@types/node": "^22.10.0",
     "eslint": "^9.17.0",
+    "playwright-core": "1.62.1",
     "prettier": "^3.4.0",
     "sharp": "^0.35.3",
     "turbo": "^2.3.0",
