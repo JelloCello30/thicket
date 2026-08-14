@@ -1,0 +1,15 @@
+/* General Sans (variable) — self-hosted, licensed under the Fontshare Free Font License (see FFL.txt). */
+@font-face {
+  font-family: "General Sans";
+  src: url("./fonts/GeneralSans-Variable.woff2") format("woff2");
+  font-weight: 200 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "General Sans";
+  src: url("./fonts/GeneralSans-VariableItalic.woff2") format("woff2");
+  font-weight: 200 700;
+  font-style: italic;
+  font-display: swap;
+}

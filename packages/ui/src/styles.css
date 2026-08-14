@@ -1,0 +1,157 @@
+/**
+ * TabMind design tokens.
+ *
+ * Warm paper + ink + a single spruce-green accent. Calm, editorial,
+ * no gradients. Light is the canonical theme; dark keeps the same
+ * relationships at lower luminance.
+ */
+
+:root {
+  /* surfaces */
+  --tm-bg: #faf9f7;
+  --tm-bg-raised: #ffffff;
+  --tm-bg-sunken: #f3f1ed;
+  --tm-bg-overlay: rgba(250, 249, 247, 0.86);
+
+  /* ink */
+  --tm-ink: #1c1b18;
+  --tm-ink-secondary: #5d5a51;
+  --tm-ink-faint: #8d897d;
+
+  /* lines */
+  --tm-border: rgba(28, 27, 24, 0.1);
+  --tm-border-strong: rgba(28, 27, 24, 0.18);
+
+  /* accent — spruce */
+  --tm-accent: #2f6b4f;
+  --tm-accent-hover: #285d44;
+  --tm-accent-ink: #ffffff;
+  --tm-accent-soft: rgba(47, 107, 79, 0.09);
+  --tm-accent-soft-strong: rgba(47, 107, 79, 0.16);
+
+  /* semantic */
+  --tm-danger: #b0432e;
+  --tm-danger-soft: rgba(176, 67, 46, 0.1);
+  --tm-warm: #9a6b23;
+  --tm-warm-soft: rgba(154, 107, 35, 0.12);
+
+  /* group chip colors (muted, print-like) */
+  --tm-group-grey: #8d897d;
+  --tm-group-blue: #4a6b96;
+  --tm-group-red: #b0432e;
+  --tm-group-yellow: #9a6b23;
+  --tm-group-green: #2f6b4f;
+  --tm-group-pink: #a04f6d;
+  --tm-group-purple: #6d5a96;
+  --tm-group-cyan: #33707e;
+  --tm-group-orange: #ab5c2b;
+
+  /* elevation */
+  --tm-shadow-sm: 0 1px 2px rgba(28, 27, 24, 0.05);
+  --tm-shadow-md: 0 2px 8px rgba(28, 27, 24, 0.07), 0 1px 2px rgba(28, 27, 24, 0.05);
+  --tm-shadow-lg: 0 12px 32px rgba(28, 27, 24, 0.12), 0 2px 8px rgba(28, 27, 24, 0.06);
+
+  /* type */
+  --tm-font-sans: "General Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --tm-font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, monospace;
+
+  /* shape */
+  --tm-radius-sm: 6px;
+  --tm-radius-md: 8px;
+  --tm-radius-lg: 12px;
+
+  --tm-focus-ring: 0 0 0 2px var(--tm-bg), 0 0 0 4px var(--tm-accent);
+}
+
+.dark {
+  --tm-bg: #161614;
+  --tm-bg-raised: #1e1e1b;
+  --tm-bg-sunken: #111110;
+  --tm-bg-overlay: rgba(22, 22, 20, 0.86);
+
+  --tm-ink: #ecebe6;
+  --tm-ink-secondary: #a5a196;
+  --tm-ink-faint: #716d62;
+
+  --tm-border: rgba(236, 235, 230, 0.09);
+  --tm-border-strong: rgba(236, 235, 230, 0.17);
+
+  --tm-accent: #85bb9d;
+  --tm-accent-hover: #97c9ac;
+  --tm-accent-ink: #10231a;
+  --tm-accent-soft: rgba(133, 187, 157, 0.1);
+  --tm-accent-soft-strong: rgba(133, 187, 157, 0.18);
+
+  --tm-danger: #d98871;
+  --tm-danger-soft: rgba(217, 136, 113, 0.12);
+  --tm-warm: #cfa25c;
+  --tm-warm-soft: rgba(207, 162, 92, 0.13);
+
+  --tm-group-grey: #8d897d;
+  --tm-group-blue: #7d9cc4;
+  --tm-group-red: #d98871;
+  --tm-group-yellow: #cfa25c;
+  --tm-group-green: #85bb9d;
+  --tm-group-pink: #c98aa4;
+  --tm-group-purple: #a595cf;
+  --tm-group-cyan: #7bacb8;
+  --tm-group-orange: #d09468;
+
+  --tm-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --tm-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.35), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --tm-shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+@theme inline {
+  --color-bg: var(--tm-bg);
+  --color-raised: var(--tm-bg-raised);
+  --color-sunken: var(--tm-bg-sunken);
+  --color-overlay: var(--tm-bg-overlay);
+  --color-ink: var(--tm-ink);
+  --color-ink-secondary: var(--tm-ink-secondary);
+  --color-ink-faint: var(--tm-ink-faint);
+  --color-edge: var(--tm-border);
+  --color-edge-strong: var(--tm-border-strong);
+  --color-accent: var(--tm-accent);
+  --color-accent-hover: var(--tm-accent-hover);
+  --color-accent-ink: var(--tm-accent-ink);
+  --color-accent-soft: var(--tm-accent-soft);
+  --color-accent-soft-strong: var(--tm-accent-soft-strong);
+  --color-danger: var(--tm-danger);
+  --color-danger-soft: var(--tm-danger-soft);
+  --color-warm: var(--tm-warm);
+  --color-warm-soft: var(--tm-warm-soft);
+  --font-sans: var(--tm-font-sans);
+  --font-mono: var(--tm-font-mono);
+  --radius-sm: var(--tm-radius-sm);
+  --radius-md: var(--tm-radius-md);
+  --radius-lg: var(--tm-radius-lg);
+  --shadow-sm: var(--tm-shadow-sm);
+  --shadow-md: var(--tm-shadow-md);
+  --shadow-lg: var(--tm-shadow-lg);
+}
+
+html {
+  font-family: var(--tm-font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  background: var(--tm-bg);
+  color: var(--tm-ink);
+}
+
+::selection {
+  background: var(--tm-accent-soft-strong);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
