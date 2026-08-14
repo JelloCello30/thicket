@@ -1,0 +1,249 @@
+import { useState } from "react";
+import type { UiState } from "../../shared/messages";
+import { Button, Input, Switch } from "@tabmind/ui";
+
+/**
+ * The privacy center. Every switch says what it really does; the scary
+ * things (content analysis) are opt-in with the permission ask attached.
+ */
+export function SettingsView({
+  state,
+  onPref,
+  onExcludeAdd,
+  onExcludeRemove,
+  onRequestContent,
+  onLink,
+  onSignOut,
+  linkBusy,
+}: {
+  state: UiState;
+  onPref: (patch: Partial<UiState["prefs"]>) => void;
+  onExcludeAdd: (domain: string) => void;
+  onExcludeRemove: (domain: string) => void;
+  onRequestContent: () => void;
+  onLink: (code: string) => void;
+  onSignOut: () => void;
+  linkBusy: boolean;
+}) {
+  const [domainDraft, setDomainDraft] = useState("");
+  const [codeDraft, setCodeDraft] = useState("");
+  const prefs = state.prefs;
+
+  return (
+    <div className="max-w-xl space-y-8">
+      <Section title="Account">
+        {state.auth ? (
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-sm text-ink">{state.auth.user.email}</p>
+              <p className="text-[0.8125rem] text-ink-secondary">
+                {state.auth.user.plan === "pro" ? "Pro plan" : "Free plan"} · syncing{" "}
+                {prefs.syncEnabled ? "on" : "off"}
+              </p>
+            </div>
+            <span className="flex gap-2">
+              {state.auth.user.plan !== "pro" ? (
+                <Button size="sm" variant="primary" onClick={() => window.open(`${state.appUrl}/pricing`, "_blank")}>
+                  Upgrade
+                </Button>
+              ) : (
+                <Button size="sm" onClick={() => window.open(`${state.appUrl}/app/settings`, "_blank")}>
+                  Manage
+                </Button>
+              )}
+              <Button size="sm" variant="ghost" onClick={onSignOut}>
+                Sign out
+              </Button>
+            </span>
+          </div>
+        ) : (
+          <div className="space-y-2.5">
+            <p className="text-[0.8125rem] leading-snug text-ink-secondary">
+              Sign in to sync workspaces across devices and unlock AI organization, summaries, and semantic
+              search. TabMind works fully on-device without an account.
+            </p>
+            <div className="flex gap-2">
+              <Button size="sm" variant="primary" onClick={() => window.open(`${state.appUrl}/login?from=extension`, "_blank")}>
+                Sign in on tabmind.app
+              </Button>
+            </div>
+            <form
+              className="flex items-center gap-2"
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (codeDraft.trim()) onLink(codeDraft.trim());
+              }}
+            >
+              <Input
+                value={codeDraft}
+                onChange={(e) => setCodeDraft(e.target.value)}
+                placeholder="Or paste a connect code"
+                aria-label="Connect code"
+                className="h-8 max-w-[220px] text-[0.8125rem]"
+              />
+              <Button size="sm" type="submit" loading={linkBusy} disabled={!codeDraft.trim()}>
+                Connect
+              </Button>
+            </form>
+          </div>
+        )}
+      </Section>
+
+      <Section title="Privacy">
+        <Row
+          label="Pause TabMind"
+          hint="Stops all observation, grouping, and syncing until you resume."
+        >
+          <Switch checked={prefs.paused} onChange={(v) => onPref({ paused: v })} aria-label="Pause TabMind" />
+        </Row>
+        <Row
+          label="AI processing"
+          hint="Send page titles and web addresses to TabMind's servers for smarter grouping, names, and search. Never page contents unless you turn that on below."
+        >
+          <Switch checked={prefs.aiEnabled} onChange={(v) => onPref({ aiEnabled: v })} aria-label="AI processing" />
+        </Row>
+        <Row
+          label="Page content"
+          hint="Off by default. When on, TabMind may read the visible text of a page to improve summaries and comparisons. Requires a browser permission."
+        >
+          {prefs.contentAnalysis && state.contentPermission ? (
+            <Switch checked onChange={() => onPref({ contentAnalysis: false })} aria-label="Page content analysis" />
+          ) : (
+            <Button size="sm" onClick={onRequestContent}>
+              Turn on…
+            </Button>
+          )}
+        </Row>
+        <Row
+          label="Remember pages"
+          hint="Keep a local history of pages TabMind has seen so closed tabs stay findable."
+        >
+          <Switch checked={prefs.historyEnabled} onChange={(v) => onPref({ historyEnabled: v })} aria-label="Remember pages" />
+        </Row>
+        <Row label="Sync" hint="Back workspaces and history up to your account (signed in only).">
+          <Switch checked={prefs.syncEnabled} onChange={(v) => onPref({ syncEnabled: v })} aria-label="Sync" />
+        </Row>
+      </Section>
+
+      <Section title="Excluded sites">
+        <p className="mb-2 text-[0.8125rem] leading-snug text-ink-secondary">
+          Pages on these sites are never grouped, never remembered, and never leave this device. Banking and
+          healthcare sites are excluded automatically.
+        </p>
+        <form
+          className="mb-2 flex items-center gap-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (domainDraft.trim()) {
+              onExcludeAdd(domainDraft.trim());
+              setDomainDraft("");
+            }
+          }}
+        >
+          <Input
+            value={domainDraft}
+            onChange={(e) => setDomainDraft(e.target.value)}
+            placeholder="example.com"
+            aria-label="Domain to exclude"
+            className="h-8 max-w-[220px] text-[0.8125rem]"
+          />
+          <Button size="sm" type="submit" disabled={!domainDraft.trim()}>
+            Exclude
+          </Button>
+        </form>
+        {state.excludedDomains.length > 0 ? (
+          <ul className="flex flex-wrap gap-1.5">
+            {state.excludedDomains.map((domain) => (
+              <li
+                key={domain}
+                className="flex items-center gap-1.5 rounded-full border border-edge px-2.5 py-1 text-[0.8125rem] text-ink"
+              >
+                {domain}
+                <button
+                  aria-label={`Stop excluding ${domain}`}
+                  onClick={() => onExcludeRemove(domain)}
+                  className="text-ink-faint hover:text-ink"
+                >
+                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden>
+                    <path d="M2.5 2.5l5 5M7.5 2.5l-5 5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                  </svg>
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+      </Section>
+
+      <Section title="Behavior">
+        <Row label="Mirror groups in the tab strip" hint="Show TabMind's groups as native Chrome tab groups.">
+          <Switch
+            checked={prefs.mirrorTabGroups}
+            onChange={(v) => onPref({ mirrorTabGroups: v })}
+            aria-label="Mirror tab groups"
+          />
+        </Row>
+        <Row label="Theme" hint="">
+          <div className="flex gap-1">
+            {(["system", "light", "dark"] as const).map((theme) => (
+              <button
+                key={theme}
+                onClick={() => onPref({ theme })}
+                className={
+                  prefs.theme === theme
+                    ? "rounded-md bg-accent-soft px-2.5 py-1 text-[0.8125rem] font-medium text-accent"
+                    : "rounded-md px-2.5 py-1 text-[0.8125rem] text-ink-secondary hover:bg-sunken"
+                }
+              >
+                {theme[0]!.toUpperCase() + theme.slice(1)}
+              </button>
+            ))}
+          </div>
+        </Row>
+      </Section>
+
+      <Section title="Your data">
+        <p className="text-[0.8125rem] leading-snug text-ink-secondary">
+          Export or permanently delete everything TabMind knows —{" "}
+          {state.auth ? (
+            <>
+              manage it from{" "}
+              <button
+                className="text-accent hover:underline"
+                onClick={() => window.open(`${state.appUrl}/app/settings#data`, "_blank")}
+              >
+                your account settings
+              </button>
+              .
+            </>
+          ) : (
+            "signed out, everything lives in this browser's local storage and is removed when you uninstall the extension."
+          )}
+        </p>
+        <p className="mt-2 text-[0.75rem] text-ink-faint">TabMind v{state.version}</p>
+      </Section>
+    </div>
+  );
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section>
+      <h2 className="mb-3 border-b border-edge pb-1.5 text-[0.6875rem] font-medium uppercase tracking-wider text-ink-faint">
+        {title}
+      </h2>
+      {children}
+    </section>
+  );
+}
+
+function Row({ label, hint, children }: { label: string; hint: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-start justify-between gap-6 py-2.5">
+      <div className="min-w-0">
+        <p className="text-sm text-ink">{label}</p>
+        {hint ? <p className="mt-0.5 text-[0.8125rem] leading-snug text-ink-secondary">{hint}</p> : null}
+      </div>
+      <div className="shrink-0 pt-0.5">{children}</div>
+    </div>
+  );
+}

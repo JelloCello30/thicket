@@ -1,0 +1,42 @@
+{
+  "manifest_version": 3,
+  "name": "TabMind — Your tabs, organized",
+  "short_name": "TabMind",
+  "version": "0.1.0",
+  "description": "TabMind understands why your tabs are open, groups them into projects, and remembers them when you're ready to close everything.",
+  "minimum_chrome_version": "121",
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "TabMind"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "options_ui": {
+    "page": "dashboard.html#/settings",
+    "open_in_tab": true
+  },
+  "permissions": ["tabs", "tabGroups", "storage", "alarms", "favicon", "scripting", "unlimitedStorage"],
+  "optional_host_permissions": ["<all_urls>"],
+  "host_permissions": [],
+  "externally_connectable": {
+    "matches": ["https://tabmind.app/*", "http://localhost:3000/*"]
+  },
+  "commands": {
+    "_execute_action": {
+      "suggested_key": { "default": "Ctrl+Shift+Space", "mac": "Command+Shift+Space" },
+      "description": "Open TabMind"
+    },
+    "open-dashboard": {
+      "suggested_key": { "default": "Ctrl+Shift+K", "mac": "Command+Shift+K" },
+      "description": "Open the TabMind dashboard"
+    }
+  }
+}

@@ -1,0 +1,9 @@
+@import "tailwindcss";
+@import "@tabmind/ui/fonts.css";
+@import "@tabmind/ui/styles.css";
+
+@source "../../../packages/ui/src";
+
+html {
+  font-size: 15px;
+}
