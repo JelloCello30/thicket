@@ -27,6 +27,9 @@ const serverEnvSchema = z.object({
   ANTHROPIC_API_KEY: z.string().optional(),
   /** Embeddings for semantic search. Absent → lexical search only. */
   VOYAGE_API_KEY: z.string().optional(),
+  /** Model tier overrides; defaults live in @tabmind/ai. */
+  AI_MODEL_FAST: z.string().optional(),
+  AI_MODEL_SMART: z.string().optional(),
 
   /** Stripe. Absent → billing page shows "not configured" state; no fake checkout. */
   STRIPE_SECRET_KEY: z.string().optional(),
@@ -58,7 +61,10 @@ export function serverEnv(): ServerEnv {
     throw new Error(`Invalid environment configuration:\n${issues}`);
   }
   const env = parsed.data;
-  if (env.NODE_ENV === "production") {
+  // Strict requirements apply when *serving* production traffic — not during
+  // `next build`, which sets NODE_ENV=production without runtime secrets.
+  const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build";
+  if (env.NODE_ENV === "production" && !isBuildPhase) {
     const required: (keyof ServerEnv)[] = ["DATABASE_URL", "BETTER_AUTH_SECRET", "BETTER_AUTH_URL"];
     const missing = required.filter((k) => !env[k]);
     if (missing.length > 0) {

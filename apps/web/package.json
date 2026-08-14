@@ -11,6 +11,7 @@
     "lint": "eslint src"
   },
   "dependencies": {
+    "@electric-sql/pglite": "^0.3.16",
     "@sentry/nextjs": "^9.0.0",
     "@tabmind/ai": "workspace:*",
     "@tabmind/config": "workspace:*",
@@ -21,6 +22,7 @@
     "better-auth": "^1.3.0",
     "drizzle-orm": "^0.44.0",
     "next": "^15.1.0",
+    "pg": "^8.23.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "stripe": "^18.0.0",

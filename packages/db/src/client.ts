@@ -2,6 +2,7 @@ import { drizzle as drizzleNode, type NodePgDatabase } from "drizzle-orm/node-po
 import { drizzle as drizzlePglite } from "drizzle-orm/pglite";
 import { Pool } from "pg";
 import * as schema from "./schema";
+import { defaultPgliteDir } from "./paths";
 
 /**
  * One schema, two drivers:
@@ -25,8 +26,10 @@ interface GlobalDbCache {
 const globalCache = globalThis as unknown as GlobalDbCache;
 
 async function createPglite(dataDir: string): Promise<DbHandle> {
-  const { PGlite } = await import("@electric-sql/pglite");
-  const { vector } = await import("@electric-sql/pglite/vector");
+  // webpackIgnore: PGlite ships WASM/tarball assets that must load from
+  // node_modules at runtime — bundling it breaks asset resolution.
+  const { PGlite } = await import(/* webpackIgnore: true */ "@electric-sql/pglite");
+  const { vector } = await import(/* webpackIgnore: true */ "@electric-sql/pglite/vector");
   const pglite = new PGlite(dataDir, { extensions: { vector } });
   const db = drizzlePglite(pglite, { schema }) as unknown as Db;
   return {
@@ -70,11 +73,6 @@ export async function getDb(options: ConnectOptions = {}): Promise<DbHandle> {
   const handle = await connect(options);
   globalCache.__tabmindDb = handle;
   return handle;
-}
-
-function defaultPgliteDir(): string {
-  // Keep dev data at the repo root regardless of which app is running.
-  return new URL("../../../.pglite/", import.meta.url).pathname;
 }
 
 export { schema };

@@ -1,12 +1,13 @@
 import { sql } from "drizzle-orm";
 import { connect, type DbHandle } from "./client";
+import { defaultMigrationsDir } from "./paths";
 
 /**
  * Apply all pending migrations. Used by `pnpm db:migrate`, the test setup,
  * and (optionally) at deploy time. Works against both drivers.
  */
 export async function migrate(handle: DbHandle, migrationsFolder?: string): Promise<void> {
-  const folder = migrationsFolder ?? new URL("../drizzle", import.meta.url).pathname;
+  const folder = migrationsFolder ?? defaultMigrationsDir();
   // pgvector must exist before the generated migrations reference it.
   await handle.db.execute(sql`CREATE EXTENSION IF NOT EXISTS vector`);
   if (handle.kind === "postgres") {
