@@ -3,7 +3,3 @@
 @import "@tabmind/ui/styles.css";
 
 @source "../../../../packages/ui/src";
-
-html {
-  scroll-behavior: smooth;
-}
