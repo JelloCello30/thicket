@@ -14,7 +14,7 @@
     "lint": "eslint src"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.60.0",
+    "@anthropic-ai/sdk": "^0.116.0",
     "@tabmind/config": "workspace:*",
     "@tabmind/core": "workspace:*",
     "@tabmind/types": "workspace:*",
