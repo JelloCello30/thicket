@@ -123,7 +123,7 @@ function WorkspaceRow({
         <span className="shrink-0 text-[0.75rem] tabular-nums text-ink-faint">
           {workspace.tabs.length} {workspace.tabs.length === 1 ? "page" : "pages"} · {formatRelative(workspace.lastActiveAt)}
         </span>
-        <span className="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+        <span className="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
           <Button size="sm" variant="ghost" onClick={() => onArchive(workspace.id, !archived)}>
             {archived ? "Unarchive" : "Archive"}
           </Button>

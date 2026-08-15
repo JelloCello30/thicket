@@ -113,7 +113,7 @@ export function HistoryView({
                 aria-label={`Forget ${record.title}`}
                 title="Forget this page — removed from history and search, everywhere"
                 onClick={() => onForget(record.url)}
-                className="invisible shrink-0 rounded p-1 text-ink-faint hover:text-ink group-hover/row:visible"
+                className="invisible shrink-0 rounded p-1 text-ink-faint hover:text-ink focus-visible:visible group-hover/row:visible"
               >
                 <svg width="11" height="11" viewBox="0 0 10 10" fill="none" aria-hidden>
                   <path d="M2.5 2.5l5 5M7.5 2.5l-5 5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />

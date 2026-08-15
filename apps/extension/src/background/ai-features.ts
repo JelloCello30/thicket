@@ -1,4 +1,5 @@
 import type { AnalysisResult, ComparisonTable, GroupSummary } from "@tabmind/types";
+import { localComparison, localGroupSummary } from "@tabmind/core";
 import { api, ApiError } from "../shared/api";
 import { readState } from "../shared/storage";
 
@@ -17,11 +18,9 @@ class FeatureError extends Error {
   }
 }
 
-async function requireAi(): Promise<void> {
+async function aiAvailable(): Promise<boolean> {
   const { auth, prefs } = await readState("auth", "prefs");
-  if (!auth) throw new FeatureError("auth-required", "Sign in to use AI features.");
-  if (!prefs.aiEnabled)
-    throw new FeatureError("ai-unavailable", "AI processing is turned off in your privacy settings.");
+  return Boolean(auth) && prefs.aiEnabled;
 }
 
 async function groupFeatures(analysis: AnalysisResult, groupId: string, withContent: boolean) {
@@ -52,7 +51,8 @@ async function groupFeatures(analysis: AnalysisResult, groupId: string, withCont
 }
 
 export async function summarizeGroup(analysis: AnalysisResult, groupId: string): Promise<GroupSummary> {
-  await requireAi();
+  // No account / AI off? The local engine answers instantly instead of erroring.
+  if (!(await aiAvailable())) return localGroupSummary(analysis, groupId);
   const { prefs } = await readState("prefs");
   const withContent = prefs.contentAnalysis && (await hasContentPermission());
   const { group, tabs, members } = await groupFeatures(analysis, groupId, withContent);
@@ -69,14 +69,19 @@ export async function summarizeGroup(analysis: AnalysisResult, groupId: string):
         })
         .filter((k): k is NonNullable<typeof k> => k !== null),
       nextStep: result.nextStep,
+      source: "ai",
     };
   } catch (error) {
-    throw translate(error);
+    // Server said no (plan, outage, offline)? Degrade to the local version —
+    // a real answer now beats an error toast.
+    const translated = translate(error);
+    if (translated instanceof FeatureError) return localGroupSummary(analysis, groupId);
+    throw translated;
   }
 }
 
 export async function compareGroup(analysis: AnalysisResult, groupId: string): Promise<ComparisonTable> {
-  await requireAi();
+  if (!(await aiAvailable())) return localComparison(analysis, groupId);
   const { prefs } = await readState("prefs");
   const withContent = prefs.contentAnalysis && (await hasContentPermission());
   const { tabs, members } = await groupFeatures(analysis, groupId, withContent);
@@ -94,9 +99,12 @@ export async function compareGroup(analysis: AnalysisResult, groupId: string): P
           return { url: tab.url, title: tab.title, values: row.values };
         })
         .filter((r): r is NonNullable<typeof r> => r !== null),
+      source: "ai",
     };
   } catch (error) {
-    throw translate(error);
+    const translated = translate(error);
+    if (translated instanceof FeatureError) return localComparison(analysis, groupId);
+    throw translated;
   }
 }
 

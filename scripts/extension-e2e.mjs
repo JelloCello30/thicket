@@ -229,6 +229,28 @@ async function main() {
   await straying.close().catch(() => undefined);
   await dashboard.evaluate(() => chrome.runtime.sendMessage({ type: "focus-end" }));
 
+  // ————— Signed-out Summarize: local engine answers, never an error —————
+  await dashboard.keyboard.press("Escape"); // the cleanup-shot dialog may still be up
+  await dashboard.goto(`chrome-extension://${extensionId}/dashboard.html#/now`);
+  await dashboard.reload();
+  await dashboard.waitForTimeout(1000);
+  const firstHeader = dashboard.locator("section header").first();
+  await firstHeader.hover();
+  await dashboard.waitForTimeout(250);
+  const summarizeBtn = dashboard.getByText("Summarize", { exact: true }).first();
+  if (await summarizeBtn.count()) {
+    await summarizeBtn.click();
+    await dashboard.waitForTimeout(600);
+    const dialogText = await dashboard.evaluate(
+      () => document.querySelector('[role="dialog"]')?.textContent ?? "",
+    );
+    checks["signed-out summarize works locally"] =
+      /tabs across \d+ sites/.test(dialogText) && dialogText.includes("Made on this device");
+    await dashboard.keyboard.press("Escape");
+  } else {
+    checks["signed-out summarize works locally"] = false;
+  }
+
   // ————— Pre-existing native tab groups: honored, never dismantled —————
   // Group a zillow tab with a kayak tab by hand — an arrangement clustering
   // would never produce. TabMind must show it verbatim and leave it alone.

@@ -150,6 +150,11 @@ export function SummaryDialog({
             {summary.nextStep}
           </p>
         ) : null}
+        {summary.source === "local" ? (
+          <p className="text-[0.75rem] leading-snug text-ink-faint">
+            Made on this device from tab titles and activity. Sign in with AI on for a written summary.
+          </p>
+        ) : null}
       </div>
     </Dialog>
   );
@@ -204,7 +209,9 @@ export function CompareDialog({
         </table>
       </div>
       <p className="mt-2 text-[0.75rem] text-ink-faint">
-        Built only from what's visible in your tabs. Blank cells mean the page didn't say.
+        {comparison.source === "local"
+          ? "Made on this device from tab titles. Sign in with AI on to pull specs from the pages themselves."
+          : "Built only from what's visible in your tabs. Blank cells mean the page didn't say."}
       </p>
     </Dialog>
   );

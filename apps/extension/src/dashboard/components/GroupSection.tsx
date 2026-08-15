@@ -150,7 +150,7 @@ export function GroupSection({
           </span>
         ) : null}
 
-        <span className="ml-auto hidden shrink-0 items-center gap-1 group-hover/section:flex">
+        <span className="ml-auto hidden shrink-0 items-center gap-1 group-hover/section:flex group-focus-within/section:flex">
           <HeaderAction label="Show tabs" onClick={() => onFocusGroup(group.id)} />
           {shoppy && members.length >= 2 ? (
             <HeaderAction label="Compare" onClick={() => onCompare(group.id)} loading={busy === `compare:${group.id}`} />

@@ -128,8 +128,8 @@ export function CommandBar({
                 else void runCommand();
               }
             }}
-            placeholder="Ask TabMind or find anything…"
-            aria-label="Ask TabMind or find anything"
+            placeholder={aiAvailable ? "Ask TabMind or find anything…" : "Search tabs, history, workspaces — or type a command…"}
+            aria-label="Search or ask TabMind"
             className="h-12 w-full bg-transparent text-[0.9375rem] text-ink placeholder:text-ink-faint outline-none"
           />
           {running ? <Spinner size={16} className="text-ink-faint" /> : <Kbd>esc</Kbd>}

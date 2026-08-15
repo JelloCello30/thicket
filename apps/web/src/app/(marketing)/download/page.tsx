@@ -9,6 +9,7 @@ export const metadata: Metadata = {
 };
 
 export default function DownloadPage() {
+  const storeReady = !BRAND.chromeStoreUrl.includes("PENDING");
   return (
     <main className="mx-auto w-full max-w-2xl px-6 py-16 sm:py-20">
       <Mark size={40} />
@@ -17,17 +18,48 @@ export default function DownloadPage() {
         Install it, and within seconds your open tabs become a short list of the things you're
         actually doing. No setup, no account required.
       </p>
-      <a
-        href={BRAND.chromeStoreUrl}
-        target="_blank"
-        rel="noreferrer"
-        className="mt-7 inline-block rounded-md bg-accent px-5 py-2.5 text-[0.9375rem] font-medium text-accent-ink transition-colors hover:bg-accent-hover"
-      >
-        Add to Chrome — it's free
-      </a>
-      <p className="mt-3 text-[0.8125rem] text-ink-faint">
-        Chrome 121 or newer. Works on Edge, Brave, and Arc too.
-      </p>
+      {storeReady ? (
+        <>
+          <a
+            href={BRAND.chromeStoreUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-7 inline-block rounded-md bg-accent px-5 py-2.5 text-[0.9375rem] font-medium text-accent-ink transition-colors hover:bg-accent-hover"
+          >
+            Add to Chrome — it's free
+          </a>
+          <p className="mt-3 text-[0.8125rem] text-ink-faint">
+            Chrome 121 or newer. Works on Edge, Brave, and Arc too.
+          </p>
+        </>
+      ) : (
+        <div className="mt-7 rounded-lg border border-edge bg-raised p-5">
+          <p className="text-[0.9375rem] font-medium text-ink">
+            The Chrome Web Store listing is on its way.
+          </p>
+          <p className="mt-1.5 text-[0.9375rem] leading-relaxed text-ink-secondary">
+            Until it's live, you can run TabMind from source in about a minute — everything works,
+            including updates when you pull:
+          </p>
+          <ol className="mt-3 list-decimal space-y-1.5 pl-5 text-[0.875rem] leading-relaxed text-ink-secondary">
+            <li>
+              Clone the repo and build:{" "}
+              <code className="rounded bg-sunken px-1.5 py-0.5 text-[0.8125rem]">pnpm install && pnpm build</code>
+            </li>
+            <li>
+              Open <code className="rounded bg-sunken px-1.5 py-0.5 text-[0.8125rem]">chrome://extensions</code>,
+              turn on Developer mode
+            </li>
+            <li>
+              Click “Load unpacked” and pick{" "}
+              <code className="rounded bg-sunken px-1.5 py-0.5 text-[0.8125rem]">apps/extension/dist</code>
+            </li>
+          </ol>
+          <p className="mt-3 text-[0.8125rem] text-ink-faint">
+            Chrome 121 or newer. Works on Edge, Brave, and Arc too.
+          </p>
+        </div>
+      )}
 
       <section className="mt-14">
         <h2 className="text-lg font-semibold tracking-tight text-ink">What happens next</h2>

@@ -212,6 +212,8 @@ export interface GroupSummary {
   findings: string[];
   keep: { url: string; title: string; why: string }[];
   nextStep?: string;
+  /** Where this came from: on-device deterministic ("local") or the AI ("ai"). */
+  source?: "local" | "ai";
 }
 
 export interface ComparisonColumn {
@@ -230,6 +232,8 @@ export interface ComparisonTable {
   subject: string;
   columns: ComparisonColumn[];
   rows: ComparisonRow[];
+  /** Where this came from: on-device deterministic ("local") or the AI ("ai"). */
+  source?: "local" | "ai";
 }
 
 /** What the command bar understood. */

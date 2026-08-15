@@ -176,7 +176,7 @@ export function AutomationsView({
               ) : null}
               <button
                 onClick={() => onDelete(rule.id)}
-                className="shrink-0 rounded px-1.5 py-0.5 text-[0.8125rem] text-ink-faint opacity-0 transition-opacity hover:text-danger group-hover:opacity-100"
+                className="shrink-0 rounded px-1.5 py-0.5 text-[0.8125rem] text-ink-faint opacity-0 transition-opacity hover:text-danger focus-visible:opacity-100 group-hover:opacity-100"
               >
                 Delete
               </button>

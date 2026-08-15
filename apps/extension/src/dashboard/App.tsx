@@ -105,9 +105,11 @@ export function App() {
         case "cleanup-plan":
           setCleanupPlan(outcome.cleanupPlan ?? null);
           break;
-        case "summarized":
-          if (outcome.summary) setSummary({ title: "Summary", data: outcome.summary });
+        case "summarized": {
+          const group = state?.analysis?.groups.find((g) => g.id === outcome.groupId);
+          if (outcome.summary) setSummary({ title: group?.name ?? "Summary", data: outcome.summary });
           break;
+        }
         case "compared":
           setComparison(outcome.comparison ?? null);
           break;
@@ -136,7 +138,7 @@ export function App() {
           break;
       }
     },
-    [navigate, push, refresh, withUndoToast],
+    [navigate, push, refresh, withUndoToast, state],
   );
 
   const actions = {
@@ -231,8 +233,14 @@ export function App() {
 
   if (error) {
     return (
-      <div className="flex min-h-screen items-center justify-center p-8 text-sm text-ink-secondary">
-        {error}
+      <div className="flex min-h-screen flex-col items-center justify-center gap-3 p-8">
+        <p className="text-sm text-ink-secondary">{error}</p>
+        <button
+          onClick={() => void refresh()}
+          className="rounded-md border border-edge-strong px-3 py-1.5 text-[0.8125rem] font-medium text-ink hover:border-ink/30"
+        >
+          Try again
+        </button>
       </div>
     );
   }
@@ -373,9 +381,10 @@ export function App() {
               onRestore={(id) => {
                 setBusy(`restore:${id}`);
                 void sendBg({ type: "restore-workspace", workspaceId: id })
-                  .then(({ opened }) =>
-                    push({ message: opened > 0 ? `Reopened ${opened} tabs` : "Already open" }),
-                  )
+                  .then(({ opened }) => {
+                    push({ message: opened > 0 ? `Reopened ${opened} tabs` : "Already open" });
+                    void refresh();
+                  })
                   .catch(fail)
                   .finally(() => setBusy(null));
               }}
