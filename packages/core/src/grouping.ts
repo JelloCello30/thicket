@@ -232,6 +232,17 @@ export function groupAnalyzedTabs(
 
 const SPECIAL_NAMES = new Set(["Reading", "Probably done", "Everything else"]);
 
+/** Kinds that don't commit to a specific activity, so they can join anything. */
+const GENERIC_KINDS = new Set<GroupKind>(["project", "research", "other"]);
+/** Work, docs, and dev read as one working context. */
+const WORKISH_KINDS = new Set<GroupKind>(["work"]);
+
+function kindsCompatible(a: GroupKind, b: GroupKind): boolean {
+  if (a === b) return true;
+  if (GENERIC_KINDS.has(a) || GENERIC_KINDS.has(b)) return true;
+  return WORKISH_KINDS.has(a) && WORKISH_KINDS.has(b);
+}
+
 /**
  * Two drafts that would render under the same name — or that revolve around
  * the same entity — are one activity the clusterer split. Showing both is the
@@ -259,8 +270,15 @@ function mergeDuplicateTopicDrafts(
         const b = drafts[j]!;
         if (b.isCatchAll || SPECIAL_NAMES.has(b.name)) continue;
         const sameName = a.name.toLowerCase() === b.name.toLowerCase();
+        // Sharing an entity is only evidence of one activity when the two
+        // drafts are the same KIND of activity. "Los Angeles" is the entity of
+        // both an apartment hunt and a flight search, and those are two
+        // different intentions — merging them would be the over-merge bug.
         const sameEntity =
-          Boolean(a.entity) && Boolean(b.entity) && a.entity!.toLowerCase() === b.entity!.toLowerCase();
+          Boolean(a.entity) &&
+          Boolean(b.entity) &&
+          a.entity!.toLowerCase() === b.entity!.toLowerCase() &&
+          kindsCompatible(a.kind, b.kind);
         if (!sameName && !sameEntity) continue;
         // Keep the larger draft's identity — it carries more evidence.
         const [keep, absorb] = a.tabIdx.length >= b.tabIdx.length ? [a, b] : [b, a];

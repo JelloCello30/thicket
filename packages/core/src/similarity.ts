@@ -196,10 +196,21 @@ export function pairScore(fa: TabFeatures, fb: TabFeatures, ctx: SimilarityConte
   }
   if (sharedTheme) score += 0.3;
 
-  // Title vocabulary, weighted by how often tokens recur across the session.
-  score += 0.38 * weightedCosine(fa.tokenSet, fb.tokenSet, ctx.tokenDf);
-
   const incompatible = categoriesIncompatible(a.category, b.category);
+
+  /**
+   * Shared vocabulary and shared entities are precisely the signals a common
+   * place or brand name inflates: "Los Angeles" appears in an apartment
+   * listing and in a flight search, "Sony" in a camera review and a TV deal.
+   * When two pages serve different intents AND agree on no activity theme,
+   * distrust those signals — otherwise a city name chains a lease to a plane
+   * ticket. A shared theme means the ACTIVITY matches, which outranks the
+   * site-type mismatch, so it lifts the damping entirely.
+   */
+  const topicalDamping = incompatible && !sharedTheme ? 0.45 : 1;
+
+  // Title vocabulary, weighted by how often tokens recur across the session.
+  score += 0.38 * weightedCosine(fa.tokenSet, fb.tokenSet, ctx.tokenDf) * topicalDamping;
 
   // Project keywords: tokens recurring across ≥3 open tabs ("pricing",
   // "acme") mark an activity. Shared ones are strong glue — but only between
@@ -224,7 +235,7 @@ export function pairScore(fa: TabFeatures, fb: TabFeatures, ctx: SimilarityConte
   if (ea.size > 0 && eb.size > 0) {
     let inter = 0;
     for (const t of ea) if (eb.has(t)) inter++;
-    score += 0.35 * (inter / (ea.size + eb.size - inter));
+    score += 0.35 * (inter / (ea.size + eb.size - inter)) * topicalDamping;
   }
 
   // Weak spatial hint.

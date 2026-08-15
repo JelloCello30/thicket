@@ -103,6 +103,31 @@ describe("one topic, one group", () => {
     expect(new Set(names).size).toBe(names.length);
   });
 
+  it("does NOT fuse different activities that merely share an entity", () => {
+    nextId = 400;
+    // "Los Angeles" is the entity of both an apartment hunt and a trip.
+    // Same word, two intentions — merging them would be the over-merge bug.
+    const tabs = [
+      snap("https://www.zillow.com/homedetails/111-Oak/1_zpid/", "111 Oak Ave, Los Angeles - 2bd | Zillow"),
+      snap("https://www.zillow.com/homedetails/222-Elm/2_zpid/", "222 Elm St, Los Angeles - 1bd | Zillow"),
+      snap("https://www.apartments.com/los-angeles", "Apartments for Rent in Los Angeles | Apartments.com"),
+      snap("https://www.kayak.com/flights/JFK-LAX", "New York to Los Angeles flights | Kayak"),
+      snap("https://www.booking.com/searchresults?ss=Los+Angeles", "Booking.com: Hotels in Los Angeles"),
+      snap("https://www.airbnb.com/s/Los-Angeles/homes", "Los Angeles vacation rentals - Airbnb"),
+    ];
+    const result = groupTabs(tabs, ctx);
+    const real = result.groups.filter((g) => !g.isCatchAll && !g.isStale);
+    const housing = real.find((g) => g.kind === "realestate");
+    const travel = real.find((g) => g.kind === "travel");
+    expect(housing).toBeDefined();
+    expect(travel).toBeDefined();
+    expect(housing!.id).not.toBe(travel!.id);
+    // No listing tab leaked into the trip and vice versa.
+    const titleOf = (id: number) => result.tabs.find((t) => t.tabId === id)!.title;
+    expect(housing!.tabIds.map(titleOf).every((t) => /Zillow|Apartments\.com/.test(t))).toBe(true);
+    expect(travel!.tabIds.map(titleOf).every((t) => /Kayak|Booking|Airbnb/.test(t))).toBe(true);
+  });
+
   it("a straggler about an existing topic joins it rather than founding a rival", () => {
     nextId = 300;
     const tabs = [

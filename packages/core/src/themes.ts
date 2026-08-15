@@ -127,6 +127,12 @@ const CATEGORY_THEMES: Partial<Record<AnalyzedTab["category"], Theme>> = {
   learning: "learning",
 };
 
+/**
+ * Themes a site category can assert on its own. Two of these on one tab are
+ * rival claims about what the user is doing, so the loser needs real evidence.
+ */
+const ANCHORED_THEMES = new Set<Theme>(Object.values(CATEGORY_THEMES));
+
 const strongIndex = new Map<string, Theme[]>();
 const weakIndex = new Map<string, Theme[]>();
 for (const [theme, lex] of Object.entries(LEXICONS) as [Theme, Lexicon][]) {
@@ -158,7 +164,25 @@ export function tabThemes(tab: Pick<AnalyzedTab, "tokens" | "category" | "title"
   for (const theme of all) {
     const strong = strongHits.get(theme) ?? 0;
     const weak = weakHits.get(theme) ?? 0;
-    if (strong >= 1 || weak >= 2 || (weak >= 1 && catTheme === theme)) themes.add(theme);
+    /**
+     * A site whose own category already names its activity must not pick up a
+     * RIVAL activity theme from one loose word. "Los Angeles vacation rentals"
+     * on Airbnb is travel, not an apartment hunt — but "rentals" is a strong
+     * realestate word, and that single token used to bridge someone's trip
+     * into their housing search and fuse two unrelated groups.
+     *
+     * Only anchored themes (the ones a site category can assert) compete this
+     * way; a finance site keeping a realestate theme from "Rent Calculator" is
+     * still exactly right, because finance asserts no rival activity.
+     */
+    const rivalsCategory =
+      catTheme != null &&
+      theme !== catTheme &&
+      ANCHORED_THEMES.has(theme) &&
+      ANCHORED_THEMES.has(catTheme);
+    const strongBar = rivalsCategory ? 2 : 1;
+    const weakBar = rivalsCategory ? 3 : 2;
+    if (strong >= strongBar || weak >= weakBar || (weak >= 1 && catTheme === theme)) themes.add(theme);
   }
 
   for (const [pattern, theme] of PHRASE_RULES) {
