@@ -76,3 +76,20 @@ are DB-backed already.
 - **Tuning maps to math, not vibes.** Grouping styles are threshold offsets on the
   clusterer (calm +0.05/min 3, eager −0.06/min 2); staleness is an hours parameter
   threaded through analysis. Changing either re-analyzes immediately.
+
+## v1.2 — respect and deletion (2026-08)
+
+- **User-created native tab groups outrank the clusterer.** Ownership is tracked by the
+  session mirror map; any native group TabMind can't prove it created is the user's.
+  Their tabs are partitioned out before clustering and re-emitted as locked groups
+  (id `native-<chromeGroupId>`, user's title/color, confidence 1, never stale). After a
+  browser restart the map is empty, so TabMind's own old groups are adopted as the
+  user's rather than fought over — continuity beats ownership.
+- **Deletion propagates.** Forgetting a page removes it locally (page memory, recently
+  closed, undo batches) and queues the normalized URL for server deletion; the queue
+  survives offline and flushes on the sync alarm ("*" = clear-all). Deletion flushes
+  even when sync is off — it's a privacy action, not a sync feature.
+- **Search never dead-ends silently.** The worker-wake retry, the honest empty state,
+  and the one-shot AI escalation each remove a distinct "it did nothing" failure mode.
+- **Lockdown is predictable, not clever.** It ignores token overlap on purpose: "only
+  my task's tabs" has to mean exactly that, or the wall teaches the user nothing.

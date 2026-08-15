@@ -12,10 +12,13 @@ export function CommandBar({
   open,
   onClose,
   onOutcome,
+  aiAvailable,
 }: {
   open: boolean;
   onClose: () => void;
   onOutcome: (outcome: CommandOutcome) => void;
+  /** Signed in with AI on — free-form asks can escalate to the server. */
+  aiAvailable: boolean;
 }) {
   const [input, setInput] = useState("");
   const [results, setResults] = useState<SearchOutcome | null>(null);
@@ -167,9 +170,20 @@ export function CommandBar({
             })}
           </ul>
         ) : input.trim().length >= 2 && results ? (
-          <p className="px-3.5 py-4 text-sm text-ink-secondary">
-            Nothing found — press <Kbd>↵</Kbd> to ask TabMind instead.
-          </p>
+          <div className="px-3.5 py-4">
+            <p className="text-sm text-ink-secondary">
+              Nothing in your open tabs, workspaces, or recent history.
+            </p>
+            <p className="mt-1 text-[0.8125rem] text-ink-faint">
+              {aiAvailable ? (
+                <>
+                  Press <Kbd>↵</Kbd> and TabMind will work out what you meant.
+                </>
+              ) : (
+                "Commands still work on Enter — and signing in adds AI search across everything you've closed."
+              )}
+            </p>
+          </div>
         ) : (
           <div className="flex flex-wrap gap-1.5 px-3.5 py-3">
             {[
@@ -193,7 +207,8 @@ export function CommandBar({
   );
 }
 
-const COMMAND_LEADS = /^(close|save|keep|restore|reopen|bring|summari|compare|clean|clear|tidy|pause|resume|show|archive)/i;
+const COMMAND_LEADS =
+  /^(close|save|keep|restore|reopen|bring|summari|compare|clean|clear|tidy|pause|resume|show|archive|focus|help|end|find|search|ask|what|why|how|which|who|can|does|is|are)\b/i;
 
 function looksLikeCommand(input: string): boolean {
   return COMMAND_LEADS.test(input.trim());

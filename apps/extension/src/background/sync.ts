@@ -22,7 +22,10 @@ export async function flushSync(): Promise<void> {
   flushing = true;
   try {
     const { auth, prefs } = await readState("auth", "prefs");
-    if (!auth || !prefs.syncEnabled || prefs.paused) return;
+    if (!auth) return;
+    // Deletions are privacy actions: they propagate even when sync is off.
+    await flushPageDeletes();
+    if (!prefs.syncEnabled || prefs.paused) return;
     await flushWorkspaces();
     if (prefs.historyEnabled) await flushPages();
   } finally {
@@ -45,6 +48,25 @@ async function flushWorkspaces(): Promise<void> {
   } catch (error) {
     if (error instanceof ApiError && error.status === 401) await handleAuthLoss();
     // Other failures: keep the queue, retry on the next alarm.
+  }
+}
+
+export async function flushPageDeletes(): Promise<void> {
+  const { auth, pendingPageDeletes } = await readState("auth", "pendingPageDeletes");
+  if (!auth || pendingPageDeletes.length === 0) return;
+  try {
+    if (pendingPageDeletes.includes("*")) {
+      await api.deletePages({ all: true });
+      await writeState({ pendingPageDeletes: [] });
+    } else {
+      const batch = pendingPageDeletes.slice(0, 100);
+      await api.deletePages({ urls: batch });
+      const sent = new Set(batch);
+      await updateState("pendingPageDeletes", (queue) => queue.filter((u) => !sent.has(u)));
+    }
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) await handleAuthLoss();
+    // Other failures: the queue stays; the next sync alarm retries.
   }
 }
 

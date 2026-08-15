@@ -50,6 +50,19 @@ export function App() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
+  // The popup's "Ask TabMind" row and the global shortcut land here with
+  // #/now?cmd=1 — open the bar and clean the address so reloads stay calm.
+  useEffect(() => {
+    const openIfAsked = () => {
+      if (!window.location.hash.includes("?cmd")) return;
+      setCommandOpen(true);
+      history.replaceState(null, "", window.location.pathname + window.location.hash.split("?")[0]);
+    };
+    openIfAsked();
+    window.addEventListener("hashchange", openIfAsked);
+    return () => window.removeEventListener("hashchange", openIfAsked);
+  }, []);
+
   const withUndoToast = useCallback(
     (message: string, undoBatchId: string) => {
       push({
@@ -193,9 +206,9 @@ export function App() {
     openAccount: () => window.open(`${state?.appUrl}/login?from=extension`, "_blank"),
   };
 
-  const startFocus = (task: string, minutes: number | null) => {
+  const startFocus = (task: string, minutes: number | null, strictness: "gentle" | "strict" | "lockdown") => {
     setFocusDialogOpen(false);
-    void sendBg({ type: "focus-start", task, minutes })
+    void sendBg({ type: "focus-start", task, minutes, strictness })
       .then(() => {
         push({ message: `Focused on “${task}”` });
         void refresh();
@@ -392,6 +405,22 @@ export function App() {
                   })
                   .catch(fail)
               }
+              onForget={(url) =>
+                void sendBg({ type: "history-delete", url })
+                  .then(() => {
+                    push({ message: "Forgotten — removed from history and search." });
+                    void refresh();
+                  })
+                  .catch(fail)
+              }
+              onClear={() =>
+                void sendBg({ type: "history-clear" })
+                  .then(() => {
+                    push({ message: "History cleared." });
+                    void refresh();
+                  })
+                  .catch(fail)
+              }
             />
           ) : null}
           {route === "settings" ? (
@@ -427,7 +456,12 @@ export function App() {
         </div>
       </main>
 
-      <CommandBar open={commandOpen} onClose={() => setCommandOpen(false)} onOutcome={handleOutcome} />
+      <CommandBar
+        open={commandOpen}
+        onClose={() => setCommandOpen(false)}
+        onOutcome={handleOutcome}
+        aiAvailable={Boolean(state.auth) && state.prefs.aiEnabled}
+      />
       <CleanupDialog
         plan={cleanupPlan}
         onClose={() => setCleanupPlan(null)}
@@ -456,7 +490,7 @@ export function App() {
         open={focusDialogOpen}
         onClose={() => setFocusDialogOpen(false)}
         onStart={startFocus}
-        strictness={state.prefs.focusStrictness}
+        defaultStrictness={state.prefs.focusStrictness}
       />
       <HelpPanel
         open={helpOpen}

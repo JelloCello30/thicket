@@ -28,7 +28,26 @@ export async function executeCommand(input: string): Promise<CommandOutcome> {
   if (intent.type === "ask" || intent.type === "unknown") {
     intent = await aiFallback(input, context, intent);
   }
-  return execute(intent, analysis);
+  let outcome = await execute(intent, analysis);
+
+  // Local search found nothing? Before showing an empty list, let the AI
+  // reinterpret the request once — "that pdf about visas" may really mean
+  // a group, a workspace, or a differently-worded search.
+  if (
+    outcome.kind === "searched" &&
+    intent.type === "search" &&
+    isEmptySearch(outcome.searchResults)
+  ) {
+    const escalated = await aiFallback(input, context, { type: "unknown", raw: input });
+    const sameSearch = escalated.type === "search" && escalated.query === intent.query;
+    if (!sameSearch) outcome = await execute(escalated, analysis);
+  }
+  return outcome;
+}
+
+function isEmptySearch(results: CommandOutcome["searchResults"]): boolean {
+  if (!results) return true;
+  return results.open.length === 0 && results.history.length === 0 && results.workspaces.length === 0;
 }
 
 async function aiFallback(

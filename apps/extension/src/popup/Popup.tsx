@@ -13,8 +13,8 @@ export function Popup() {
     void sendBg({ type: "get-state" }).then(setState).catch(() => setState(null));
   }, []);
 
-  const openDashboard = (section?: string) => {
-    void sendBg({ type: "open-dashboard", section }).then(() => window.close());
+  const openDashboard = (section?: string, command?: boolean) => {
+    void sendBg({ type: "open-dashboard", section, command }).then(() => window.close());
   };
 
   if (!state) {
@@ -47,7 +47,7 @@ export function Popup() {
       </header>
 
       <button
-        onClick={() => openDashboard("now")}
+        onClick={() => openDashboard("now", true)}
         className="mx-4 mt-3 flex w-[calc(100%-2rem)] items-center justify-between rounded-md border border-edge px-3 py-2 text-left text-[0.8125rem] text-ink-faint hover:border-edge-strong"
       >
         Ask TabMind or find anything…

@@ -1,10 +1,30 @@
 # TabMind — Build Progress
 
-## Status: ✅ v1.1 COMPLETE — ready for external setup (see docs/LAUNCH_CHECKLIST.md)
+## Status: ✅ v1.2 COMPLETE — ready for external setup (see docs/LAUNCH_CHECKLIST.md)
 
 Everything code-side is built, tested, and verified. Remaining work is exclusively
 external accounts/keys, legal customization, and the manual Chrome Web Store submission —
 all documented with exact steps.
+
+### v1.2 (reliability + respect + deletion) — verified
+
+- **Pre-existing native tab groups are sacred**: groups the user made in Chrome come
+  through analysis as locked groups (their title, color, membership — verbatim, with a
+  "yours" badge), clustering never splits or absorbs them, the mirror never moves their
+  tabs, and automations treat their tabs as protected. Renames/drags done in the TabMind
+  dashboard on a native group apply natively (explicit actions). E2E-proven: a hand-made
+  zillow+kayak "My mix" group survives analysis + mirroring untouched.
+- **Search/ask reliability**: sendBg retries while the MV3 worker wakes; empty results
+  state tells the truth (what was searched, whether AI can help); when local search
+  finds nothing and AI is on, the request escalates to server interpretation once; the
+  popup "Ask TabMind" row and ⌘⇧K now open the dashboard WITH the command bar open.
+- **Focus lockdown**: third strictness level — only the task's groups and explicitly
+  allowed domains pass. Strictness is chosen per session in the Focus dialog (defaults
+  from Settings; default is now Strict).
+- **History deletion**: hover-× forgets a single page from local page memory, recently
+  closed, undo batches, AND the synced server copy (queued + retried until delivered);
+  "Clear history…" (two-step) wipes all of it. DELETE /api/sync/pages removes rows —
+  embeddings live on the row, so nothing lingers. API-tested.
 
 ### v1.1 (focus, automations, help, tuning) — verified
 

@@ -100,6 +100,25 @@ describe("assessTabFocus", () => {
     expect(tab.excluded).toBe(true);
     expect(assessTabFocus(tab, undefined, session).verdict).toBe("neutral");
   });
+
+  it("lockdown intercepts even task-matching new sites", () => {
+    const lockdown = { ...session, strictness: "lockdown" as const };
+    // Looks related — passes in gentle/strict, but lockdown wants walls.
+    const related = analyzed("https://docs.google.com/document/d/xyz", "Pricing copy draft - Google Docs");
+    expect(assessTabFocus(related, undefined, session).verdict).toBe("relevant");
+    expect(assessTabFocus(related, undefined, lockdown).verdict).toBe("distraction");
+    const unknown = analyzed("https://www.some-random-store.com/products", "Novelty desk lamps");
+    expect(assessTabFocus(unknown, undefined, lockdown).verdict).toBe("distraction");
+  });
+
+  it("lockdown still passes the task's groups and the allowlist", () => {
+    const lockdown = { ...session, strictness: "lockdown" as const };
+    const grouped = analyzed("https://linear.app/acme/issue/ACM-1", "ACM-1 Some ticket – Linear");
+    expect(assessTabFocus(grouped, "g-work", lockdown).verdict).toBe("relevant");
+    const allowed = { ...lockdown, allowedDomains: ["reddit.com"] };
+    const reddit = analyzed("https://www.reddit.com/r/all", "reddit: the front page");
+    expect(assessTabFocus(reddit, undefined, allowed).verdict).toBe("relevant");
+  });
 });
 
 describe("session shape", () => {

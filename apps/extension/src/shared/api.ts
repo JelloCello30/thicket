@@ -82,6 +82,8 @@ export const api = {
     request<{ workspaces: import("@tabmind/types").WorkspaceData[] }>("/api/sync/workspaces"),
   syncPages: (body: SyncPagesRequest) =>
     request<{ recorded: number }>("/api/sync/pages", { method: "POST", body: JSON.stringify(body) }),
+  deletePages: (body: { urls?: string[]; all?: boolean }) =>
+    request<{ deleted: number }>("/api/sync/pages", { method: "DELETE", body: JSON.stringify(body) }),
   search: (query: string) =>
     request<{ results: SearchResultItem[]; semantic: boolean }>(
       `/api/search?q=${encodeURIComponent(query)}`,

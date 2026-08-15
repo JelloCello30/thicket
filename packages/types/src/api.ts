@@ -53,6 +53,17 @@ export const syncPagesRequest = z.object({
 });
 export type SyncPagesRequest = z.infer<typeof syncPagesRequest>;
 
+/** Forget pages server-side: specific urls, or everything. */
+export const deletePagesRequest = z
+  .object({
+    urls: z.array(z.string().max(2048)).max(200).optional(),
+    all: z.boolean().optional(),
+  })
+  .refine((d) => d.all === true || (d.urls?.length ?? 0) > 0, {
+    message: "Provide urls or all: true",
+  });
+export type DeletePagesRequest = z.infer<typeof deletePagesRequest>;
+
 /** Compact tab features sent for AI organization. Titles + URLs only unless content opt-in. */
 export const aiTabFeature = z.object({
   key: z.string().max(64),

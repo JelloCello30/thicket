@@ -24,6 +24,12 @@ export interface GroupingOptions {
   lockedAssignments?: Map<string, string>;
   /** User-tunable clustering behavior ("grouping style" in Settings). */
   tuning?: ClusterTuning;
+  /**
+   * Native Chrome tab groups the USER created (not TabMind's mirrors).
+   * Their members are honored as-is: one locked group each, the user's own
+   * title and color, never split, renamed, or judged stale.
+   */
+  nativeGroups?: { id: number; title: string; color: GroupColor }[];
   idFactory?: () => string;
 }
 
@@ -67,7 +73,25 @@ export function groupAnalyzedTabs(
   totalTabs: number = tabs.length,
 ): AnalysisResult {
   const idFactory = options.idFactory ?? defaultIdFactory;
-  const outcome = clusterTabs(tabs, options.similarity ?? {}, options.tuning ?? {});
+
+  // Tabs sitting in a user-created native group are spoken for — the user
+  // already organized them. Pull them out before clustering.
+  const nativeById = new Map((options.nativeGroups ?? []).map((g) => [g.id, g]));
+  const nativeMemberIdx = new Map<number, number[]>();
+  tabs.forEach((tab, i) => {
+    if (tab.excluded || tab.chromeGroupId == null) return;
+    if (!nativeById.has(tab.chromeGroupId)) return;
+    const list = nativeMemberIdx.get(tab.chromeGroupId) ?? [];
+    list.push(i);
+    nativeMemberIdx.set(tab.chromeGroupId, list);
+  });
+  const nativeLocked = new Set([...nativeMemberIdx.values()].flat());
+
+  const inputIdx = tabs.map((_, i) => i).filter((i) => !nativeLocked.has(i));
+  const inputTabs = inputIdx.map((i) => tabs[i]!);
+  const remap = (indices: number[]) => indices.map((i) => inputIdx[i]!);
+
+  const outcome = clusterTabs(inputTabs, options.similarity ?? {}, options.tuning ?? {});
 
   interface Draft {
     tabIdx: number[];
@@ -82,12 +106,12 @@ export function groupAnalyzedTabs(
 
   const drafts: Draft[] = [];
   for (const cluster of outcome.clusters) {
-    const members = cluster.memberIdx.map((i) => tabs[i]!);
+    const members = cluster.memberIdx.map((i) => inputTabs[i]!);
     const features = cluster.memberIdx.map((i) => outcome.features[i]!);
     const naming = nameCluster(members, features);
     const allStale = members.every((t) => t.staleness >= 0.85 && !t.pinned);
     drafts.push({
-      tabIdx: cluster.memberIdx,
+      tabIdx: remap(cluster.memberIdx),
       name: naming.name,
       kind: naming.kind,
       entity: naming.entity,
@@ -98,7 +122,7 @@ export function groupAnalyzedTabs(
   }
   if (outcome.readingIdx.length > 0) {
     drafts.push({
-      tabIdx: outcome.readingIdx,
+      tabIdx: remap(outcome.readingIdx),
       name: "Reading",
       kind: "reading",
       signals: ["Articles and threads without a project attached"],
@@ -107,7 +131,7 @@ export function groupAnalyzedTabs(
   }
   if (outcome.probablyDoneIdx.length > 0) {
     drafts.push({
-      tabIdx: outcome.probablyDoneIdx,
+      tabIdx: remap(outcome.probablyDoneIdx),
       name: "Probably done",
       kind: "stale",
       signals: ["No recent activity, not connected to active work"],
@@ -117,7 +141,7 @@ export function groupAnalyzedTabs(
   }
   if (outcome.otherIdx.length > 0) {
     drafts.push({
-      tabIdx: outcome.otherIdx,
+      tabIdx: remap(outcome.otherIdx),
       name: "Everything else",
       kind: "other",
       signals: [],
@@ -128,7 +152,7 @@ export function groupAnalyzedTabs(
 
   // Apply explicit user corrections before identity matching.
   if (options.lockedAssignments && options.lockedAssignments.size > 0) {
-    applyLocks(drafts, tabs, options.lockedAssignments, options.previous ?? []);
+    applyLocks(drafts, tabs, options.lockedAssignments, options.previous ?? [], nativeLocked);
   }
 
   // Stable identity: reuse previous ids/names when membership overlaps.
@@ -158,6 +182,23 @@ export function groupAnalyzedTabs(
     }
     return buildGroup(draft, tabs, { id: idFactory(), color: KIND_COLORS[draft.kind] });
   });
+
+  // The user's own native groups, exactly as they made them. Identity comes
+  // from the chrome group id; the name and color are theirs, verbatim.
+  for (const [nativeId, memberIdx] of nativeMemberIdx) {
+    const native = nativeById.get(nativeId)!;
+    const members = memberIdx.map((i) => tabs[i]!);
+    groups.push({
+      id: `native-${nativeId}`,
+      name: native.title.trim() || "Grouped by you",
+      kind: dominantKind(members),
+      tabIds: members.map((t) => t.tabId),
+      confidence: 1,
+      signals: ["You grouped these in Chrome — TabMind keeps hands off"],
+      color: native.color,
+      nativeGroupId: nativeId,
+    });
+  }
 
   sortGroups(groups, tabs);
 
@@ -193,11 +234,12 @@ function applyLocks(
   tabs: AnalyzedTab[],
   locks: Map<string, string>,
   previous: PreviousGroup[],
+  nativeLocked: ReadonlySet<number> = new Set(),
 ): void {
   const prevById = new Map(previous.map((p) => [p.id, p]));
   for (const [url, targetGroupId] of locks) {
     const tabIdx = tabs.findIndex((t) => t.normalizedUrl === url);
-    if (tabIdx < 0) continue;
+    if (tabIdx < 0 || nativeLocked.has(tabIdx)) continue;
     const target = prevById.get(targetGroupId);
     if (!target) continue;
     // Find the draft that best matches the target group and move the tab there.
@@ -222,6 +264,29 @@ function applyLocks(
   for (let i = drafts.length - 1; i >= 0; i--) {
     if (drafts[i]!.tabIdx.length === 0) drafts.splice(i, 1);
   }
+}
+
+const CATEGORY_KIND: Partial<Record<AnalyzedTab["category"], GroupKind>> = {
+  realestate: "realestate",
+  travel: "travel",
+  shopping: "shopping",
+  dev: "work",
+  work: "work",
+  docs: "work",
+  jobs: "jobs",
+  learning: "learning",
+  media: "media",
+  reading: "reading",
+};
+
+function dominantKind(members: AnalyzedTab[]): GroupKind {
+  const counts = new Map<GroupKind, number>();
+  for (const m of members) {
+    const kind = CATEGORY_KIND[m.category];
+    if (kind) counts.set(kind, (counts.get(kind) ?? 0) + 1);
+  }
+  const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
+  return top && top[1] >= members.length / 2 ? top[0] : "project";
 }
 
 function sortGroups(groups: TabGroup[], tabs: AnalyzedTab[]): void {

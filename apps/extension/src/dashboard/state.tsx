@@ -29,7 +29,7 @@ export function useUiState() {
 }
 
 export function useHashRoute(): [string, (next: string) => void] {
-  const parse = () => window.location.hash.replace(/^#\/?/, "") || "now";
+  const parse = () => (window.location.hash.replace(/^#\/?/, "").split("?")[0] || "now");
   const [route, setRoute] = useState(parse);
   useEffect(() => {
     const onHash = () => setRoute(parse());

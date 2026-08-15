@@ -1,4 +1,4 @@
-import type { AnalysisResult, TabGroup } from "@tabmind/types";
+import type { AnalysisResult, GroupColor, TabGroup } from "@tabmind/types";
 import {
   GROUPING_STYLES,
   groupTabs,
@@ -8,7 +8,7 @@ import { TIMING } from "@tabmind/config";
 import { api } from "../shared/api";
 import { readState, writeState, type RememberedGroup } from "../shared/storage";
 import { collectTabs } from "./tabs";
-import { mirrorGroups } from "./mirror";
+import { mirrorGroups, readMirrorMap } from "./mirror";
 import { track } from "./analytics";
 import { runAutomations } from "./automations";
 import { refreshFocusGroups } from "./focus";
@@ -54,16 +54,30 @@ export async function runAnalysis(): Promise<AnalysisResult> {
 }
 
 async function doAnalyze(): Promise<AnalysisResult> {
-  const [snapshots, state] = await Promise.all([
+  const [snapshots, state, allNativeGroups, mirrorMap] = await Promise.all([
     collectTabs(),
     readState("prefs", "excludedDomains", "groupMemory", "corrections", "workspaces", "auth"),
+    chrome.tabGroups.query({}).catch(() => [] as chrome.tabGroups.TabGroup[]),
+    readMirrorMap(),
   ]);
+
+  // Native groups TabMind didn't create belong to the user — honor them as
+  // locked groups (their title, their color, never split or renamed).
+  const ours = new Set(Object.values(mirrorMap));
+  const userNativeGroups = allNativeGroups
+    .filter((g) => !ours.has(g.id))
+    .map((g) => ({
+      id: g.id,
+      title: g.title ?? "",
+      color: g.color as GroupColor,
+    }));
 
   const options: GroupingOptions = {
     previous: state.groupMemory,
     similarity: { pairBoosts: state.corrections.pairBoosts },
     lockedAssignments: new Map(Object.entries(state.corrections.locks)),
     tuning: GROUPING_STYLES[state.prefs.groupingStyle] ?? GROUPING_STYLES.balanced,
+    nativeGroups: userNativeGroups,
   };
 
   const result = groupTabs(

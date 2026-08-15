@@ -63,6 +63,8 @@ export interface AnalyzedTab {
   /** Proper-noun-ish entities pulled from the title, original casing. */
   entities: string[];
   openerTabId?: number;
+  /** Native Chrome tab-group id the tab currently sits in (undefined/-1 = none). */
+  chromeGroupId?: number;
   lastAccessed?: number;
   pinned: boolean;
   active: boolean;
@@ -128,6 +130,11 @@ export interface TabGroup {
   isCatchAll?: boolean;
   /** The "Probably done" group of stale tabs. */
   isStale?: boolean;
+  /**
+   * Set when this group mirrors a native Chrome tab group the USER created.
+   * TabMind never renames, recolors, moves, or auto-archives these.
+   */
+  nativeGroupId?: number;
 }
 
 export interface AnalysisResult {
@@ -278,7 +285,7 @@ export interface UserPreferences {
   /** Hours before an untouched tab starts counting as done. */
   staleAfterHours: number;
   /** Focus mode: gentle intercepts known rabbit holes; strict also stops unrelated new sites. */
-  focusStrictness: "gentle" | "strict";
+  focusStrictness: "gentle" | "strict" | "lockdown";
   /** Length of a focus-mode break, minutes. */
   focusBreakMinutes: number;
 }
@@ -293,7 +300,7 @@ export const DEFAULT_PREFERENCES: UserPreferences = {
   theme: "system",
   groupingStyle: "balanced",
   staleAfterHours: 24,
-  focusStrictness: "gentle",
+  focusStrictness: "strict",
   focusBreakMinutes: 5,
 };
 

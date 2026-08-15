@@ -9,7 +9,7 @@ import { sha256 } from "@/lib/request-auth";
 import { GET as meGet } from "@/app/api/me/route";
 import { GET as searchGet } from "@/app/api/search/route";
 import { POST as syncWorkspacesPost } from "@/app/api/sync/workspaces/route";
-import { POST as syncPagesPost } from "@/app/api/sync/pages/route";
+import { POST as syncPagesPost, DELETE as syncPagesDelete } from "@/app/api/sync/pages/route";
 import { POST as organizePost } from "@/app/api/ai/organize/route";
 import { POST as eventsPost } from "@/app/api/events/route";
 import { POST as webhookPost } from "@/app/api/stripe/webhook/route";
@@ -227,6 +227,40 @@ describe("page-memory ingest re-applies privacy rules server-side", () => {
     const body = (await response.json()) as { results: { url: string }[]; semantic: boolean };
     expect(body.results.some((r) => r.url.includes("maggieappleton"))).toBe(true);
     expect(body.semantic).toBe(false); // no embeddings configured in tests
+  });
+
+  it("deletes specific pages, then everything, for real", async () => {
+    const database = await db();
+    const before = await database.select().from(pageRecord).where(eq(pageRecord.userId, "u-free"));
+    expect(before.length).toBeGreaterThan(0);
+
+    // Forget one page by url.
+    const one = await syncPagesDelete(
+      req("/api/sync/pages", {
+        method: "DELETE",
+        token: FREE_TOKEN,
+        body: { urls: ["https://maggieappleton.com/local-first"] },
+      }),
+      ctx,
+    );
+    expect(one.status).toBe(200);
+    expect(((await one.json()) as { deleted: number }).deleted).toBe(1);
+    const after = await database.select().from(pageRecord).where(eq(pageRecord.userId, "u-free"));
+    expect(after.some((p) => p.url.includes("maggieappleton"))).toBe(false);
+
+    // And the search index no longer serves it.
+    const search = await searchGet(req("/api/search?q=local-first%20software", { token: FREE_TOKEN }), ctx);
+    const results = ((await search.json()) as { results: { url: string }[] }).results;
+    expect(results.some((r) => r.url.includes("maggieappleton"))).toBe(false);
+
+    // Clear-all removes the rest.
+    const all = await syncPagesDelete(
+      req("/api/sync/pages", { method: "DELETE", token: FREE_TOKEN, body: { all: true } }),
+      ctx,
+    );
+    expect(all.status).toBe(200);
+    const remaining = await database.select().from(pageRecord).where(eq(pageRecord.userId, "u-free"));
+    expect(remaining).toHaveLength(0);
   });
 });
 

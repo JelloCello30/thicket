@@ -124,6 +124,14 @@ const TOPICS: HelpTopic[] = [
       "Sign in at tabmind.app, then connect this extension — workspaces sync everywhere and AI naming, summaries, and semantic search unlock. TabMind works fully without it.",
     action: { label: "Sign in", run: (a) => a.openAccount() },
   },
+  {
+    id: "forget",
+    title: "Delete history",
+    keywords: "delete history forget clear remove erase page memory wipe",
+    explain:
+      "Hover any entry in History and click × to forget that page — gone from history and search, on this device and your account. “Clear history…” at the top forgets everything at once. Deleting your whole account lives in Settings → Your data.",
+    action: { label: "Open History", run: (a) => a.navigate("history") },
+  },
 ];
 
 export function findHelpTopics(query?: string): HelpTopic[] {

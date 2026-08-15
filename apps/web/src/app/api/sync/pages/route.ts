@@ -1,6 +1,6 @@
 import { createHash, randomUUID } from "node:crypto";
-import { and, eq, sql } from "drizzle-orm";
-import { syncPagesRequest } from "@tabmind/types";
+import { and, eq, inArray, sql } from "drizzle-orm";
+import { deletePagesRequest, syncPagesRequest } from "@tabmind/types";
 import { normalizeUrl, sanitizeForStorage, allowedOffDevice } from "@tabmind/core";
 import { RATE_LIMITS } from "@tabmind/config";
 import { excludedDomain, pageRecord } from "@tabmind/db/schema";
@@ -104,3 +104,29 @@ export const POST = handled(async (request) => {
 function embedText(title: string, domain: string): string {
   return `${title} (${domain})`.slice(0, 500);
 }
+
+/**
+ * Forget pages. "Delete" means the rows are gone — embeddings live on the
+ * row, so nothing lingers. `all` wipes the user's whole page memory.
+ */
+export const DELETE = handled(async (request) => {
+  const user = await requireUser(request);
+  rateLimit(`pages:${user.id}`, RATE_LIMITS.syncPerMinute);
+  const parsed = deletePagesRequest.safeParse(await request.json());
+  if (!parsed.success) throw new HttpError(400, "invalid", "Invalid delete payload.");
+
+  const database = await db();
+  if (parsed.data.all) {
+    const gone = await database
+      .delete(pageRecord)
+      .where(eq(pageRecord.userId, user.id))
+      .returning({ id: pageRecord.id });
+    return json({ deleted: gone.length });
+  }
+  const hashes = parsed.data.urls!.map((u) => md5(normalizeUrl(u)));
+  const gone = await database
+    .delete(pageRecord)
+    .where(and(eq(pageRecord.userId, user.id), inArray(pageRecord.urlHash, hashes)))
+    .returning({ id: pageRecord.id });
+  return json({ deleted: gone.length });
+});

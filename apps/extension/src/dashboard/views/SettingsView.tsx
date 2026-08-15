@@ -216,10 +216,10 @@ export function SettingsView({
       <Section title="Focus mode">
         <Row
           label="Strictness"
-          hint="Gentle intercepts known rabbit holes (social, video, forums, news). Strict also stops new sites that don't relate to your task."
+          hint="Gentle intercepts known rabbit holes (social, video, forums, news). Strict also stops unrelated new sites. Lockdown allows only your task's groups and sites you explicitly allow. You can also pick per session when starting."
         >
           <div className="flex gap-1">
-            {(["gentle", "strict"] as const).map((mode) => (
+            {(["gentle", "strict", "lockdown"] as const).map((mode) => (
               <button
                 key={mode}
                 onClick={() => onPref({ focusStrictness: mode })}

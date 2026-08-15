@@ -95,7 +95,8 @@ chrome.tabs.onActivated.addListener(({ tabId }) => {
 chrome.tabs.onReplaced.addListener(() => scheduleAnalysis("replaced"));
 
 chrome.commands.onCommand.addListener((command) => {
-  if (command === "open-dashboard") void openDashboard();
+  // The global shortcut's promise is "ask TabMind anything" — land ready to type.
+  if (command === "open-dashboard") void openDashboard("now", { command: true });
 });
 
 /* ─────────────────── device linking (web → ext) ─────────────────── */
@@ -320,7 +321,7 @@ async function handle(request: BgRequest): Promise<unknown> {
       return { granted };
     }
     case "open-dashboard": {
-      await openDashboard(request.section);
+      await openDashboard(request.section, { command: request.command });
       return { ok: true };
     }
     case "focus-start": {
@@ -329,6 +330,18 @@ async function handle(request: BgRequest): Promise<unknown> {
     }
     case "focus-end":
       return { summary: await endFocus("manual") };
+    case "history-delete": {
+      const { forgetPage } = await import("./history");
+      await forgetPage(request.url);
+      notifyUi();
+      return uiState();
+    }
+    case "history-clear": {
+      const { clearHistory } = await import("./history");
+      await clearHistory();
+      notifyUi();
+      return uiState();
+    }
     case "rules-add": {
       await addRule(request.condition, request.action);
       notifyUi();
@@ -382,8 +395,8 @@ async function uiState(): Promise<UiState> {
   };
 }
 
-async function openDashboard(section?: string): Promise<void> {
-  const url = chrome.runtime.getURL(`dashboard.html#/${section ?? "now"}`);
+async function openDashboard(section?: string, opts: { command?: boolean } = {}): Promise<void> {
+  const url = chrome.runtime.getURL(`dashboard.html#/${section ?? "now"}${opts.command ? "?cmd=1" : ""}`);
   const existing = await chrome.tabs.query({ url: chrome.runtime.getURL("dashboard.html") + "*" });
   const first = existing[0];
   if (first?.id != null) {
@@ -405,7 +418,14 @@ async function renameGroup(groupId: string, name: string): Promise<void> {
   const analysis = await readCached();
   if (analysis) {
     const group = analysis.groups.find((g) => g.id === groupId);
-    if (group) group.name = clean;
+    if (group) {
+      group.name = clean;
+      // Renaming their own native group through TabMind is an explicit ask —
+      // apply it to the real thing so the strip and dashboard agree.
+      if (group.nativeGroupId != null) {
+        await chrome.tabGroups.update(group.nativeGroupId, { title: clean }).catch(() => undefined);
+      }
+    }
     await chrome.storage.session.set({ analysis });
   }
   notifyUi();
@@ -417,6 +437,16 @@ async function applyMoveCorrection(tabId: number, toGroupId: string): Promise<vo
   const target = analysis.groups.find((g) => g.id === toGroupId);
   if (!tab || !target) return;
   const from = analysis.groups.find((g) => g.tabIds.includes(tabId));
+
+  // Dragging into/out of the user's own native group applies natively —
+  // otherwise the next analysis reads native membership and snaps back.
+  if (target.nativeGroupId != null) {
+    await chrome.tabs
+      .group({ groupId: target.nativeGroupId, tabIds: [tabId] })
+      .catch(() => undefined);
+  } else if (from?.nativeGroupId != null) {
+    await chrome.tabs.ungroup([tabId]).catch(() => undefined);
+  }
 
   await updateState("corrections", (corrections) => {
     const locks = { ...corrections.locks, [tab.normalizedUrl]: toGroupId };
@@ -449,6 +479,16 @@ async function applyMergeCorrection(fromGroupId: string, intoGroupId: string): P
   const from = analysis.groups.find((g) => g.id === fromGroupId);
   const into = analysis.groups.find((g) => g.id === intoGroupId);
   if (!from || !into) return;
+  // Merging is explicit: if either side is the user's native group, make the
+  // strip agree, or the next analysis reads native membership and undoes it.
+  const tabIds = from.tabIds.filter((id) => analysis.tabs.some((t) => t.tabId === id));
+  if (into.nativeGroupId != null && tabIds.length > 0) {
+    await chrome.tabs
+      .group({ groupId: into.nativeGroupId, tabIds: tabIds as [number, ...number[]] })
+      .catch(() => undefined);
+  } else if (from.nativeGroupId != null && tabIds.length > 0) {
+    await chrome.tabs.ungroup(tabIds as [number, ...number[]]).catch(() => undefined);
+  }
   await updateState("corrections", (corrections) => {
     const locks = { ...corrections.locks };
     for (const tabId of from.tabIds) {

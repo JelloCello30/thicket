@@ -8,9 +8,10 @@ import { tokenize } from "./text";
  * somewhere new, decide whether it's part of the task, harmless, or a
  * rabbit hole worth intercepting.
  *
- * Philosophy: interventions must be proportionate. Only sites in known
- * leisure categories get intercepted ("strict" also intercepts clearly
- * unrelated new sites); everything ambiguous passes with no friction.
+ * Philosophy: interventions must be proportionate, and the user picks the
+ * level. "gentle" intercepts only known leisure categories; "strict" also
+ * intercepts clearly unrelated new sites; "lockdown" allows only the task's
+ * groups and explicitly allowed domains — nothing new gets through quietly.
  * The user is always one click from overriding — they're the boss.
  */
 
@@ -21,12 +22,14 @@ export const DEFAULT_LEISURE_CATEGORIES: ReadonlySet<SiteCategory> = new Set([
   "news",
 ] as SiteCategory[]);
 
+export type FocusStrictness = "gentle" | "strict" | "lockdown";
+
 export interface FocusSessionState {
   task: string;
   taskTokens: string[];
   startedAt: number;
   endsAt: number | null;
-  strictness: "gentle" | "strict";
+  strictness: FocusStrictness;
   /** Group ids judged relevant to the task at start (refreshed on analysis). */
   relevantGroupIds: string[];
   /** Domains the user marked on-task during this session. */
@@ -39,7 +42,7 @@ export interface FocusSessionState {
 
 export function createFocusSession(
   task: string,
-  options: { minutes?: number | null; strictness?: "gentle" | "strict"; now?: number } = {},
+  options: { minutes?: number | null; strictness?: FocusStrictness; now?: number } = {},
 ): FocusSessionState {
   const now = options.now ?? Date.now();
   return {
@@ -125,7 +128,9 @@ export function assessTabFocus(
   const overlap =
     tab.tokens.filter((t) => taskSet.has(t)).length +
     tokenize(tab.entities.join(" ")).filter((t) => taskSet.has(t)).length;
-  if (overlap >= 1 && session.taskTokens.length > 0) {
+  // In lockdown, looking related isn't enough — only the task's groups and
+  // explicit allowances pass. Predictable beats clever when you asked for walls.
+  if (overlap >= 1 && session.taskTokens.length > 0 && session.strictness !== "lockdown") {
     return { verdict: "relevant", reason: "Matches what you're working on" };
   }
 
@@ -134,6 +139,12 @@ export function assessTabFocus(
     return {
       verdict: "distraction",
       reason: `${tab.siteName || tab.domain} tends to be a rabbit hole`,
+    };
+  }
+  if (session.strictness === "lockdown") {
+    return {
+      verdict: "distraction",
+      reason: "Lockdown is on — only your task's tabs pass",
     };
   }
   if (session.strictness === "strict") {

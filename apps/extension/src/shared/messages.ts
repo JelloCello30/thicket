@@ -98,12 +98,14 @@ export type BgRequest =
   | { type: "sign-out" }
   | { type: "reopen"; url: string }
   | { type: "request-content-permission" }
-  | { type: "open-dashboard"; section?: string }
-  | { type: "focus-start"; task: string; minutes?: number | null; strictness?: "gentle" | "strict" }
+  | { type: "open-dashboard"; section?: string; command?: boolean }
+  | { type: "focus-start"; task: string; minutes?: number | null; strictness?: "gentle" | "strict" | "lockdown" }
   | { type: "focus-end" }
   | { type: "rules-add"; condition: AutomationRule["condition"]; action: AutomationRule["action"] }
   | { type: "rules-toggle"; id: string; enabled: boolean }
-  | { type: "rules-delete"; id: string };
+  | { type: "rules-delete"; id: string }
+  | { type: "history-delete"; url: string }
+  | { type: "history-clear" };
 
 export interface BgResponses {
   "get-state": UiState;
@@ -139,6 +141,8 @@ export interface BgResponses {
   "rules-add": UiState;
   "rules-toggle": UiState;
   "rules-delete": UiState;
+  "history-delete": UiState;
+  "history-clear": UiState;
 }
 
 export interface BgError {
@@ -153,17 +157,37 @@ export function isBgError(value: unknown): value is BgError {
   return typeof value === "object" && value !== null && (value as BgError).__error === true;
 }
 
-/** UI → background. Rejects with a typed error message on failure. */
+/**
+ * UI → background. Rejects with a typed error message on failure.
+ * MV3 service workers can be asleep when the first message lands (the promise
+ * resolves `undefined` or rejects with a connection error) — retry once after
+ * a beat so "search sometimes does nothing" can't happen. App-level errors
+ * (BgError) are real answers and are never retried.
+ */
 export async function sendBg<T extends BgRequest["type"]>(
   request: Extract<BgRequest, { type: T }>,
 ): Promise<BgResponses[T]> {
-  const response = (await chrome.runtime.sendMessage(request)) as BgResponse<T>;
-  if (isBgError(response)) {
-    const error = new Error(response.message) as Error & { code: BgError["code"] };
-    error.code = response.code;
-    throw error;
+  let lastError: unknown;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    if (attempt > 0) await new Promise((r) => setTimeout(r, 250 * attempt));
+    try {
+      const response = (await chrome.runtime.sendMessage(request)) as BgResponse<T> | undefined;
+      if (response === undefined) {
+        lastError = new Error("TabMind is waking up — try that again.");
+        continue;
+      }
+      if (isBgError(response)) {
+        const error = new Error(response.message) as Error & { code: BgError["code"] };
+        error.code = response.code;
+        throw error;
+      }
+      return response;
+    } catch (error) {
+      if (error instanceof Error && "code" in error) throw error;
+      lastError = error;
+    }
   }
-  return response;
+  throw lastError instanceof Error ? lastError : new Error("TabMind didn't respond.");
 }
 
 /** Broadcast from background → all UI surfaces when state changes. */

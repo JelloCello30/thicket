@@ -25,7 +25,7 @@ export interface FocusSummary {
 
 export async function startFocus(
   task: string,
-  options: { minutes?: number | null; strictness?: "gentle" | "strict" } = {},
+  options: { minutes?: number | null; strictness?: "gentle" | "strict" | "lockdown" } = {},
 ): Promise<FocusSessionState> {
   const { prefs } = await readState("prefs");
   const session = createFocusSession(task, {

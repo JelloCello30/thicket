@@ -229,6 +229,45 @@ async function main() {
   await straying.close().catch(() => undefined);
   await dashboard.evaluate(() => chrome.runtime.sendMessage({ type: "focus-end" }));
 
+  // ————— Pre-existing native tab groups: honored, never dismantled —————
+  // Group a zillow tab with a kayak tab by hand — an arrangement clustering
+  // would never produce. TabMind must show it verbatim and leave it alone.
+  const nativeSetup = await dashboard.evaluate(async () => {
+    const tabs = await chrome.tabs.query({ windowType: "normal" });
+    const zillow = tabs.find((t) => t.url?.includes("3421-Sunset-Blvd"));
+    const kayak = tabs.find((t) => t.url?.includes("kayak.com"));
+    if (!zillow?.id || !kayak?.id) return null;
+    const groupId = await chrome.tabs.group({ tabIds: [zillow.id, kayak.id] });
+    await chrome.tabGroups.update(groupId, { title: "My mix", color: "purple" });
+    return { groupId, tabIds: [zillow.id, kayak.id] };
+  });
+  if (nativeSetup) {
+    await dashboard.evaluate(() => chrome.runtime.sendMessage({ type: "analyze-now" }));
+    await dashboard.waitForTimeout(1500); // let the mirror pass run too
+    const nativeState = await dashboard.evaluate(async (setup) => {
+      const state = await chrome.runtime.sendMessage({ type: "get-state" });
+      const group = state.analysis?.groups.find((g) => g.nativeGroupId === setup.groupId);
+      const t0 = await chrome.tabs.get(setup.tabIds[0]);
+      const t1 = await chrome.tabs.get(setup.tabIds[1]);
+      const native = await chrome.tabGroups.get(setup.groupId).catch(() => null);
+      return {
+        analysisName: group?.name,
+        analysisTabs: group?.tabIds.slice().sort(),
+        stillGrouped: t0.groupId === setup.groupId && t1.groupId === setup.groupId,
+        title: native?.title,
+        color: native?.color,
+      };
+    }, nativeSetup);
+    checks["native group honored in analysis"] =
+      nativeState.analysisName === "My mix" &&
+      JSON.stringify(nativeState.analysisTabs) === JSON.stringify(nativeSetup.tabIds.slice().sort());
+    checks["native group untouched in strip"] =
+      nativeState.stillGrouped && nativeState.title === "My mix" && nativeState.color === "purple";
+  } else {
+    checks["native group honored in analysis"] = false;
+    checks["native group untouched in strip"] = false;
+  }
+
   console.log("checks:", JSON.stringify(checks, null, 2));
   const failed = Object.entries(checks).filter(([, ok]) => !ok);
 

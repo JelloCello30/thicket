@@ -27,6 +27,7 @@ export function analyzeTab(tab: TabSnapshot, ctx: AnalyzeContext): AnalyzedTab {
     tokens: [],
     entities: [],
     openerTabId: tab.openerTabId,
+    chromeGroupId: tab.groupId != null && tab.groupId >= 0 ? tab.groupId : undefined,
     lastAccessed: tab.lastAccessed,
     pinned: tab.pinned,
     active: tab.active,

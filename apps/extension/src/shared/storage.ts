@@ -67,6 +67,8 @@ export interface LocalState {
   workspaces: WorkspaceData[];
   recentlyClosed: ClosedTabRecord[];
   localHistory: LocalPage[];
+  /** Normalized urls queued for server-side deletion ("*" = everything). */
+  pendingPageDeletes: string[];
   closedBatches: ClosedBatch[];
   groupMemory: RememberedGroup[];
   corrections: CorrectionState;
@@ -87,6 +89,7 @@ export const DEFAULT_LOCAL_STATE: LocalState = {
   workspaces: [],
   recentlyClosed: [],
   localHistory: [],
+  pendingPageDeletes: [],
   closedBatches: [],
   groupMemory: [],
   corrections: { locks: {}, pairBoosts: [] },

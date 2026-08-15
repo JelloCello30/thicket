@@ -136,6 +136,14 @@ export function GroupSection({
           </button>
         )}
         <span className="text-[0.8125rem] tabular-nums text-ink-faint">{members.length}</span>
+        {group.nativeGroupId != null ? (
+          <span
+            className="rounded-full border border-edge px-1.5 py-px text-[0.6875rem] font-medium text-ink-faint"
+            title="You made this group in Chrome. TabMind shows it but never reorganizes it."
+          >
+            yours
+          </span>
+        ) : null}
         {saved ? (
           <span className="rounded-full bg-accent-soft px-1.5 py-px text-[0.6875rem] font-medium text-accent">
             saved

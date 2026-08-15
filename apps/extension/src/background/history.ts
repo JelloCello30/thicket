@@ -98,6 +98,43 @@ export async function pruneHistory(retentionDays: number): Promise<void> {
   await updateState("localHistory", (history) => history.filter((p) => p.lastSeenAt >= cutoff));
 }
 
+/**
+ * Forget a single page everywhere: local page memory, recently-closed,
+ * undo batches — and queue the server copy for deletion when signed in.
+ */
+export async function forgetPage(url: string): Promise<void> {
+  const normalized = normalizeUrl(url);
+  await updateState("localHistory", (history) =>
+    history.filter((p) => p.normalizedUrl !== normalized),
+  );
+  await updateState("recentlyClosed", (closed) =>
+    closed.filter((c) => normalizeUrl(c.url) !== normalized),
+  );
+  await updateState("closedBatches", (batches) =>
+    batches
+      .map((b) => ({ ...b, tabs: b.tabs.filter((t) => normalizeUrl(t.url) !== normalized) }))
+      .filter((b) => b.tabs.length > 0),
+  );
+  await updateState("pendingPageDeletes", (queue) =>
+    queue.includes("*") || queue.includes(normalized) ? queue : [...queue, normalized],
+  );
+  const { flushPageDeletes } = await import("./sync");
+  void flushPageDeletes();
+}
+
+/** Clear all history: page memory, closed records, batches — and the synced copy. */
+export async function clearHistory(): Promise<void> {
+  const { writeState } = await import("../shared/storage");
+  await writeState({
+    localHistory: [],
+    recentlyClosed: [],
+    closedBatches: [],
+    pendingPageDeletes: ["*"],
+  });
+  const { flushPageDeletes } = await import("./sync");
+  void flushPageDeletes();
+}
+
 /** Wipe everything TabMind remembers locally (Delete My Data). */
 export async function wipeLocalData(): Promise<void> {
   await chrome.storage.local.clear();

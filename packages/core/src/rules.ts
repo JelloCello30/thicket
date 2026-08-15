@@ -55,9 +55,14 @@ const DEFAULT_COOLDOWN_MS = 30 * 60_000;
 /** Tabs a rule may never close: pinned, active, or audibly in use. */
 function closableTabs(analysis: AnalysisResult, tabIds: number[]): number[] {
   const byId = new Map(analysis.tabs.map((t) => [t.tabId, t]));
+  // Tabs inside a native group the user made are protected from automation —
+  // even duplicate copies. The user arranged those on purpose.
+  const nativeProtected = new Set(
+    analysis.groups.filter((g) => g.nativeGroupId != null).flatMap((g) => g.tabIds),
+  );
   return tabIds.filter((id) => {
     const tab = byId.get(id);
-    return tab && !tab.pinned && !tab.active && !tab.audible;
+    return tab && !tab.pinned && !tab.active && !tab.audible && !nativeProtected.has(id);
   });
 }
 
@@ -99,8 +104,9 @@ export function evaluateRules(
       case "group-stale": {
         for (const group of analysis.groups) {
           // Special piles aren't projects: never archive them automatically;
-          // collapsing them is fine.
-          if (group.isCatchAll) continue;
+          // collapsing them is fine. Native groups the user made themselves
+          // are theirs — automations never touch them.
+          if (group.isCatchAll || group.nativeGroupId != null) continue;
           if (group.isStale && rule.action.type !== "collapse-group") continue;
           if (group.savedWorkspaceId && rule.action.type === "save-group") continue;
           if (!nameMatches(rule.condition.nameQuery, group.name, group.entity)) continue;

@@ -23,7 +23,7 @@ interface MirrorMap {
   [groupId: string]: number;
 }
 
-async function readMirrorMap(): Promise<MirrorMap> {
+export async function readMirrorMap(): Promise<MirrorMap> {
   const raw = await chrome.storage.session.get("mirrorMap");
   return (raw.mirrorMap as MirrorMap | undefined) ?? {};
 }
@@ -33,12 +33,21 @@ export async function mirrorGroups(result: AnalysisResult): Promise<void> {
   const nextMap: MirrorMap = {};
   const byId = new Map(result.tabs.map((t) => [t.tabId, t]));
 
+  // Any native group we didn't create is the user's. Its tabs are untouchable —
+  // pulling them into a TabMind group would dismantle the user's own strip.
+  const ours = new Set(Object.values(mirrorMap));
+  const userGroupIds = new Set(
+    (await chrome.tabGroups.query({})).map((g) => g.id).filter((id) => !ours.has(id)),
+  );
+
   for (const group of result.groups) {
     if (group.isCatchAll) continue; // leave loose tabs loose
+    if (group.nativeGroupId != null) continue; // the user's own group — already in the strip
     // Native groups are per-window; mirror within the dominant window.
     const members = group.tabIds
       .map((id) => byId.get(id))
-      .filter((t): t is NonNullable<typeof t> => Boolean(t) && !t!.pinned);
+      .filter((t): t is NonNullable<typeof t> => Boolean(t) && !t!.pinned)
+      .filter((t) => t.chromeGroupId == null || !userGroupIds.has(t.chromeGroupId));
     if (members.length < 2) continue;
     const windowCounts = new Map<number, number>();
     for (const m of members) windowCounts.set(m.windowId, (windowCounts.get(m.windowId) ?? 0) + 1);

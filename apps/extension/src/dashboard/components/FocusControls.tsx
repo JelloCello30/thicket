@@ -1,21 +1,46 @@
-import { useState } from "react";
-import type { FocusSessionState } from "@tabmind/core";
+import { useEffect, useState } from "react";
+import type { FocusSessionState, FocusStrictness } from "@tabmind/core";
 import { Button, Dialog, Input, cn } from "@tabmind/ui";
 
-/** Start dialog: one input, three duration chips, done. */
+const STRICTNESS_COPY: Record<FocusStrictness, { label: string; hint: string }> = {
+  gentle: {
+    label: "Gentle",
+    hint: "Steps in only for known rabbit holes — social, video, forums, news.",
+  },
+  strict: {
+    label: "Strict",
+    hint: "Also steps in for anything that doesn't look related to your task.",
+  },
+  lockdown: {
+    label: "Lockdown",
+    hint: "Only your task's groups and sites you explicitly allow get through.",
+  },
+};
+
+/** Start dialog: one input, duration chips, strictness chips, done. */
 export function FocusDialog({
   open,
   onClose,
   onStart,
-  strictness,
+  defaultStrictness,
 }: {
   open: boolean;
   onClose: () => void;
-  onStart: (task: string, minutes: number | null) => void;
-  strictness: "gentle" | "strict";
+  onStart: (task: string, minutes: number | null, strictness: FocusStrictness) => void;
+  defaultStrictness: FocusStrictness;
 }) {
   const [task, setTask] = useState("");
   const [minutes, setMinutes] = useState<number | null>(50);
+  const [strictness, setStrictness] = useState<FocusStrictness>(defaultStrictness);
+  useEffect(() => {
+    if (open) setStrictness(defaultStrictness);
+  }, [open, defaultStrictness]);
+
+  const start = () => {
+    if (!task.trim()) return;
+    onStart(task.trim(), minutes, strictness);
+    setTask("");
+  };
 
   return (
     <Dialog
@@ -28,14 +53,7 @@ export function FocusDialog({
           <Button variant="ghost" onClick={onClose}>
             Cancel
           </Button>
-          <Button
-            variant="primary"
-            disabled={!task.trim()}
-            onClick={() => {
-              onStart(task.trim(), minutes);
-              setTask("");
-            }}
-          >
+          <Button variant="primary" disabled={!task.trim()} onClick={start}>
             Start focusing
           </Button>
         </>
@@ -44,10 +62,7 @@ export function FocusDialog({
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          if (task.trim()) {
-            onStart(task.trim(), minutes);
-            setTask("");
-          }
+          start();
         }}
       >
         <label htmlFor="focus-task" className="mb-1.5 block text-[0.8125rem] text-ink-secondary">
@@ -78,10 +93,25 @@ export function FocusDialog({
           </button>
         ))}
       </div>
+      <div className="mt-3 flex items-center gap-1.5">
+        {(Object.keys(STRICTNESS_COPY) as FocusStrictness[]).map((level) => (
+          <button
+            key={level}
+            onClick={() => setStrictness(level)}
+            className={cn(
+              "rounded-full border px-3 py-1 text-[0.8125rem] transition-colors",
+              strictness === level
+                ? "border-accent bg-accent-soft font-medium text-accent"
+                : "border-edge text-ink-secondary hover:border-edge-strong",
+            )}
+          >
+            {STRICTNESS_COPY[level].label}
+          </button>
+        ))}
+      </div>
       <p className="mt-3 text-[0.8125rem] leading-snug text-ink-secondary">
-        TabMind figures out which of your groups are this task, then quietly steps in if a known
-        rabbit hole opens — {strictness === "gentle" ? "just the obvious ones" : "strictly"}. You can
-        override any intercept in one click, and it all stays on this device.
+        {STRICTNESS_COPY[strictness].hint} You can override any intercept in one click, and it all
+        stays on this device.
       </p>
     </Dialog>
   );
