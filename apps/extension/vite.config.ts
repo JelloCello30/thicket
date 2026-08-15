@@ -38,7 +38,6 @@ export default defineConfig(({ mode }) => ({
         background: path.resolve(__dirname, "src/background/index.ts"),
         popup: path.resolve(__dirname, "popup.html"),
         dashboard: path.resolve(__dirname, "dashboard.html"),
-        focus: path.resolve(__dirname, "focus.html"),
       },
       output: {
         entryFileNames: (chunk) => (chunk.name === "background" ? "background.js" : "assets/[name]-[hash].js"),

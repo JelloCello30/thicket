@@ -4,7 +4,7 @@ import type {
   UserPreferences,
   WorkspaceData,
 } from "@tabmind/types";
-import type { AutomationRule, FocusSessionState, PreviousGroup } from "@tabmind/core";
+import type { AutomationRule, PreviousGroup } from "@tabmind/core";
 import { DEFAULT_PREFERENCES } from "@tabmind/types";
 
 /** Typed facade over chrome.storage — one place that knows the keys. */
@@ -73,7 +73,6 @@ export interface LocalState {
   groupMemory: RememberedGroup[];
   corrections: CorrectionState;
   pendingWorkspaceSync: { upsertIds: string[]; deleteIds: string[] };
-  focus: FocusSessionState | null;
   rules: AutomationRule[];
   ruleActivity: RuleActivityEntry[];
   onboarded: boolean;
@@ -94,7 +93,6 @@ export const DEFAULT_LOCAL_STATE: LocalState = {
   groupMemory: [],
   corrections: { locks: {}, pairBoosts: [] },
   pendingWorkspaceSync: { upsertIds: [], deleteIds: [] },
-  focus: null,
   rules: [],
   ruleActivity: [],
   onboarded: false,

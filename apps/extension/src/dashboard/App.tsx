@@ -7,7 +7,6 @@ import { sendBg } from "../shared/messages";
 import { useHashRoute, useTheme, useUiState } from "./state";
 import { CommandBar } from "./components/CommandBar";
 import { CleanupDialog, CompareDialog, SummaryDialog } from "./components/dialogs";
-import { FocusBar, FocusDialog } from "./components/FocusControls";
 import { HelpPanel, Spotlight, type HelpStep } from "./components/HelpPanel";
 import { AutomationsView } from "./views/AutomationsView";
 import { HistoryView } from "./views/HistoryView";
@@ -28,7 +27,6 @@ export function App() {
   const { state, error, refresh } = useUiState();
   const [route, navigate] = useHashRoute();
   const [commandOpen, setCommandOpen] = useState(false);
-  const [focusDialogOpen, setFocusDialogOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [helpQuery, setHelpQuery] = useState<string | undefined>(undefined);
   const [tour, setTour] = useState<HelpStep[] | null>(null);
@@ -129,8 +127,6 @@ export function App() {
         case "saved":
         case "restored":
         case "prefs":
-        case "focus-started":
-        case "focus-ended":
           if (outcome.message) push({ message: outcome.message });
           void refresh();
           break;
@@ -198,7 +194,6 @@ export function App() {
   const helpActions = {
     navigate,
     openCommandBar: () => setCommandOpen(true),
-    openFocusDialog: () => setFocusDialogOpen(true),
     runCleanup: () => actions.cleanup(),
     saveFirstGroup: () => {
       const first = state?.analysis?.groups.find((g) => !g.isCatchAll && !g.isStale);
@@ -206,29 +201,6 @@ export function App() {
       else push({ message: "No groups to save yet — open a few tabs first." });
     },
     openAccount: () => window.open(`${state?.appUrl}/login?from=extension`, "_blank"),
-  };
-
-  const startFocus = (task: string, minutes: number | null, strictness: "gentle" | "strict" | "lockdown") => {
-    setFocusDialogOpen(false);
-    void sendBg({ type: "focus-start", task, minutes, strictness })
-      .then(() => {
-        push({ message: `Focused on “${task}”` });
-        void refresh();
-      })
-      .catch(fail);
-  };
-
-  const endFocus = () => {
-    void sendBg({ type: "focus-end" })
-      .then(({ summary }) => {
-        if (summary) {
-          push({
-            message: `Focused ${summary.minutes}m · ${summary.blocked} ${summary.blocked === 1 ? "distraction" : "distractions"} blocked`,
-          });
-        }
-        void refresh();
-      })
-      .catch(fail);
   };
 
   if (error) {
@@ -298,19 +270,6 @@ export function App() {
             <Kbd>K</Kbd>
           </span>
         </button>
-        <button
-          data-help="focus"
-          onClick={() => (state.focus ? endFocus() : setFocusDialogOpen(true))}
-          className={cn(
-            "mt-2 flex items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-sm",
-            state.focus
-              ? "bg-accent-soft font-medium text-accent"
-              : "text-ink-secondary hover:bg-sunken hover:text-ink",
-          )}
-        >
-          <span className={cn("h-2 w-2 rounded-full", state.focus ? "bg-accent" : "bg-ink/20")} />
-          {state.focus ? "Focusing…" : "Focus"}
-        </button>
         <div className="mt-auto flex flex-col gap-0.5">
           <button
             onClick={() => {
@@ -348,9 +307,6 @@ export function App() {
 
       <main className="min-w-0 flex-1 px-8 py-6">
         <div className="mx-auto max-w-3xl">
-          {state.focus ? (
-            <FocusBar focus={state.focus} minutesLeft={state.focusMinutesLeft} onEnd={endFocus} />
-          ) : null}
           {route === "now" ? <NowView state={state} busy={busy} actions={actions} /> : null}
           {route === "automations" ? (
             <AutomationsView
@@ -494,12 +450,6 @@ export function App() {
         comparison={comparison}
         onClose={() => setComparison(null)}
         onOpenUrl={(url) => void sendBg({ type: "reopen", url }).catch(fail)}
-      />
-      <FocusDialog
-        open={focusDialogOpen}
-        onClose={() => setFocusDialogOpen(false)}
-        onStart={startFocus}
-        defaultStrictness={state.prefs.focusStrictness}
       />
       <HelpPanel
         open={helpOpen}

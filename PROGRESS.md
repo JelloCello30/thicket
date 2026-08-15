@@ -1,10 +1,26 @@
 # TabMind — Build Progress
 
-## Status: ✅ v1.2 COMPLETE — ready for external setup (see docs/LAUNCH_CHECKLIST.md)
+## Status: ✅ v1.3 COMPLETE — ready for external setup (see docs/LAUNCH_CHECKLIST.md)
 
 Everything code-side is built, tested, and verified. Remaining work is exclusively
 external accounts/keys, legal customization, and the manual Chrome Web Store submission —
 all documented with exact steps.
+
+### v1.3 (full audit + focus removal) — verified
+
+- **Focus mode removed** at the founder's request (2026-08-14). All of it: core
+  engine, intercept page, badge, dialog, settings, command grammar, marketing
+  section, pricing line, store bullet, e2e checks. Recoverable from git history
+  (last full version: commit 9038c33).
+- **Summarize/Compare always work now**: a deterministic on-device engine answers
+  signed-out or on any server failure (top sites, price ranges from titles,
+  search origins, keep-list, next step; honest "made on this device" note).
+  E2E-verified signed out. AI replaces it when available.
+- Keyboard a11y: all hover-revealed actions also reveal on focus.
+- Dashboard error state gained retry; command-bar summaries titled by group;
+  command bar placeholder is honest about AI availability.
+- Download page: the store CTA renders only once the listing is live; until
+  then, honest run-from-source instructions (no dead primary button).
 
 ### v1.2 (reliability + respect + deletion) — verified
 

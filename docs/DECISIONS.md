@@ -93,3 +93,15 @@ are DB-backed already.
   and the one-shot AI escalation each remove a distinct "it did nothing" failure mode.
 - **Lockdown is predictable, not clever.** It ignores token overlap on purpose: "only
   my task's tabs" has to mean exactly that, or the wall teaches the user nothing.
+
+## v1.3 — audit pass (2026-08)
+
+- **Focus mode was removed** on founder request. The deterministic verdict
+  engine, intercept UX, and strictness tiers live in git history (9038c33) if
+  it ever returns. Tab-focus (jump-to-tab) is unrelated and stays.
+- **No dead buttons, ever**: every AI-labeled action now has a deterministic
+  local fallback (summaries and comparisons from titles/domains/activity),
+  labeled honestly, upgraded silently when AI is available. An error toast is
+  never the primary experience of a feature.
+- **Hover affordances must also be focus affordances** — every action revealed
+  on hover reveals on keyboard focus too.

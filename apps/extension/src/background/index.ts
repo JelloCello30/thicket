@@ -9,17 +9,7 @@ import { flushEvents, reportError, track } from "./analytics";
 import { executeCommand, focusGroup } from "./commands";
 import { recordClosed, recordVisit, pruneHistory } from "./history";
 import { unmirrorAll } from "./mirror";
-import {
-  allowDomainAndReturn,
-  endFocus,
-  focusTick,
-  maybeIntercept,
-  returnToWork,
-  startFocus,
-  takeBreakAndReturn,
-} from "./focus";
 import { addRule, deleteRule, toggleRule } from "./automations";
-import { focusMinutesLeft } from "@tabmind/core";
 import { runSearch } from "./search";
 import { flushSync, pullWorkspaces } from "./sync";
 import { noteActivated, noteRemoved } from "./tabs";
@@ -58,9 +48,6 @@ chrome.alarms.onAlarm.addListener((alarm) => {
     void flushSync();
     void flushEvents();
   }
-  if (alarm.name === "tabmind-focus-tick") {
-    void focusTick();
-  }
   if (alarm.name === "tabmind-daily") {
     void (async () => {
       const { auth } = await readState("auth");
@@ -74,9 +61,6 @@ chrome.alarms.onAlarm.addListener((alarm) => {
 
 chrome.tabs.onCreated.addListener(() => scheduleAnalysis("created"));
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (changeInfo.url) {
-    void maybeIntercept(tabId, changeInfo.url);
-  }
   if (changeInfo.status === "complete" && tab.url) {
     void recordVisit(tabId, tab.url, tab.title ?? "");
     scheduleAnalysis("updated");
@@ -134,25 +118,6 @@ chrome.runtime.onMessage.addListener((message: BgRequest | { type: string }, sen
   if (!message || typeof (message as { type?: unknown }).type !== "string") return undefined;
   if ((message as { type: string }).type.startsWith("tabmind:")) return undefined; // broadcasts
 
-  // Focus intercept page actions carry the sender tab.
-  const focusPage = message as { type: string; url?: string };
-  if (focusPage.type.startsWith("focus-page:") && sender.tab?.id != null) {
-    const tabId = sender.tab.id;
-    void (async () => {
-      if (focusPage.type === "focus-page:allow" && focusPage.url) {
-        await allowDomainAndReturn(tabId, focusPage.url);
-      } else if (focusPage.type === "focus-page:break" && focusPage.url) {
-        await takeBreakAndReturn(tabId, focusPage.url);
-      } else if (focusPage.type === "focus-page:return") {
-        await returnToWork(tabId);
-      } else if (focusPage.type === "focus-page:end" && focusPage.url) {
-        await endFocus("manual");
-        await chrome.tabs.update(tabId, { url: focusPage.url }).catch(() => undefined);
-      }
-      sendResponse({ ok: true });
-    })();
-    return true;
-  }
   void handle(message as BgRequest)
     .then(sendResponse)
     .catch((error: Error & { code?: BgError["code"] }) => {
@@ -324,12 +289,6 @@ async function handle(request: BgRequest): Promise<unknown> {
       await openDashboard(request.section, { command: request.command });
       return { ok: true };
     }
-    case "focus-start": {
-      await startFocus(request.task, { minutes: request.minutes, strictness: request.strictness });
-      return uiState();
-    }
-    case "focus-end":
-      return { summary: await endFocus("manual") };
     case "history-delete": {
       const { forgetPage } = await import("./history");
       await forgetPage(request.url);
@@ -368,7 +327,6 @@ async function uiState(): Promise<UiState> {
       "workspaces",
       "recentlyClosed",
       "closedBatches",
-      "focus",
       "rules",
       "ruleActivity",
       "onboarded",
@@ -384,8 +342,6 @@ async function uiState(): Promise<UiState> {
     workspaces: state.workspaces,
     recentlyClosed: state.recentlyClosed,
     closedBatches: state.closedBatches,
-    focus: state.focus,
-    focusMinutesLeft: state.focus ? focusMinutesLeft(state.focus) : null,
     rules: state.rules,
     ruleActivity: state.ruleActivity,
     onboarded: state.onboarded,

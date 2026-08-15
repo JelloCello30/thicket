@@ -41,7 +41,6 @@ export function entitlementsFor(plan: Plan): Entitlements {
 export const PLAN_FEATURES = {
   free: [
     "Automatic tab organization",
-    "Focus mode with distraction blocking",
     "Automation rules",
     "Up to 3 saved workspaces",
     "Search your open tabs and recent history",

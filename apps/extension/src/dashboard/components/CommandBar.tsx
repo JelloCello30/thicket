@@ -208,7 +208,7 @@ export function CommandBar({
 }
 
 const COMMAND_LEADS =
-  /^(close|save|keep|restore|reopen|bring|summari|compare|clean|clear|tidy|pause|resume|show|archive|focus|help|end|find|search|ask|what|why|how|which|who|can|does|is|are)\b/i;
+  /^(close|save|keep|restore|reopen|bring|summari|compare|clean|clear|tidy|pause|resume|show|archive|help|find|search|ask|what|why|how|which|who|can|does|is|are)\b/i;
 
 function looksLikeCommand(input: string): boolean {
   return COMMAND_LEADS.test(input.trim());

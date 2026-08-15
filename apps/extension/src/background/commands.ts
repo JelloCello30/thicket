@@ -176,26 +176,6 @@ async function execute(intent: CommandIntent, analysis: AnalysisResult): Promise
       notifyUi();
       return { kind: "prefs", message: intent.type === "pause" ? "TabMind paused" : "TabMind resumed" };
     }
-    case "focus": {
-      const { startFocus } = await import("./focus");
-      const session = await startFocus(intent.task, { minutes: intent.minutes ?? null });
-      return {
-        kind: "focus-started",
-        message: session.endsAt
-          ? `Focused on “${session.task}” for ${intent.minutes} minutes`
-          : `Focused on “${session.task}”`,
-      };
-    }
-    case "focus_end": {
-      const { endFocus } = await import("./focus");
-      const summary = await endFocus("manual");
-      return {
-        kind: "focus-ended",
-        message: summary
-          ? `Focused ${summary.minutes}m on “${summary.task}” · ${summary.blocked} ${summary.blocked === 1 ? "distraction" : "distractions"} blocked`
-          : "Focus wasn't running.",
-      };
-    }
     case "help":
       return { kind: "help", helpQuery: intent.query };
     case "open_dashboard":

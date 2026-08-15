@@ -19,7 +19,6 @@ export interface HelpStep {
 export interface HelpActions {
   navigate: (route: string) => void;
   openCommandBar: () => void;
-  openFocusDialog: () => void;
   runCleanup: () => void;
   saveFirstGroup: () => void;
   openAccount: () => void;
@@ -70,15 +69,6 @@ const TOPICS: HelpTopic[] = [
       "Cleanup gathers duplicates, empty tabs, things you're done with, and pages already saved in a workspace. You see the full list first, untick anything, then close the rest in one go — undoable, always.",
     steps: [{ anchor: "cleanup", text: "It lives up here on the Now screen.", route: "now" }],
     action: { label: "Run cleanup now", run: (a) => a.runCleanup() },
-  },
-  {
-    id: "focus",
-    title: "Start a focus session",
-    keywords: "focus mode block distraction concentrate deep work pomodoro",
-    explain:
-      "Type what you're working on and TabMind works out which groups are that task. If a known rabbit hole opens mid-session, a calm page steps in with one-click ways to override. Try it from the rail, or type “focus on …” in the command bar.",
-    steps: [{ anchor: "focus", text: "Start it here any time.", route: "now" }],
-    action: { label: "Start focusing", run: (a) => a.openFocusDialog() },
   },
   {
     id: "automations",

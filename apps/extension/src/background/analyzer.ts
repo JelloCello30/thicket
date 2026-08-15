@@ -11,7 +11,6 @@ import { collectTabs } from "./tabs";
 import { mirrorGroups, readMirrorMap } from "./mirror";
 import { track } from "./analytics";
 import { runAutomations } from "./automations";
-import { refreshFocusGroups } from "./focus";
 
 /**
  * The analysis loop. Debounced against tab churn, stable across re-runs,
@@ -114,10 +113,8 @@ async function doAnalyze(): Promise<AnalysisResult> {
 
   notifyUi();
 
-  // Post-analysis hooks: user automations act on the fresh picture, and an
-  // active focus session re-anchors which groups count as the task.
+  // Post-analysis hook: user automations act on the fresh picture.
   void runAutomations(result).catch(() => undefined);
-  void refreshFocusGroups().catch(() => undefined);
 
   // AI refinement runs after the local result is already live.
   if (state.auth && state.prefs.aiEnabled && !state.prefs.paused) {

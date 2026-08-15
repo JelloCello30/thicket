@@ -248,8 +248,6 @@ export type CommandIntent =
   | { type: "cleanup" }
   | { type: "pause" }
   | { type: "resume" }
-  | { type: "focus"; task: string; minutes?: number }
-  | { type: "focus_end" }
   | { type: "help"; query?: string }
   | { type: "open_dashboard"; section?: "settings" | "history" | "workspaces" | "automations" }
   | { type: "ask"; question: string }
@@ -289,9 +287,7 @@ export interface UserPreferences {
   /** Hours before an untouched tab starts counting as done. */
   staleAfterHours: number;
   /** Focus mode: gentle intercepts known rabbit holes; strict also stops unrelated new sites. */
-  focusStrictness: "gentle" | "strict" | "lockdown";
   /** Length of a focus-mode break, minutes. */
-  focusBreakMinutes: number;
 }
 
 export const DEFAULT_PREFERENCES: UserPreferences = {
@@ -304,8 +300,6 @@ export const DEFAULT_PREFERENCES: UserPreferences = {
   theme: "system",
   groupingStyle: "balanced",
   staleAfterHours: 24,
-  focusStrictness: "strict",
-  focusBreakMinutes: 5,
 };
 
 export interface DeviceInfo {

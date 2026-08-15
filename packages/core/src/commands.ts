@@ -23,20 +23,6 @@ export function parseCommand(raw: string, ctx: CommandContext): CommandIntent {
   if (/^(resume|unpause)( tabmind)?$/.test(lower)) return { type: "resume" };
   if (/^(open |show |go to )?automations?$/.test(lower)) return { type: "open_dashboard", section: "automations" };
 
-  // Focus mode
-  if (/^(end|stop|exit) focus( mode)?$/.test(lower)) return { type: "focus_end" };
-  const focusMatch = lower.match(/^focus(?: mode)?(?: on| for)?[:\s]+(.+)$/);
-  if (focusMatch) {
-    let task = focusMatch[1]!.trim();
-    let minutes: number | undefined;
-    const timed = task.match(/^(.*?)\s+for\s+(\d{1,3})\s*(?:m|min|mins|minutes)$/);
-    if (timed) {
-      task = timed[1]!.trim();
-      minutes = Number(timed[2]);
-    }
-    if (task) return { type: "focus", task, minutes };
-  }
-
   // Help
   if (/^(help|\?)$/.test(lower)) return { type: "help" };
   const helpMatch = lower.match(/^(?:help(?: me)?(?: with)?|how do i|how to)\s+(.+?)\??$/);
