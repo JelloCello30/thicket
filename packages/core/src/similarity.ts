@@ -1,7 +1,7 @@
 import type { AnalyzedTab, SiteCategory } from "@tabmind/types";
 import { HUB_CATEGORIES } from "./sites";
 import { tokenize } from "./text";
-import { tabThemes, type Theme } from "./themes";
+import { tabEvidenceThemes, tabThemes, type Theme } from "./themes";
 
 export interface PairBoost {
   /** Registrable domains. */
@@ -24,6 +24,8 @@ export interface SimilarityContext {
 export interface TabFeatures {
   tab: AnalyzedTab;
   themes: Set<Theme>;
+  /** Themes the TITLE evidences, not merely ones the category implies. */
+  evidenceThemes: Set<Theme>;
   tokenSet: Set<string>;
   entityTokens: Set<string>;
   queryTokens: string[];
@@ -33,6 +35,7 @@ export function featuresFor(tabs: AnalyzedTab[]): TabFeatures[] {
   return tabs.map((tab) => ({
     tab,
     themes: tabThemes(tab),
+    evidenceThemes: tabEvidenceThemes(tab),
     tokenSet: new Set(tab.tokens),
     entityTokens: new Set(tokenize(tab.entities.join(" "))),
     queryTokens: tab.searchQuery ? tokenize(tab.searchQuery) : [],
@@ -55,6 +58,41 @@ export function sessionTokenDf(features: TabFeatures[]): Map<string, number> {
  * and multi-product domains like google.com.
  */
 const HUB_DOMAINS = new Set(["google.com", "youtube.com", "reddit.com", "wikipedia.org", "x.com", "twitter.com"]);
+
+/**
+ * Domains that host many unrelated projects, products, or papers, where the
+ * leading path segments — not the hostname — say what you're looking at.
+ * Two GitHub pull requests are only the same work if they're the same repo;
+ * two Amazon pages are only the same shopping if they're the same product.
+ * Without this, the flat same-domain bonus (0.42) alone clears the union bar
+ * and fuses every unrelated thing a user has open on one big site.
+ */
+const MULTI_TOPIC_DOMAINS = new Set([
+  // Code hosts: the owner/repo path IS the project.
+  "github.com", "gitlab.com", "bitbucket.org",
+  // Paper hosts: each path is a different paper on a different subject.
+  "arxiv.org",
+  // Marketplaces: each path is a different product.
+  "amazon.com", "ebay.com", "etsy.com", "walmart.com", "target.com", "bestbuy.com",
+  "homedepot.com", "lowes.com", "wayfair.com", "newegg.com",
+]);
+/*
+ * Deliberately NOT listed: travel aggregators (kayak, booking, airbnb, expedia)
+ * and work tools (figma, linear, notion, atlassian). On those, two different
+ * paths are usually still the SAME activity — three Kayak searches are one trip
+ * being planned. Listing them split the fixture's Tokyo trip into a 10-tab group
+ * plus a rival 2-tab "Research" group, which is the very bug this file fights.
+ */
+
+/** The path prefix that identifies WHICH thing on a multi-topic site. */
+function topicPath(url: string): string {
+  try {
+    const segments = new URL(url).pathname.split("/").filter(Boolean).slice(0, 2);
+    return segments.join("/").toLowerCase();
+  } catch {
+    return "";
+  }
+}
 
 function isHubSite(domain: string, category: SiteCategory): boolean {
   return HUB_CATEGORIES.has(category) || HUB_DOMAINS.has(domain);
@@ -137,8 +175,18 @@ export function pairScore(fa: TabFeatures, fb: TabFeatures, ctx: SimilarityConte
   const b = fb.tab;
   if (a.excluded || b.excluded) return 0;
 
-  // The same page open twice is the same intention, full stop.
-  if (a.normalizedUrl && a.normalizedUrl === b.normalizedUrl) return 1;
+  // The same page open twice is the same intention, full stop — except on hub
+  // apps, where routing lives in fragments and query strings that normalization
+  // flattens. Two Gmail views are not "the same page"; treating them as proof
+  // fuses unrelated mail tabs into a meaningless group.
+  if (
+    a.normalizedUrl &&
+    a.normalizedUrl === b.normalizedUrl &&
+    !isHubSite(a.domain, a.category) &&
+    !isHubSite(b.domain, b.category)
+  ) {
+    return 1;
+  }
 
   let score = 0;
 
@@ -148,6 +196,12 @@ export function pairScore(fa: TabFeatures, fb: TabFeatures, ctx: SimilarityConte
     const hub = isHubSite(a.domain, a.category) || isHubSite(b.domain, b.category);
     if (hub) {
       score += 0.08;
+    } else if (MULTI_TOPIC_DOMAINS.has(a.domain)) {
+      // Same big site, but is it the same THING on it? Same repo, product, or
+      // paper is as strong as any same-site signal; a different one is barely
+      // evidence at all, and the titles have to earn the link.
+      const samePath = topicPath(a.url) === topicPath(b.url);
+      score += samePath ? 0.42 : 0.1;
     } else if (a.siteName === b.siteName) {
       score += 0.42;
     } else {
@@ -186,10 +240,17 @@ export function pairScore(fa: TabFeatures, fb: TabFeatures, ctx: SimilarityConte
   }
   score += querySignal;
 
-  // Shared activity theme (travel, apartment hunt, camera research…).
+  /**
+   * Shared activity theme (travel, apartment hunt, camera research…).
+   * At least one side must EVIDENCE the theme in its title: when both tabs
+   * merely inherit it from their category, the same-category bonus above has
+   * already paid for that fact, and paying twice fused every pair of trips
+   * (0.53, over the union bar) without a shred of topical agreement.
+   */
   let sharedTheme = false;
   for (const t of fa.themes) {
-    if (fb.themes.has(t)) {
+    if (!fb.themes.has(t)) continue;
+    if (fa.evidenceThemes.has(t) || fb.evidenceThemes.has(t)) {
       sharedTheme = true;
       break;
     }
@@ -250,7 +311,13 @@ export function pairScore(fa: TabFeatures, fb: TabFeatures, ctx: SimilarityConte
     let inter = 0;
     for (const t of fa.tokenSet) if (fb.tokenSet.has(t)) inter++;
     const jaccard = inter / (fa.tokenSet.size + fb.tokenSet.size - inter);
-    if (jaccard >= 0.8) score = Math.max(score, 0.85);
+    // Containment as well as symmetry: one retailer writes "Breville Barista
+    // Express Espresso Machine" and another writes only the product name, so
+    // the shorter title is a strict subset of the longer. Symmetric overlap
+    // scores that pair too low and splits one product across two groups.
+    const smaller = Math.min(fa.tokenSet.size, fb.tokenSet.size);
+    const containment = inter / smaller;
+    if (jaccard >= 0.8 || (smaller >= 3 && containment >= 0.9)) score = Math.max(score, 0.85);
   }
 
   return Math.max(0, Math.min(1, score));

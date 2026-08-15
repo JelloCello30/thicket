@@ -105,3 +105,66 @@ are DB-backed already.
   never the primary experience of a feature.
 - **Hover affordances must also be focus affordances** — every action revealed
   on hover reveals on keyboard focus too.
+
+## v1.4 — grouping quality (2026-08)
+
+- **Merge beats create.** When tabs share a title or topic they join the existing
+  group; the engine never opens a rival group for a topic that already has one. Two
+  visible groups with the same name is treated as a bug outright, not a tie.
+- **Identity signals are ranked by how forgeable they are.** Same normalized URL is
+  proof (1.0). Near-identical titles are near-proof (floor 0.85) and deliberately
+  outrank category mismatch — a syndicated story is one topic wherever it is hosted.
+  Shared *vocabulary* and shared *entities*, by contrast, are the weakest identity
+  signals, because a city or brand name appears across genuinely different
+  activities; they are damped 0.45× when categories conflict and no theme agrees.
+- **Activity theme outranks site category.** A theme match means the user's activity
+  matches, which is what grouping is about; a category mismatch only means the site
+  types differ. So a shared theme lifts topical damping entirely (finance +
+  realestate = a rent calculator in the apartment hunt, correctly).
+- **…but a site's own category outranks one loose lexicon word.** Anchored themes
+  (realestate/travel/jobs/learning — the ones a category asserts) need 2 strong or 3
+  weak hits to override the site's category, so "vacation rentals" on a travel site
+  stays travel. This asymmetry is the whole fix for cross-activity bridging.
+- **Every clustering change must be measured on both failure modes.** Fragmentation
+  (failing to merge) and fusion (merging the unrelated) trade off against each other;
+  a change that fixes one and worsens the other is a net loss. The 47-tab quality
+  fixture plus merge-over-create.test.ts pin both ends.
+
+## v1.4b — what a 13-agent adversarial audit changed (2026-08)
+
+Five agents each built a realistic session (dev workday, cross-retailer shopping,
+two-topic research, same-topic news, 47-tab chaos), ran it through the real clusterer,
+and reported measured defects; eight more tried to refute them. 8 confirmed, 0 refuted.
+The durable lessons:
+
+- **The tuned fixture is the only honest regression signal.** The full test suite stayed
+  green while the fixture silently split a 12-tab Tokyo trip into 10 tabs plus a rival
+  2-tab group — itself a merge-over-create violation. Every clustering change is now
+  measured against the fixture's group names AND sizes, not just assertions.
+- **A site's furniture is not a topic.** Entity extraction was reading "Pull Request",
+  "Web APIs", and "Amazon.com" as proper nouns and paying up to +0.35 for them, which
+  fused unrelated repos and reference pages. Chrome phrases and the site's own brand are
+  rejected outright.
+- **Rejecting noisy input threw away the signal with it.** Title-case headlines were
+  discarded wholesale because they contain capitalized connectives ("To", "For"), so
+  outlets covering one story shared no entity at all. Keeping the head of the run
+  (the subject) rather than the whole run recovers the signal without the noise —
+  the fix has to be surgical, because splitting at stopwords re-introduced junk
+  entities and immediately regressed the fixture.
+- **Never pay twice for one fact.** A category granted a theme, and the theme was then
+  scored as independent evidence on top of the same-category bonus: a flat 0.53, above
+  the union bar, for two tabs that agreed on nothing but being travel sites.
+- **The hostname is not the unit of meaning on big sites.** GitHub, arXiv, and
+  marketplaces host unrelated things; the leading path segments are what identify them.
+  But this must be scoped tightly — travel aggregators and work tools were in the first
+  version of that list and fragmented real activities, because three Kayak searches are
+  one trip.
+- **A fallback label is not an identity.** Two unrelated purchases both named "Shopping"
+  are not one topic. Generic bucket labels are excluded from topic-merging and the
+  colliding groups get disambiguated instead — which satisfies "never show two groups
+  with the same name" without fusing unrelated work.
+- **Fixes get adversarially reviewed too.** Two of the eight confirmed defects were
+  regressions introduced by the fixes earlier the same day. Verifiers also rejected
+  three proposed fixes with measurements (lowering thresholds collapses the fixture into
+  a 20-tab mega-group; making "other" a specific category attacks the exact tabs the
+  fixture asserts on; removing entity/token double-counting demotes a real group).

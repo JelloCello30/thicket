@@ -44,19 +44,89 @@ export function tokenize(text: string): string[] {
  * original title, excluding sentence-leading single words that are stopwords
  * when lowercased. "4 Bed Apartment in Silver Lake" → ["Silver Lake"].
  */
-export function extractEntities(title: string): string[] {
+/**
+ * Interface chrome that looks like a proper noun but names no subject. Left in,
+ * these fuse unrelated work: two pull requests from different repos both yield
+ * the entity "Pull Request" and score as the same topic, and every MDN page
+ * shares "Web APIs". A site's own furniture is never what the user is doing.
+ */
+const BOILERPLATE_ENTITIES = new Set([
+  "pull request", "pull requests", "merge request", "issue", "issues", "commit", "commits",
+  "web apis", "api reference", "documentation", "docs", "release notes", "changelog",
+  "sign in", "log in", "login", "search results", "new tab", "untitled", "home page",
+  "dashboard", "settings", "inbox", "notifications", "comments", "discussion", "discussions",
+  "google docs", "google drive", "google sheets", "google slides", "google search",
+  "terms of service", "privacy policy", "shopping cart", "your account", "my account",
+  "product details", "customer reviews", "frequently asked questions",
+]);
+
+/**
+ * Named entities in a page title. `context` (the site's name and domain) lets
+ * the extractor reject the site's own branding — "Amazon.com" is not a topic.
+ */
+export function extractEntities(title: string, context: { siteName?: string; domain?: string } = {}): string[] {
   const entities: string[] = [];
   const words = title.split(/\s+/);
+  const brand = new Set(
+    [context.siteName, context.domain?.replace(/\.[a-z.]+$/, "")]
+      .filter((v): v is string => Boolean(v))
+      .map((v) => v.toLowerCase().replace(/[^a-z0-9]/g, "")),
+  );
+  const isBrand = (phrase: string): boolean => {
+    const flat = phrase.toLowerCase().replace(/[^a-z0-9]/g, "");
+    for (const b of brand) if (b.length >= 3 && (flat === b || flat.startsWith(b))) return true;
+    return false;
+  };
   let run: string[] = [];
+  const push = (phrase: string) => {
+    if (phrase.length < 3) return;
+    if (BOILERPLATE_ENTITIES.has(phrase.toLowerCase())) return;
+    if (isBrand(phrase)) return;
+    entities.push(phrase);
+  };
   const flush = (startIndex: number) => {
     if (run.length === 0) return;
-    const phrase = run.join(" ");
-    const isSentenceLead = startIndex === 0 && run.length === 1;
-    // Title-case headlines produce junk runs like "BEST Things" — reject any
-    // run built from stopwords.
+    /**
+     * Title-case headlines capitalize their connectives ("Eaton Fire Spreads
+     * To Altadena"), so rejecting any run containing a stopword used to throw
+     * the whole headline away — two articles about one story then shared no
+     * entity at all and read as unrelated. Split at the stopword instead and
+     * keep the real noun phrases either side.
+     */
     const hasStopword = run.some((w) => STOPWORDS.has(w.toLowerCase()));
-    if (!isSentenceLead && !hasStopword && phrase.length >= 3 && run.length <= 4) {
-      entities.push(phrase);
+    if (!hasStopword) {
+      const isSentenceLead = startIndex === 0 && run.length === 1;
+      if (!isSentenceLead) {
+        // Long runs used to be discarded outright, which silently erased the
+        // strongest signal retail and headline titles have: "Breville Barista
+        // Express Espresso Machine" produced no entity at all. Truncate
+        // instead of rejecting.
+        push(run.slice(0, 4).join(" "));
+        // A story's or product's subject is the HEAD of its title; the rest is
+        // what happened or which variant. Emitting the head is what lets
+        // several outlets covering one event, or several retailers listing one
+        // product, share an entity and land in one group.
+        if (run.length >= 3) push(run.slice(0, 2).join(" "));
+      }
+      run = [];
+      return;
+    }
+    /**
+     * The run contains a connective, so it is a title-case headline rather than
+     * a name. Keep only the part BEFORE the first stopword — the subject —
+     * and only when it is a real phrase. Fragments after the stopword ("Things"
+     * out of "THE 15 BEST Things to Do in Tokyo") are noise, which is why the
+     * original code threw such runs away wholesale; the cost of that was that
+     * two articles about one event shared no entity at all.
+     */
+    const head: string[] = [];
+    for (const word of run) {
+      if (STOPWORDS.has(word.toLowerCase())) break;
+      head.push(word);
+    }
+    if (head.length >= 2) {
+      if (head.length <= 4) push(head.join(" "));
+      if (head.length >= 3) push(head.slice(0, 2).join(" "));
     }
     run = [];
   };

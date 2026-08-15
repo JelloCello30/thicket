@@ -148,6 +148,31 @@ for (const [theme, lex] of Object.entries(LEXICONS) as [Theme, Lexicon][]) {
   }
 }
 
+/**
+ * Themes a tab holds on VOCABULARY evidence — its title actually says so.
+ * Kept separate from category-derived themes because pairScore must not pay
+ * for the same fact twice: two travel sites already score a same-category
+ * bonus, and adding a "shared travel theme" on top of it reached 0.53 — over
+ * the union bar — with no evidence the two trips are the same trip.
+ */
+export function tabEvidenceThemes(tab: Pick<AnalyzedTab, "tokens" | "category" | "title">): Set<Theme> {
+  const all = tabThemes(tab);
+  const catTheme = CATEGORY_THEMES[tab.category];
+  if (catTheme && !hasVocabularyEvidence(tab, catTheme)) all.delete(catTheme);
+  return all;
+}
+
+function hasVocabularyEvidence(tab: Pick<AnalyzedTab, "tokens" | "title">, theme: Theme): boolean {
+  for (const token of new Set(tab.tokens)) {
+    if ((strongIndex.get(token) ?? []).includes(theme)) return true;
+    if ((weakIndex.get(token) ?? []).includes(theme)) return true;
+  }
+  for (const [pattern, phraseTheme] of PHRASE_RULES) {
+    if (phraseTheme === theme && pattern.test(tab.title)) return true;
+  }
+  return false;
+}
+
 /** Themes present in a tab, from category + title/query vocabulary. */
 export function tabThemes(tab: Pick<AnalyzedTab, "tokens" | "category" | "title">): Set<Theme> {
   const themes = new Set<Theme>();

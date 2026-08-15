@@ -212,8 +212,10 @@ async function main() {
   }
 
   // ————— Automations builder: add → listed → toggle —————
+  await dashboard.keyboard.press("Escape"); // don't inherit an open dialog
   await dashboard.goto(`chrome-extension://${extensionId}/dashboard.html#/automations`);
-  await dashboard.waitForTimeout(600);
+  await dashboard.reload();
+  await dashboard.waitForTimeout(900);
   await dashboard.getByText("Add rule", { exact: true }).click();
   await dashboard.waitForTimeout(600);
   const ruleText = await dashboard.evaluate(() => document.body.innerText);

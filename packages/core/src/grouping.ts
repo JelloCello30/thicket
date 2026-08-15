@@ -183,6 +183,7 @@ export function groupAnalyzedTabs(
         name: keepName && !draft.isCatchAll && !draft.isStale ? match.name : draft.name,
         color: match.color,
         savedWorkspaceId: match.savedWorkspaceId,
+        userNamed: match.userNamed,
       });
     }
     return buildGroup(draft, tabs, { id: idFactory(), color: KIND_COLORS[draft.kind] });
@@ -205,6 +206,7 @@ export function groupAnalyzedTabs(
     });
   }
 
+  disambiguateNames(groups, tabs);
   sortGroups(groups, tabs);
 
   return { groups, tabs, analyzedAt, totalTabs };
@@ -212,7 +214,13 @@ export function groupAnalyzedTabs(
   function buildGroup(
     draft: Draft,
     all: AnalyzedTab[],
-    identity: { id: string; name?: string; color: GroupColor; savedWorkspaceId?: string },
+    identity: {
+      id: string;
+      name?: string;
+      color: GroupColor;
+      savedWorkspaceId?: string;
+      userNamed?: boolean;
+    },
   ): TabGroup {
     return {
       id: identity.id,
@@ -224,13 +232,23 @@ export function groupAnalyzedTabs(
       entity: draft.entity,
       color: identity.color,
       savedWorkspaceId: identity.savedWorkspaceId,
+      userNamed: identity.userNamed,
       isCatchAll: draft.isCatchAll,
       isStale: draft.isStale,
     };
   }
 }
 
-const SPECIAL_NAMES = new Set(["Reading", "Probably done", "Everything else"]);
+const SPECIAL_NAMES = new Set(["Probably done", "Everything else"]);
+
+/**
+ * Fallback bucket labels, not topics. Two groups can both land on "Shopping"
+ * while being genuinely different purchases, so a shared name here is NOT
+ * evidence of one activity — merging them would fuse unrelated research.
+ * They get disambiguated by `disambiguateNames` instead, so the user still
+ * never sees two identically-labelled groups.
+ */
+const GENERIC_NAMES = new Set(["Shopping", "Work", "Research", "Reading", "Watching", "Learning"]);
 
 /** Kinds that don't commit to a specific activity, so they can join anything. */
 const GENERIC_KINDS = new Set<GroupKind>(["project", "research", "other"]);
@@ -269,7 +287,9 @@ function mergeDuplicateTopicDrafts(
       for (let j = i + 1; j < drafts.length; j++) {
         const b = drafts[j]!;
         if (b.isCatchAll || SPECIAL_NAMES.has(b.name)) continue;
-        const sameName = a.name.toLowerCase() === b.name.toLowerCase();
+        // A shared *topic* name means one activity; a shared *bucket* label
+        // ("Shopping", "Work") means only that both fell back to the same word.
+        const sameName = a.name.toLowerCase() === b.name.toLowerCase() && !GENERIC_NAMES.has(a.name);
         // Sharing an entity is only evidence of one activity when the two
         // drafts are the same KIND of activity. "Los Angeles" is the entity of
         // both an apartment hunt and a flight search, and those are two
@@ -295,6 +315,66 @@ function mergeDuplicateTopicDrafts(
       }
     }
   }
+}
+
+/**
+ * Last line of defence for the founder's rule. Same-topic groups are already
+ * merged by now, so anything still sharing a name is genuinely different work
+ * that happened to land on the same fallback label ("Shopping" twice). Two
+ * identically-named groups read as a bug either way, so give each one the
+ * detail that tells them apart — its dominant site, or its most distinctive
+ * word. Never touches the user's own native groups or the special piles.
+ */
+function disambiguateNames(groups: TabGroup[], tabs: AnalyzedTab[]): void {
+  const byTabId = new Map(tabs.map((t) => [t.tabId, t]));
+  const byName = new Map<string, TabGroup[]>();
+  for (const group of groups) {
+    if (group.nativeGroupId != null || group.isCatchAll) continue;
+    if (SPECIAL_NAMES.has(group.name)) continue;
+    const key = group.name.toLowerCase();
+    byName.set(key, [...(byName.get(key) ?? []), group]);
+  }
+
+  for (const clashing of byName.values()) {
+    if (clashing.length < 2) continue;
+    const used = new Set<string>();
+    for (const group of clashing) {
+      // A name the user typed is theirs — it stays exactly as they wrote it,
+      // and the other side of the collision is what gets the distinguishing
+      // detail. (Collisions are still detected across user-named groups, or
+      // neither side would be disambiguated and both would render alike.)
+      if (group.userNamed) continue;
+      const members = group.tabIds
+        .map((id) => byTabId.get(id))
+        .filter((t): t is AnalyzedTab => Boolean(t));
+      const label = distinguishingLabel(members, used);
+      if (!label) continue;
+      used.add(label.toLowerCase());
+      group.name = `${group.name} — ${label}`;
+    }
+  }
+}
+
+/** The site or word that best separates this group from its namesakes. */
+function distinguishingLabel(members: AnalyzedTab[], used: Set<string>): string | undefined {
+  const tally = (values: string[]): string[] => {
+    const counts = new Map<string, number>();
+    for (const v of values) if (v) counts.set(v, (counts.get(v) ?? 0) + 1);
+    return [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([v]) => v);
+  };
+
+  // Prefer a real word from the titles — it names the subject, not the store.
+  for (const token of tally(members.flatMap((t) => t.tokens))) {
+    if (token.length < 4 || used.has(token)) continue;
+    const appearances = members.filter((t) => t.tokens.includes(token)).length;
+    if (appearances < Math.max(2, Math.ceil(members.length * 0.5))) continue;
+    return token[0]!.toUpperCase() + token.slice(1);
+  }
+  // Otherwise the dominant site.
+  for (const site of tally(members.map((t) => t.siteName || t.domain))) {
+    if (!used.has(site.toLowerCase())) return site;
+  }
+  return undefined;
 }
 
 function applyLocks(

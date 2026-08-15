@@ -144,6 +144,125 @@ describe("one topic, one group", () => {
   });
 });
 
+describe("merging must not overreach", () => {
+  it("hash-routed apps are not 'the same page' just because the hash is gone", () => {
+    const tabs = analyzeTabs(
+      [
+        snap("https://mail.google.com/mail/u/0/#inbox", "Inbox (42) - me@example.com - Gmail"),
+        snap("https://mail.google.com/mail/u/0/#search/greenhouse", "Search results - Gmail"),
+      ],
+      ctx,
+    );
+    // Gmail routes in the fragment; flattening it made every view identical.
+    expect(tabs[0]!.normalizedUrl).not.toBe(tabs[1]!.normalizedUrl);
+    const features = featuresFor(tabs);
+    expect(pairScore(features[0]!, features[1]!)).toBeLessThan(1);
+  });
+
+  it("two different purchases that both fall back to 'Shopping' stay apart and get distinct names", () => {
+    nextId = 500;
+    const tabs = [
+      // A coffee machine hunt.
+      snap("https://www.bestbuy.com/site/breville-barista-express", "Breville Barista Express Espresso Machine - Best Buy"),
+      snap("https://www.target.com/p/breville-barista-express", "Breville Barista Express Espresso Machine : Target"),
+      snap("https://www.walmart.com/ip/breville-barista-express", "Breville Barista Express Espresso Machine - Walmart.com"),
+      // An unrelated mattress hunt.
+      snap("https://www.bestbuy.com/site/casper-original-mattress", "Casper Original Foam Mattress Queen - Best Buy"),
+      snap("https://www.target.com/p/casper-original-mattress", "Casper Original Foam Mattress Queen : Target"),
+      snap("https://www.walmart.com/ip/casper-original-mattress", "Casper Original Foam Mattress Queen - Walmart.com"),
+    ];
+    const result = groupTabs(tabs, ctx);
+    const real = result.groups.filter((g) => !g.isCatchAll);
+    const names = real.map((g) => g.name.toLowerCase());
+    // Whatever the split, the user must never see two identical labels.
+    expect(new Set(names).size).toBe(names.length);
+    // And the two products must not have been fused on the shared "Shopping" label.
+    const titleOf = (id: number) => result.tabs.find((t) => t.tabId === id)!.title;
+    for (const group of real) {
+      const titles = group.tabIds.map(titleOf).join(" ");
+      const hasCoffee = /Breville/.test(titles);
+      const hasMattress = /Casper/.test(titles);
+      expect(hasCoffee && hasMattress).toBe(false);
+    }
+  });
+});
+
+describe("same topic across different sites", () => {
+  it("several outlets covering one story land in one group named for it", () => {
+    nextId = 600;
+    const tabs = [
+      snap("https://www.reuters.com/world/eaton-fire-containment", "Eaton Fire Containment Grows To 45 Percent"),
+      snap("https://www.bbc.com/news/eaton-fire-evacuations", "Eaton Fire Evacuation Orders Lifted For Altadena"),
+      snap("https://apnews.com/article/eaton-fire-damage", "Eaton Fire Damage Assessment Begins"),
+    ];
+    const result = groupTabs(tabs, ctx);
+    const real = result.groups.filter((g) => !g.isCatchAll);
+    expect(real).toHaveLength(1);
+    expect(real[0]!.tabIds).toHaveLength(3);
+    expect(real[0]!.name).toMatch(/Eaton Fire/i);
+  });
+
+  it("site chrome is never an entity, so unrelated repos don't fuse on it", () => {
+    const tabs = analyzeTabs(
+      [
+        snap("https://github.com/acme/checkout-service/pull/482", "feat(webhooks): idempotency · Pull Request #482 · acme/checkout-service"),
+        snap("https://github.com/acme/atlas-dashboard/pull/77", "fix(table): virtualized rows · Pull Request #77 · acme/atlas-dashboard"),
+      ],
+      ctx,
+    );
+    for (const tab of tabs) {
+      expect(tab.entities.map((e) => e.toLowerCase())).not.toContain("pull request");
+    }
+    const features = featuresFor(tabs);
+    // Different repos on the same host must not clear the union bar on chrome.
+    expect(pairScore(features[0]!, features[1]!)).toBeLessThan(0.45);
+  });
+
+  it("one product listed under a shorter title on another retailer still merges", () => {
+    const tabs = analyzeTabs(
+      [
+        snap("https://www.bestbuy.com/site/breville-barista-express", "Breville Barista Express Espresso Machine Stainless Steel"),
+        snap("https://www.williams-sonoma.com/products/breville-barista-express", "Breville Barista Express Espresso Machine"),
+      ],
+      ctx,
+    );
+    const features = featuresFor(tabs);
+    // The shorter title is a strict subset of the longer — same product.
+    expect(pairScore(features[0]!, features[1]!)).toBeGreaterThanOrEqual(0.85);
+  });
+});
+
+describe("names the user chose are never rewritten", () => {
+  it("disambiguation suffixes the other group, not the user's own name", () => {
+    nextId = 700;
+    const tabs = [
+      snap("https://www.bestbuy.com/site/breville-barista-express", "Breville Barista Express Espresso Machine - Best Buy"),
+      snap("https://www.target.com/p/breville-barista-express", "Breville Barista Express Espresso Machine : Target"),
+      snap("https://www.walmart.com/ip/casper-original-mattress", "Casper Original Foam Mattress Queen - Walmart.com"),
+      snap("https://www.target.com/p/casper-original-mattress", "Casper Original Foam Mattress Queen : Target"),
+    ];
+    const first = groupTabs(tabs, ctx);
+    const target = first.groups.find((g) => !g.isCatchAll);
+    expect(target).toBeDefined();
+    // The user renames that group to a word that is also a fallback label.
+    const previous = first.groups
+      .filter((g) => !g.isCatchAll)
+      .map((g) => ({
+        id: g.id,
+        name: g.id === target!.id ? "Shopping" : g.name,
+        kind: g.kind,
+        color: g.color,
+        userNamed: g.id === target!.id,
+        memberUrls: g.tabIds.map((id) => first.tabs.find((t) => t.tabId === id)!.normalizedUrl),
+      }));
+    const second = groupTabs(tabs, ctx, { previous });
+    const kept = second.groups.find((g) => g.id === target!.id);
+    expect(kept?.name).toBe("Shopping");
+    const names = second.groups.filter((g) => !g.isCatchAll).map((g) => g.name.toLowerCase());
+    expect(new Set(names).size).toBe(names.length);
+  });
+});
+
 describe("regression: the demo session still groups correctly", () => {
   it("keeps the four expected activities distinct", () => {
     const result = groupTabs(demoTabs(), ctx);

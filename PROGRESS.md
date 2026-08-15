@@ -1,10 +1,68 @@
 # TabMind — Build Progress
 
-## Status: ✅ v1.3 COMPLETE — ready for external setup (see docs/LAUNCH_CHECKLIST.md)
+## Status: ✅ v1.4 COMPLETE — ready for external setup (see docs/LAUNCH_CHECKLIST.md)
 
 Everything code-side is built, tested, and verified. Remaining work is exclusively
 external accounts/keys, legal customization, and the manual Chrome Web Store submission —
 all documented with exact steps.
+
+### v1.4 (grouping quality: merge, don't duplicate) — verified
+
+Founder report, stated four times: "it groups irrelevant tabs into a different tab
+group… when there are multiple tabs with the same title or topic, it should merge
+into those tab groups. You shouldn't just create something new."
+
+Fixed in the deterministic engine, in both directions:
+
+- **Same title/page always unites.** `pairScore` returns 1.0 for an identical
+  normalized URL, and floors at 0.85 when title-token Jaccard ≥ 0.8 — so a
+  syndicated article or one listing on five portals lands in ONE group. Guarded at
+  ≥2 content tokens so "Menu"/"Dashboard" don't glue unrelated pages.
+- **One topic can't render as two groups.** `mergeDuplicateTopicDrafts` folds drafts
+  that named themselves identically, or that share an entity AND a compatible kind,
+  before identity matching. Special piles are exempt.
+- **Shared place names no longer fuse unrelated activities.** Found while testing the
+  above: an LA apartment hunt and an LA trip collapsed into one group. Three causes,
+  all fixed — a single lexicon word could give a site a rival activity theme
+  ("vacation *rentals*" on Airbnb → realestate); vocabulary and entity signals were
+  undamped across conflicting categories (a flat −0.08 vs a +0.35 entity bonus); and
+  entity-merge ignored kind. Cross-activity pair scores fell 0.70 → 0.15 (union bar
+  0.45) while same-activity pairs stayed at 1.0.
+- **A 13-agent adversarial audit** then hunted the engine across five realistic sessions
+  (dev workday, cross-retailer shopping, two-topic research, same-topic news/listings,
+  47-tab chaos). It confirmed 8 defects, refuted 0, and caught two regressions from the
+  fixes above. All fixed:
+  - Site chrome was read as a topic — two pull requests from different repos both yielded
+    the entity "Pull Request" and fused; every MDN page shared "Web APIs". Chrome phrases
+    and the site's own brand are now rejected as entities.
+  - Title-case headlines yielded NO entity at all (any run containing a capitalized
+    connective was discarded), so five outlets covering one story shared nothing. The
+    head of the headline is now emitted: three outlets on one story become one group
+    named for it. Long runs are truncated rather than dropped, so product names survive.
+  - Category was counted twice (same-category bonus + a theme derived from that same
+    category) — a flat 0.53, over the union bar, with zero topical evidence, fusing any
+    two trips. A theme now counts only when at least one title evidences it.
+  - Big multi-topic hosts (GitHub, arXiv, marketplaces) no longer treat the hostname as
+    proof; the leading path decides whether it is the same repo/product/paper.
+  - Hash-routed apps (Gmail, Calendar, Slack) keep their fragment, so unrelated views
+    stopped normalizing to one URL and fusing — and stopped being offered as duplicates.
+  - Scholarly and retail domains were missing from the site table and fell to "other",
+    stranding tabs whose titles named the very topic beside them. ~30 domains added.
+  - A shorter retailer title that is a subset of a longer one now counts as the same
+    product (containment, not just symmetric overlap).
+  - Two regressions the audit caught in my own fixes, both closed: two unrelated
+    purchases fused because both fell back to the label "Shopping" (generic labels are
+    no longer topic identities; colliding groups are disambiguated instead), and a
+    user's own group name could be overwritten by that disambiguation (never now).
+- Regression suite `packages/core/test/merge-over-create.test.ts` (14 tests) locks all
+  of it in, including the opposite failure (over-merge). NerdWallet's rent calculator
+  still correctly joins Apartment Hunt, and the 47-tab fixture is byte-identical to
+  before this work — verified by direct measurement and in the e2e, not just asserted.
+
+**Known limitation, stated honestly:** two projects on the same host with heavily shared
+vocabulary (two repos under one org) can still land in one group. Path-derived tokens
+were tried and reverted — they made it worse, because the shared org slug glues rather
+than separates.
 
 ### v1.3 (full audit + focus removal) — verified
 

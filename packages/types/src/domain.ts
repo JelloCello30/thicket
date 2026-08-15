@@ -125,6 +125,8 @@ export interface TabGroup {
   color: GroupColor;
   /** Set when this group has been saved as a workspace. */
   savedWorkspaceId?: string;
+  /** True when the user named this group themselves — never overwrite it. */
+  userNamed?: boolean;
   insight?: GroupInsight;
   /** The residual "Everything else" group. */
   isCatchAll?: boolean;

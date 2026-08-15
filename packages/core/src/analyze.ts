@@ -73,7 +73,7 @@ export function analyzeTab(tab: TabSnapshot, ctx: AnalyzeContext): AnalyzedTab {
     category,
     searchQuery,
     tokens: tokenize(searchQuery ? `${cleanTitle} ${searchQuery}` : cleanTitle),
-    entities: extractEntities(cleanTitle),
+    entities: extractEntities(cleanTitle, { siteName, domain: base.domain }),
     staleness: stalenessScore(tab, ctx.now, ctx.staleAfterHours),
   };
 }

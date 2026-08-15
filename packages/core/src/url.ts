@@ -117,11 +117,32 @@ export function getHostname(raw: string): string {
  * Canonical identity for a page: strips tracking params, hash, default ports,
  * trailing slash, and "www.". Two tabs with equal normalized URLs are duplicates.
  */
+/**
+ * Apps that put their entire route in the URL fragment. Stripping the hash on
+ * these collapses every view to one address — every Gmail tab would read as
+ * the same page, so unrelated tabs fuse into one group and cleanup offers to
+ * close them as duplicates. For these hosts the fragment IS the identity.
+ */
+const HASH_ROUTED_HOSTS = new Set([
+  "mail.google.com",
+  "calendar.google.com",
+  "app.slack.com",
+  "discord.com",
+  "web.whatsapp.com",
+  "messenger.com",
+  "trello.com",
+  "app.asana.com",
+  "teams.microsoft.com",
+  "outlook.office.com",
+  "outlook.live.com",
+]);
+
 export function normalizeUrl(raw: string): string {
   if (!isHttpUrl(raw)) return raw;
   try {
     const u = new URL(raw);
-    u.hash = "";
+    const host = u.hostname.toLowerCase().replace(/^www\./, "");
+    if (!HASH_ROUTED_HOSTS.has(host)) u.hash = "";
     u.hostname = u.hostname.toLowerCase().replace(/^www\./, "");
     if ((u.protocol === "https:" && u.port === "443") || (u.protocol === "http:" && u.port === "80")) {
       u.port = "";
