@@ -211,6 +211,36 @@ async function main() {
     checks["signed-out summarize works locally"] = false;
   }
 
+  // ————— Automations builder: add → listed → toggle —————
+  await dashboard.goto(`chrome-extension://${extensionId}/dashboard.html#/automations`);
+  await dashboard.waitForTimeout(600);
+  await dashboard.getByText("Add rule", { exact: true }).click();
+  await dashboard.waitForTimeout(600);
+  const ruleText = await dashboard.evaluate(() => document.body.innerText);
+  checks["automation rule adds"] = /untouched for 3 days/.test(ruleText) && !/No rules yet/.test(ruleText);
+
+  // ————— History forget: row disappears —————
+  // Close one tab first so History has an entry.
+  await dashboard.evaluate(async () => {
+    const tabs = await chrome.tabs.query({ windowType: "normal" });
+    const victim = tabs.find((t) => t.url?.includes("adorama.com"));
+    if (victim?.id) await chrome.tabs.remove(victim.id);
+  });
+  await dashboard.waitForTimeout(900);
+  await dashboard.goto(`chrome-extension://${extensionId}/dashboard.html#/history`);
+  await dashboard.waitForTimeout(700);
+  const beforeForget = await dashboard.evaluate(() => document.body.innerText);
+  if (beforeForget.includes("Adorama")) {
+    const row = dashboard.locator("li", { hasText: "Adorama" }).first();
+    await row.hover();
+    await row.locator('button[aria-label^="Forget"]').click();
+    await dashboard.waitForTimeout(700);
+    const afterForget = await dashboard.evaluate(() => document.body.innerText);
+    checks["history forget removes the page"] = !afterForget.includes("Adorama");
+  } else {
+    checks["history forget removes the page"] = false;
+  }
+
   // ————— Pre-existing native tab groups: honored, never dismantled —————
   // Group a zillow tab with a kayak tab by hand — an arrangement clustering
   // would never produce. TabMind must show it verbatim and leave it alone.

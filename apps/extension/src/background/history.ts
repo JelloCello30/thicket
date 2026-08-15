@@ -86,6 +86,10 @@ export async function recordClosed(tabId: number, groupName?: string, groupId?: 
     next.length = Math.min(next.length, LIMITS.recentlyClosedKept);
     return next;
   });
+  // Tell open UI surfaces right away — History should show a close instantly,
+  // not whenever the next debounced analysis broadcasts.
+  const { notifyUi } = await import("./analyzer");
+  notifyUi();
 }
 
 export function knownTab(tabId: number): { url: string; title: string; domain: string } | undefined {

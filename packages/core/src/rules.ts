@@ -206,7 +206,8 @@ export function describeRule(rule: AutomationRule): string {
 }
 
 function formatHours(hours: number): string {
-  if (hours < 24) return `${hours}h`;
+  if (hours < 24) return `${hours} hours`;
   const days = Math.round(hours / 24);
-  return days === 7 ? "a week" : `${days}d`;
+  if (days === 1) return "a day";
+  return days === 7 ? "a week" : `${days} days`;
 }
