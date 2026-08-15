@@ -150,6 +150,11 @@ export function groupAnalyzedTabs(
     });
   }
 
+  // One topic, one group. If two drafts named themselves identically — or
+  // carry the same entity — they ARE the same activity that clustered apart;
+  // merge them instead of showing the user two groups called the same thing.
+  mergeDuplicateTopicDrafts(drafts);
+
   // Apply explicit user corrections before identity matching.
   if (options.lockedAssignments && options.lockedAssignments.size > 0) {
     applyLocks(drafts, tabs, options.lockedAssignments, options.previous ?? [], nativeLocked);
@@ -222,6 +227,55 @@ export function groupAnalyzedTabs(
       isCatchAll: draft.isCatchAll,
       isStale: draft.isStale,
     };
+  }
+}
+
+const SPECIAL_NAMES = new Set(["Reading", "Probably done", "Everything else"]);
+
+/**
+ * Two drafts that would render under the same name — or that revolve around
+ * the same entity — are one activity the clusterer split. Showing both is the
+ * "it created something new instead of merging" bug; fold them together.
+ */
+function mergeDuplicateTopicDrafts(
+  drafts: {
+    tabIdx: number[];
+    name: string;
+    kind: GroupKind;
+    entity?: string;
+    signals: string[];
+    confidence: number;
+    isCatchAll?: boolean;
+    isStale?: boolean;
+  }[],
+): void {
+  let merged = true;
+  while (merged) {
+    merged = false;
+    for (let i = 0; i < drafts.length && !merged; i++) {
+      const a = drafts[i]!;
+      if (a.isCatchAll || SPECIAL_NAMES.has(a.name)) continue;
+      for (let j = i + 1; j < drafts.length; j++) {
+        const b = drafts[j]!;
+        if (b.isCatchAll || SPECIAL_NAMES.has(b.name)) continue;
+        const sameName = a.name.toLowerCase() === b.name.toLowerCase();
+        const sameEntity =
+          Boolean(a.entity) && Boolean(b.entity) && a.entity!.toLowerCase() === b.entity!.toLowerCase();
+        if (!sameName && !sameEntity) continue;
+        // Keep the larger draft's identity — it carries more evidence.
+        const [keep, absorb] = a.tabIdx.length >= b.tabIdx.length ? [a, b] : [b, a];
+        keep.tabIdx = [...new Set([...keep.tabIdx, ...absorb.tabIdx])];
+        keep.entity = keep.entity ?? absorb.entity;
+        keep.confidence = Math.min(keep.confidence, absorb.confidence);
+        keep.isStale = Boolean(keep.isStale && absorb.isStale);
+        for (const signal of absorb.signals) {
+          if (!keep.signals.includes(signal) && keep.signals.length < 3) keep.signals.push(signal);
+        }
+        drafts.splice(drafts.indexOf(absorb), 1);
+        merged = true;
+        break;
+      }
+    }
   }
 }
 

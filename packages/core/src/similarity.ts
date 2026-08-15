@@ -137,6 +137,9 @@ export function pairScore(fa: TabFeatures, fb: TabFeatures, ctx: SimilarityConte
   const b = fb.tab;
   if (a.excluded || b.excluded) return 0;
 
+  // The same page open twice is the same intention, full stop.
+  if (a.normalizedUrl && a.normalizedUrl === b.normalizedUrl) return 1;
+
   let score = 0;
 
   // Same site is a strong signal — unless it's a hub, where two tabs can
@@ -228,6 +231,16 @@ export function pairScore(fa: TabFeatures, fb: TabFeatures, ctx: SimilarityConte
   if (a.windowId === b.windowId) score += 0.03;
 
   score += boostFor(a, b, ctx.pairBoosts);
+
+  // Near-identical titles are the same topic even across sites (a syndicated
+  // article, a listing on two portals, a doc and its preview). This must beat
+  // every union threshold — "same title, different group" is indefensible.
+  if (fa.tokenSet.size >= 2 && fb.tokenSet.size >= 2) {
+    let inter = 0;
+    for (const t of fa.tokenSet) if (fb.tokenSet.has(t)) inter++;
+    const jaccard = inter / (fa.tokenSet.size + fb.tokenSet.size - inter);
+    if (jaccard >= 0.8) score = Math.max(score, 0.85);
+  }
 
   return Math.max(0, Math.min(1, score));
 }
