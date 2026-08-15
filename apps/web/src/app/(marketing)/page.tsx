@@ -216,6 +216,83 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ————— Focus ————— */}
+      <section className="border-t border-edge">
+        <div className="mx-auto w-full max-w-5xl px-6 py-20 sm:py-24">
+          <div className="grid items-center gap-12 sm:grid-cols-2">
+            <div>
+              <h2 className="text-3xl font-semibold leading-tight tracking-tight text-ink">
+                Tell it what you're doing.
+                <br />
+                It keeps you doing it.
+              </h2>
+              <p className="mt-4 max-w-md text-pretty leading-relaxed text-ink-secondary">
+                Type your task — "finish the pricing page" — and TabMind figures out which of your
+                groups belong to it. Wander off to somewhere that doesn't, and a quiet page asks if
+                that's really where you meant to go. One click through if it is.
+              </p>
+              <p className="mt-3 max-w-md text-pretty text-[0.9375rem] leading-relaxed text-ink-secondary">
+                No shame screens, no streaks, no locked doors. Every intercept is overridable,
+                breaks are built in, and the whole thing runs on your device.
+              </p>
+            </div>
+            <div className="rounded-lg border border-edge bg-raised p-6 shadow-md">
+              <p className="text-[0.6875rem] font-medium uppercase tracking-wider text-ink-faint">
+                You're focusing on
+              </p>
+              <p className="mt-1.5 text-[1.0625rem] font-semibold text-ink">finish the pricing page</p>
+              <p className="mt-3 text-[0.8125rem] leading-snug text-ink-secondary">
+                youtube.com doesn't look related to what you're working on.
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <span className="rounded-md bg-accent px-3 py-1.5 text-[0.8125rem] font-medium text-accent-ink">
+                  Back to work
+                </span>
+                <span className="rounded-md border border-edge-strong px-3 py-1.5 text-[0.8125rem] text-ink-secondary">
+                  This is on task
+                </span>
+                <span className="rounded-md border border-edge-strong px-3 py-1.5 text-[0.8125rem] text-ink-secondary">
+                  5-minute break
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ————— Automations ————— */}
+      <section className="border-t border-edge bg-raised/60">
+        <div className="mx-auto w-full max-w-5xl px-6 py-20 sm:py-24">
+          <div className="max-w-xl">
+            <h2 className="text-3xl font-semibold leading-tight tracking-tight text-ink">
+              The tidying you'd do anyway, done for you.
+            </h2>
+            <p className="mt-4 text-pretty leading-relaxed text-ink-secondary">
+              Write the rule once, in plain terms. TabMind runs it quietly and keeps a log of
+              everything it did — with an undo button next to each entry, because automation you
+              can't reverse is automation you can't trust.
+            </p>
+          </div>
+          <div className="mt-8 space-y-2.5">
+            {[
+              { when: "a group hasn't been touched in 3 days", then: "save it and close its tabs" },
+              { when: "the same page is open twice", then: "close the extra copy" },
+              { when: "I pass 40 open tabs", then: "collapse groups I'm not using" },
+            ].map((rule) => (
+              <div
+                key={rule.when}
+                className="flex flex-wrap items-baseline gap-x-2 rounded-lg border border-edge bg-raised px-4 py-3 text-[0.9375rem] shadow-sm"
+              >
+                <span className="font-medium uppercase tracking-wide text-[0.6875rem] text-ink-faint">When</span>
+                <span className="text-ink">{rule.when}</span>
+                <span className="font-medium uppercase tracking-wide text-[0.6875rem] text-ink-faint">then</span>
+                <span className="text-ink">{rule.then}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ————— Privacy ————— */}
       <section className="border-t border-edge">
         <div className="mx-auto w-full max-w-5xl px-6 py-20 sm:py-24">
@@ -277,7 +354,8 @@ export default function HomePage() {
                 Free to stay organized.
               </h2>
               <p className="mt-3 max-w-md text-pretty leading-relaxed text-ink-secondary">
-                Automatic grouping, three saved workspaces, and cleanup — free, forever. Pro adds
+                Automatic grouping, focus mode, automations, three saved workspaces, and cleanup —
+                free, forever. Pro adds
                 unlimited workspaces, AI search across your history, summaries, and comparisons for $
                 {PRICING.pro.monthlyUsd}/month.
               </p>

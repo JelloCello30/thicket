@@ -105,17 +105,33 @@ export async function closeTabs(
 ): Promise<{ closedCount: number; undoBatchId: string }> {
   const tabs = await chrome.tabs.query({ windowType: "normal" });
   const closable = tabs.filter((t) => t.id != null && tabIds.includes(t.id));
+
+  // Capture each tab's group identity so an undo puts it back where it was.
+  const { readCached } = await import("./analyzer");
+  const analysis = await readCached();
+  const groupOf = (tabId: number) => analysis?.groups.find((g) => g.tabIds.includes(tabId));
+
   const batch: ClosedBatch = {
     id: newId("undo"),
     label,
     tabs: closable
       .filter((t) => t.url && !t.url.startsWith("chrome"))
-      .map((t) => ({ url: t.url!, title: t.title ?? t.url! })),
+      .map((t) => {
+        const group = groupOf(t.id!);
+        return {
+          url: t.url!,
+          title: t.title ?? t.url!,
+          groupId: group?.id,
+          groupName: group?.name,
+          groupColor: group?.color,
+        };
+      }),
     at: Date.now(),
   };
 
   for (const tab of closable) {
-    await recordClosed(tab.id!, groupName);
+    const group = groupOf(tab.id!);
+    await recordClosed(tab.id!, group?.name ?? groupName, group?.id);
   }
   const ids = closable.map((t) => t.id!) as number[];
   if (ids.length > 0) await chrome.tabs.remove(ids);
@@ -125,13 +141,62 @@ export async function closeTabs(
   return { closedCount: ids.length, undoBatchId: batch.id };
 }
 
+/** Pin reopened URLs to the group they came from, so re-analysis lands them home. */
+export async function lockUrlsToGroup(urls: string[], groupId: string): Promise<void> {
+  const { normalizeUrl } = await import("@tabmind/core");
+  await updateState("corrections", (corrections) => {
+    const locks = { ...corrections.locks };
+    for (const url of urls) locks[normalizeUrl(url)] = groupId;
+    // Bounded: keep the most recent 200 locks.
+    const entries = Object.entries(locks);
+    return {
+      ...corrections,
+      locks: Object.fromEntries(entries.slice(Math.max(0, entries.length - 200))),
+    };
+  });
+}
+
 export async function undoBatch(batchId: string): Promise<number> {
   const { closedBatches } = await readState("closedBatches");
   const batch = closedBatches.find((b) => b.id === batchId);
   if (!batch) return 0;
+
+  // Reopen, remembering which original group each new tab belongs to.
+  const byGroup = new Map<string, { name: string; color?: string; createdIds: number[]; urls: string[] }>();
   for (const tab of batch.tabs) {
-    await chrome.tabs.create({ url: tab.url, active: false });
+    const created = await chrome.tabs.create({ url: tab.url, active: false });
+    if (tab.groupId && tab.groupName) {
+      const entry = byGroup.get(tab.groupId) ?? {
+        name: tab.groupName,
+        color: tab.groupColor,
+        createdIds: [],
+        urls: [],
+      };
+      if (created.id != null) entry.createdIds.push(created.id);
+      entry.urls.push(tab.url);
+      byGroup.set(tab.groupId, entry);
+    }
   }
+
+  // Restore native tab groups immediately (analysis re-confirms right after),
+  // and lock the URLs so clustering keeps them in their original group.
+  for (const [groupId, entry] of byGroup) {
+    await lockUrlsToGroup(entry.urls, groupId);
+    if (entry.createdIds.length >= 2) {
+      try {
+        const chromeGroupId = await chrome.tabs.group({
+          tabIds: entry.createdIds as [number, ...number[]],
+        });
+        await chrome.tabGroups.update(chromeGroupId, {
+          title: entry.name,
+          color: (entry.color as chrome.tabGroups.ColorEnum) ?? "grey",
+        });
+      } catch {
+        /* grouping is cosmetic; the locks still land them correctly */
+      }
+    }
+  }
+
   await updateState("closedBatches", (batches) => batches.filter((b) => b.id !== batchId));
   scheduleAnalysis("undo");
   return batch.tabs.length;
@@ -159,10 +224,21 @@ export async function restoreWorkspace(workspaceId: string): Promise<number> {
   if (created.length >= 2) {
     try {
       const chromeGroupId = await chrome.tabs.group({ tabIds: created as [number, ...number[]] });
-      await chrome.tabGroups.update(chromeGroupId, { title: workspace.title });
+      await chrome.tabGroups.update(chromeGroupId, {
+        title: workspace.title,
+        color: workspace.color as chrome.tabGroups.ColorEnum,
+      });
     } catch {
       /* grouping is cosmetic */
     }
+  }
+  // Keep the restored tabs together under the workspace's original group
+  // identity — analysis then reuses its name and color instead of renaming.
+  if (workspace.originGroupId && toOpen.length > 0) {
+    await lockUrlsToGroup(
+      toOpen.map((t) => t.url),
+      workspace.originGroupId,
+    );
   }
 
   const now = Date.now();

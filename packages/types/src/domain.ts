@@ -176,8 +176,9 @@ export interface ClosedTabRecord {
   domain: string;
   faviconUrl?: string;
   closedAt: number;
-  /** Group name at close time, for "Recently closed with TabMind". */
+  /** Group identity at close time — restores go back where they came from. */
   groupName?: string;
+  groupId?: string;
   workspaceId?: string;
 }
 
@@ -236,7 +237,10 @@ export type CommandIntent =
   | { type: "cleanup" }
   | { type: "pause" }
   | { type: "resume" }
-  | { type: "open_dashboard"; section?: "settings" | "history" | "workspaces" }
+  | { type: "focus"; task: string; minutes?: number }
+  | { type: "focus_end" }
+  | { type: "help"; query?: string }
+  | { type: "open_dashboard"; section?: "settings" | "history" | "workspaces" | "automations" }
   | { type: "ask"; question: string }
   | { type: "unknown"; raw: string };
 
@@ -269,6 +273,14 @@ export interface UserPreferences {
   /** Everything off, nothing observed. */
   paused: boolean;
   theme: "system" | "light" | "dark";
+  /** How choosy clustering is: calm = fewer/bigger groups, eager = more/smaller. */
+  groupingStyle: "calm" | "balanced" | "eager";
+  /** Hours before an untouched tab starts counting as done. */
+  staleAfterHours: number;
+  /** Focus mode: gentle intercepts known rabbit holes; strict also stops unrelated new sites. */
+  focusStrictness: "gentle" | "strict";
+  /** Length of a focus-mode break, minutes. */
+  focusBreakMinutes: number;
 }
 
 export const DEFAULT_PREFERENCES: UserPreferences = {
@@ -279,6 +291,10 @@ export const DEFAULT_PREFERENCES: UserPreferences = {
   mirrorTabGroups: true,
   paused: false,
   theme: "system",
+  groupingStyle: "balanced",
+  staleAfterHours: 24,
+  focusStrictness: "gentle",
+  focusBreakMinutes: 5,
 };
 
 export interface DeviceInfo {

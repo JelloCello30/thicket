@@ -12,4 +12,6 @@ export * from "./grouping";
 export * from "./cleanup";
 export * from "./commands";
 export * from "./search";
+export * from "./focus";
+export * from "./rules";
 export { demoTabs, tinyTabSet, DEMO_NOW } from "./fixtures/demo";

@@ -174,6 +174,80 @@ export function SettingsView({
         ) : null}
       </Section>
 
+      <Section title="Tuning">
+        <Row
+          label="Grouping style"
+          hint="Calm makes fewer, bigger groups. Eager splits sooner into more, smaller ones."
+        >
+          <div className="flex gap-1">
+            {(["calm", "balanced", "eager"] as const).map((style) => (
+              <button
+                key={style}
+                onClick={() => onPref({ groupingStyle: style })}
+                className={
+                  prefs.groupingStyle === style
+                    ? "rounded-md bg-accent-soft px-2.5 py-1 text-[0.8125rem] font-medium text-accent"
+                    : "rounded-md px-2.5 py-1 text-[0.8125rem] text-ink-secondary hover:bg-sunken"
+                }
+              >
+                {style[0]!.toUpperCase() + style.slice(1)}
+              </button>
+            ))}
+          </div>
+        </Row>
+        <Row
+          label="Count a tab as “probably done” after"
+          hint="Drives the stale pile and cleanup suggestions."
+        >
+          <select
+            value={prefs.staleAfterHours}
+            onChange={(e) => onPref({ staleAfterHours: Number(e.target.value) })}
+            className="rounded-md border border-edge-strong bg-raised px-2 py-1.5 text-[0.8125rem] text-ink"
+            aria-label="Staleness window"
+          >
+            <option value={6}>6 hours</option>
+            <option value={24}>a day</option>
+            <option value={72}>3 days</option>
+            <option value={168}>a week</option>
+          </select>
+        </Row>
+      </Section>
+
+      <Section title="Focus mode">
+        <Row
+          label="Strictness"
+          hint="Gentle intercepts known rabbit holes (social, video, forums, news). Strict also stops new sites that don't relate to your task."
+        >
+          <div className="flex gap-1">
+            {(["gentle", "strict"] as const).map((mode) => (
+              <button
+                key={mode}
+                onClick={() => onPref({ focusStrictness: mode })}
+                className={
+                  prefs.focusStrictness === mode
+                    ? "rounded-md bg-accent-soft px-2.5 py-1 text-[0.8125rem] font-medium text-accent"
+                    : "rounded-md px-2.5 py-1 text-[0.8125rem] text-ink-secondary hover:bg-sunken"
+                }
+              >
+                {mode[0]!.toUpperCase() + mode.slice(1)}
+              </button>
+            ))}
+          </div>
+        </Row>
+        <Row label="Break length" hint="How long “take a break” pauses interception.">
+          <select
+            value={prefs.focusBreakMinutes}
+            onChange={(e) => onPref({ focusBreakMinutes: Number(e.target.value) })}
+            className="rounded-md border border-edge-strong bg-raised px-2 py-1.5 text-[0.8125rem] text-ink"
+            aria-label="Break length"
+          >
+            <option value={5}>5 minutes</option>
+            <option value={10}>10 minutes</option>
+            <option value={15}>15 minutes</option>
+          </select>
+        </Row>
+      </Section>
+
       <Section title="Behavior">
         <Row label="Mirror groups in the tab strip" hint="Show TabMind's groups as native Chrome tab groups.">
           <Switch

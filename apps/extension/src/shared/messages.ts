@@ -7,8 +7,8 @@ import type {
   UserPreferences,
   WorkspaceData,
 } from "@tabmind/types";
-import type { ScoredDoc } from "@tabmind/core";
-import type { AuthState, ClosedBatch } from "./storage";
+import type { AutomationRule, FocusSessionState, ScoredDoc } from "@tabmind/core";
+import type { AuthState, ClosedBatch, RuleActivityEntry } from "./storage";
 
 /**
  * The typed protocol between UI surfaces and the background service worker.
@@ -23,6 +23,10 @@ export interface UiState {
   workspaces: WorkspaceData[];
   recentlyClosed: ClosedTabRecord[];
   closedBatches: ClosedBatch[];
+  focus: FocusSessionState | null;
+  focusMinutesLeft: number | null;
+  rules: AutomationRule[];
+  ruleActivity: RuleActivityEntry[];
   onboarded: boolean;
   contentPermission: boolean;
   appUrl: string;
@@ -42,6 +46,9 @@ export interface CommandOutcome {
     | "prefs"
     | "answer"
     | "navigate"
+    | "focus-started"
+    | "focus-ended"
+    | "help"
     | "none";
   message?: string;
   searchResults?: SearchOutcome;
@@ -51,6 +58,7 @@ export interface CommandOutcome {
   groupId?: string;
   undoBatchId?: string;
   section?: string;
+  helpQuery?: string;
 }
 
 export interface SearchOutcome {
@@ -90,7 +98,12 @@ export type BgRequest =
   | { type: "sign-out" }
   | { type: "reopen"; url: string }
   | { type: "request-content-permission" }
-  | { type: "open-dashboard"; section?: string };
+  | { type: "open-dashboard"; section?: string }
+  | { type: "focus-start"; task: string; minutes?: number | null; strictness?: "gentle" | "strict" }
+  | { type: "focus-end" }
+  | { type: "rules-add"; condition: AutomationRule["condition"]; action: AutomationRule["action"] }
+  | { type: "rules-toggle"; id: string; enabled: boolean }
+  | { type: "rules-delete"; id: string };
 
 export interface BgResponses {
   "get-state": UiState;
@@ -121,6 +134,11 @@ export interface BgResponses {
   reopen: { ok: true };
   "request-content-permission": { granted: boolean };
   "open-dashboard": { ok: true };
+  "focus-start": UiState;
+  "focus-end": { summary: { task: string; minutes: number; blocked: number } | null };
+  "rules-add": UiState;
+  "rules-toggle": UiState;
+  "rules-delete": UiState;
 }
 
 export interface BgError {

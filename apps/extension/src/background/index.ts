@@ -9,6 +9,17 @@ import { flushEvents, reportError, track } from "./analytics";
 import { executeCommand, focusGroup } from "./commands";
 import { recordClosed, recordVisit, pruneHistory } from "./history";
 import { unmirrorAll } from "./mirror";
+import {
+  allowDomainAndReturn,
+  endFocus,
+  focusTick,
+  maybeIntercept,
+  returnToWork,
+  startFocus,
+  takeBreakAndReturn,
+} from "./focus";
+import { addRule, deleteRule, toggleRule } from "./automations";
+import { focusMinutesLeft } from "@tabmind/core";
 import { runSearch } from "./search";
 import { flushSync, pullWorkspaces } from "./sync";
 import { noteActivated, noteRemoved } from "./tabs";
@@ -47,6 +58,9 @@ chrome.alarms.onAlarm.addListener((alarm) => {
     void flushSync();
     void flushEvents();
   }
+  if (alarm.name === "tabmind-focus-tick") {
+    void focusTick();
+  }
   if (alarm.name === "tabmind-daily") {
     void (async () => {
       const { auth } = await readState("auth");
@@ -60,6 +74,9 @@ chrome.alarms.onAlarm.addListener((alarm) => {
 
 chrome.tabs.onCreated.addListener(() => scheduleAnalysis("created"));
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (changeInfo.url) {
+    void maybeIntercept(tabId, changeInfo.url);
+  }
   if (changeInfo.status === "complete" && tab.url) {
     void recordVisit(tabId, tab.url, tab.title ?? "");
     scheduleAnalysis("updated");
@@ -112,9 +129,29 @@ async function linkDevice(code: string) {
 
 /* ──────────────────────── message router ──────────────────────── */
 
-chrome.runtime.onMessage.addListener((message: BgRequest | { type: string }, _sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((message: BgRequest | { type: string }, sender, sendResponse) => {
   if (!message || typeof (message as { type?: unknown }).type !== "string") return undefined;
   if ((message as { type: string }).type.startsWith("tabmind:")) return undefined; // broadcasts
+
+  // Focus intercept page actions carry the sender tab.
+  const focusPage = message as { type: string; url?: string };
+  if (focusPage.type.startsWith("focus-page:") && sender.tab?.id != null) {
+    const tabId = sender.tab.id;
+    void (async () => {
+      if (focusPage.type === "focus-page:allow" && focusPage.url) {
+        await allowDomainAndReturn(tabId, focusPage.url);
+      } else if (focusPage.type === "focus-page:break" && focusPage.url) {
+        await takeBreakAndReturn(tabId, focusPage.url);
+      } else if (focusPage.type === "focus-page:return") {
+        await returnToWork(tabId);
+      } else if (focusPage.type === "focus-page:end" && focusPage.url) {
+        await endFocus("manual");
+        await chrome.tabs.update(tabId, { url: focusPage.url }).catch(() => undefined);
+      }
+      sendResponse({ ok: true });
+    })();
+    return true;
+  }
   void handle(message as BgRequest)
     .then(sendResponse)
     .catch((error: Error & { code?: BgError["code"] }) => {
@@ -142,7 +179,12 @@ async function handle(request: BgRequest): Promise<unknown> {
       const next: UserPreferences = { ...prefs, ...request.patch };
       await writeState({ prefs: next });
       if (prefs.mirrorTabGroups && request.patch.mirrorTabGroups === false) await unmirrorAll();
-      if (request.patch.paused === false || request.patch.mirrorTabGroups === true) {
+      if (
+        request.patch.paused === false ||
+        request.patch.mirrorTabGroups === true ||
+        request.patch.groupingStyle !== undefined ||
+        request.patch.staleAfterHours !== undefined
+      ) {
         await runAnalysis();
       }
       notifyUi();
@@ -259,6 +301,13 @@ async function handle(request: BgRequest): Promise<unknown> {
     }
     case "reopen": {
       await chrome.tabs.create({ url: request.url, active: true });
+      const { recentlyClosed } = await readState("recentlyClosed");
+      const record = recentlyClosed.find((r) => r.url === request.url);
+      if (record?.groupId) {
+        const { lockUrlsToGroup } = await import("./workspaces");
+        await lockUrlsToGroup([request.url], record.groupId);
+      }
+      scheduleAnalysis("reopen");
       return { ok: true };
     }
     case "request-content-permission": {
@@ -274,6 +323,25 @@ async function handle(request: BgRequest): Promise<unknown> {
       await openDashboard(request.section);
       return { ok: true };
     }
+    case "focus-start": {
+      await startFocus(request.task, { minutes: request.minutes, strictness: request.strictness });
+      return uiState();
+    }
+    case "focus-end":
+      return { summary: await endFocus("manual") };
+    case "rules-add": {
+      await addRule(request.condition, request.action);
+      notifyUi();
+      return uiState();
+    }
+    case "rules-toggle": {
+      await toggleRule(request.id, request.enabled);
+      return uiState();
+    }
+    case "rules-delete": {
+      await deleteRule(request.id);
+      return uiState();
+    }
   }
 }
 
@@ -287,6 +355,9 @@ async function uiState(): Promise<UiState> {
       "workspaces",
       "recentlyClosed",
       "closedBatches",
+      "focus",
+      "rules",
+      "ruleActivity",
       "onboarded",
       "appUrlOverride",
     ),
@@ -300,6 +371,10 @@ async function uiState(): Promise<UiState> {
     workspaces: state.workspaces,
     recentlyClosed: state.recentlyClosed,
     closedBatches: state.closedBatches,
+    focus: state.focus,
+    focusMinutesLeft: state.focus ? focusMinutesLeft(state.focus) : null,
+    rules: state.rules,
+    ruleActivity: state.ruleActivity,
     onboarded: state.onboarded,
     contentPermission,
     appUrl: state.appUrlOverride || APP_URL,

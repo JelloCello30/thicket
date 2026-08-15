@@ -149,10 +149,10 @@ async function main() {
     "Camera Research": text.includes("Camera Research"),
     "tab counts": /17 tabs open/.test(text) || /tabs open/.test(text),
     "cleanup entry": text.includes("Clear the noise"),
+    "focus entry": text.includes("Focus"),
+    "automations entry": text.includes("Automations"),
+    "help entry": text.includes("Help"),
   };
-  console.log("checks:", JSON.stringify(checks, null, 2));
-  const failed = Object.entries(checks).filter(([, ok]) => !ok);
-
   await dashboard.screenshot({ path: path.join(outDir, "store-1-dashboard.png") });
 
   // Command bar shot.
@@ -173,6 +173,24 @@ async function main() {
   await dashboard.waitForTimeout(800);
   await dashboard.screenshot({ path: path.join(outDir, "store-4-privacy.png") });
 
+  // Automations view shot.
+  await dashboard.goto(`chrome-extension://${extensionId}/dashboard.html#/automations`);
+  await dashboard.waitForTimeout(800);
+  await dashboard.screenshot({ path: path.join(outDir, "store-6-automations.png") });
+
+  // Focus dialog shot.
+  await dashboard.goto(`chrome-extension://${extensionId}/dashboard.html#/now`);
+  await dashboard.waitForTimeout(600);
+  const focusButton = dashboard.locator('[data-help="focus"]');
+  if (await focusButton.count()) {
+    await focusButton.click();
+    await dashboard.waitForTimeout(400);
+    await dashboard.keyboard.type("finish the pricing page copy", { delay: 20 });
+    await dashboard.waitForTimeout(300);
+    await dashboard.screenshot({ path: path.join(outDir, "store-7-focus.png") });
+    await dashboard.keyboard.press("Escape");
+  }
+
   // Cleanup dialog shot.
   await dashboard.goto(`chrome-extension://${extensionId}/dashboard.html#/now`);
   await dashboard.waitForTimeout(1200);
@@ -182,6 +200,37 @@ async function main() {
     await dashboard.waitForTimeout(600);
     await dashboard.screenshot({ path: path.join(outDir, "store-5-cleanup.png") });
   }
+
+  // ————— Focus mode: behavioral test of the actual interception —————
+  await dashboard.goto(`chrome-extension://${extensionId}/dashboard.html#/now`);
+  await dashboard.waitForTimeout(500);
+  await dashboard.evaluate(() =>
+    chrome.runtime.sendMessage({ type: "focus-start", task: "compare mirrorless cameras", minutes: 25 }),
+  );
+  await dashboard.waitForTimeout(500);
+
+  const straying = await context.newPage();
+  await straying.goto("https://www.youtube.com/watch?v=dQw4w9WgXcQ").catch(() => undefined);
+  await straying.waitForTimeout(1800);
+  checks["focus intercepts off-task tab"] = straying
+    .url()
+    .startsWith(`chrome-extension://${extensionId}/focus.html`);
+
+  if (checks["focus intercepts off-task tab"]) {
+    await straying.screenshot({ path: path.join(outDir, "store-8-focus-intercept.png") });
+    // The override must actually work: "this is on task" should pass through.
+    const allow = straying.getByText("is on-task", { exact: false });
+    if (await allow.count()) {
+      await allow.first().click();
+      await straying.waitForTimeout(1200);
+      checks["focus override passes through"] = straying.url().includes("youtube.com");
+    }
+  }
+  await straying.close().catch(() => undefined);
+  await dashboard.evaluate(() => chrome.runtime.sendMessage({ type: "focus-end" }));
+
+  console.log("checks:", JSON.stringify(checks, null, 2));
+  const failed = Object.entries(checks).filter(([, ok]) => !ok);
 
   await context.close();
 

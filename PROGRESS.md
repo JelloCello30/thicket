@@ -1,17 +1,41 @@
 # TabMind — Build Progress
 
-## Status: ✅ v1 COMPLETE — ready for external setup (see docs/LAUNCH_CHECKLIST.md)
+## Status: ✅ v1.1 COMPLETE — ready for external setup (see docs/LAUNCH_CHECKLIST.md)
 
 Everything code-side is built, tested, and verified. Remaining work is exclusively
 external accounts/keys, legal customization, and the manual Chrome Web Store submission —
 all documented with exact steps.
 
+### v1.1 (focus, automations, help, tuning) — verified
+
+- **Focus mode**: type a task → TabMind maps it to your groups; off-task navigations are
+  intercepted by a calm page with four honest ways out (back to work, this-is-on-task,
+  timed break, end focus). Badge shows minutes left. All on-device.
+  **Behaviorally e2e-tested**: during a "compare mirrorless cameras" session the harness
+  navigates to youtube.com, asserts redirect to the intercept page, clicks
+  "youtube.com is on-task", and asserts pass-through back to youtube.
+- **Automations**: plain-language when/then rules (group untouched N days → save+close;
+  duplicates → close extras; >N tabs → collapse unused groups), run after each analysis
+  with 30-min cooldowns, protected tabs (pinned/active/audible), an activity log, and
+  undo on every close.
+- **Restored tabs return to their original group**: group identity is captured at close
+  (batches + history records), reopened URLs are locked back to the group, and group
+  memory retains vanished groups for 7 days so the locks land. Applies to undo,
+  workspace restore, and single-tab reopen.
+- **Help that shows or does**: help panel with 10 task topics; each can explain, run a
+  spotlight tour over the live UI (data-help anchors), or perform the action directly.
+- **Tuning**: grouping style (calm/balanced/eager), staleness window, focus strictness
+  (gentle/strict), break length — all in Settings, re-analyzing on change.
+- Core suite now 71 tests (12 focus, 6 rules); e2e asserts 11 checks including the two
+  behavioral focus checks; lint/typecheck/test/build all green.
+
 ## Verified working (not just written)
 
 - **Extension e2e in real Chromium** (`node scripts/extension-e2e.mjs`): loads the built
   MV3 extension, opens a 17-tab realistic session (real domains, stubbed responses),
-  asserts grouping into Apartment Hunt / Trip Planning / Work / Camera Research, and
-  captures the five Chrome Web Store screenshots from the live product.
+  asserts grouping into Apartment Hunt / Trip Planning / Work / Camera Research, tests
+  focus interception behaviorally, and captures eight Chrome Web Store screenshot
+  candidates from the live product.
 - **Auth + device flow live**: magic link → session → /app → connect code → bearer token
   → workspace sync → search returns the synced tab → code reuse rejected.
 - **82 unit/API tests green**: core 53 (clustering quality bar on the 47-tab fixture,

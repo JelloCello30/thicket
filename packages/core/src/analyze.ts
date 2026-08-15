@@ -9,6 +9,8 @@ export interface AnalyzeContext {
   excludedDomains: ReadonlySet<string>;
   preferences: Pick<UserPreferences, "paused">;
   now: number;
+  /** How long before a tab starts counting as done (user-tunable). */
+  staleAfterHours?: number;
 }
 
 /** Turn a raw browser tab into an analyzed, privacy-filtered tab. Pure. */
@@ -71,7 +73,7 @@ export function analyzeTab(tab: TabSnapshot, ctx: AnalyzeContext): AnalyzedTab {
     searchQuery,
     tokens: tokenize(searchQuery ? `${cleanTitle} ${searchQuery}` : cleanTitle),
     entities: extractEntities(cleanTitle),
-    staleness: stalenessScore(tab, ctx.now),
+    staleness: stalenessScore(tab, ctx.now, ctx.staleAfterHours),
   };
 }
 

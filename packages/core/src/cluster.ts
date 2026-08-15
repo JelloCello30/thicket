@@ -27,6 +27,19 @@ const ATTACH_THRESHOLD = 0.4;
 /** Weaker attach bar when the singleton shares the cluster's dominant theme. */
 const THEME_ATTACH_THRESHOLD = 0.22;
 
+/** User-tunable grouping behavior. Positive offsets = choosier clustering. */
+export interface ClusterTuning {
+  thresholdOffset?: number;
+  minGroupSize?: number;
+}
+
+/** Presets exposed in Settings as "grouping style". */
+export const GROUPING_STYLES: Record<"calm" | "balanced" | "eager", ClusterTuning> = {
+  calm: { thresholdOffset: 0.05, minGroupSize: 3 },
+  balanced: {},
+  eager: { thresholdOffset: -0.06, minGroupSize: 2 },
+};
+
 class UnionFind {
   private parent: number[];
   constructor(n: number) {
@@ -74,7 +87,16 @@ function cohesion(scores: number[][], members: number[]): number {
  * merge clusters that clearly belong together, attach loose singletons,
  * and route the remainder into Reading / Probably done / Everything else.
  */
-export function clusterTabs(tabs: AnalyzedTab[], ctx: SimilarityContext = {}): ClusterOutcome {
+export function clusterTabs(
+  tabs: AnalyzedTab[],
+  ctx: SimilarityContext = {},
+  tuning: ClusterTuning = {},
+): ClusterOutcome {
+  const offset = tuning.thresholdOffset ?? 0;
+  const unionThreshold = UNION_THRESHOLD + offset;
+  const mergeThreshold = MERGE_THRESHOLD + offset;
+  const attachThreshold = ATTACH_THRESHOLD + offset;
+  const minGroupSize = tuning.minGroupSize ?? LIMITS.minGroupSize;
   const features = featuresFor(tabs);
   const effectiveCtx: SimilarityContext = {
     ...ctx,
@@ -102,7 +124,7 @@ export function clusterTabs(tabs: AnalyzedTab[], ctx: SimilarityContext = {}): C
   const uf = new UnionFind(tabs.length);
   for (const i of eligible) {
     for (const j of eligible) {
-      if (i < j && scores[i]![j]! >= UNION_THRESHOLD) uf.union(i, j);
+      if (i < j && scores[i]![j]! >= unionThreshold) uf.union(i, j);
     }
   }
 
@@ -124,7 +146,7 @@ export function clusterTabs(tabs: AnalyzedTab[], ctx: SimilarityContext = {}): C
       for (let y = x + 1; y < entries.length; y++) {
         const [ka, ma] = entries[x]!;
         const [kb, mb] = entries[y]!;
-        if (meanLink(scores, ma, mb) >= MERGE_THRESHOLD) {
+        if (meanLink(scores, ma, mb) >= mergeThreshold) {
           groups.set(ka, [...ma, ...mb]);
           groups.delete(kb);
           merged = true;
@@ -138,7 +160,7 @@ export function clusterTabs(tabs: AnalyzedTab[], ctx: SimilarityContext = {}): C
   // when it relates strongly to at least one member (max link) or decently to
   // the whole cluster (mean link).
   const singles = [...groups.entries()].filter(([, m]) => m.length === 1);
-  const realKeys = [...groups.keys()].filter((k) => groups.get(k)!.length >= LIMITS.minGroupSize);
+  const realKeys = [...groups.keys()].filter((k) => groups.get(k)!.length >= minGroupSize);
   const dominantTheme = (members: number[]): string | null => {
     const counts = new Map<string, number>();
     for (const m of members) {
@@ -163,9 +185,9 @@ export function clusterTabs(tabs: AnalyzedTab[], ctx: SimilarityContext = {}): C
       const clusterTheme = dominantTheme(cluster);
       const themeMatch = clusterTheme != null && features[idx]!.themes.has(clusterTheme as never);
       const qualifies =
-        max >= UNION_THRESHOLD ||
-        mean >= ATTACH_THRESHOLD ||
-        (themeMatch && mean >= THEME_ATTACH_THRESHOLD);
+        max >= unionThreshold ||
+        mean >= attachThreshold ||
+        (themeMatch && mean >= THEME_ATTACH_THRESHOLD + Math.max(0, offset));
       const combined = mean + max * 0.5 + (themeMatch ? 0.15 : 0);
       if (qualifies && combined > bestCombined) {
         bestCombined = combined;
@@ -182,7 +204,7 @@ export function clusterTabs(tabs: AnalyzedTab[], ctx: SimilarityContext = {}): C
   const clusters: RawCluster[] = [];
   const leftovers: number[] = [];
   for (const members of groups.values()) {
-    if (members.length >= LIMITS.minGroupSize) {
+    if (members.length >= minGroupSize) {
       clusters.push({ memberIdx: members.sort((a, b) => a - b), cohesion: cohesion(scores, members) });
     } else {
       leftovers.push(...members);

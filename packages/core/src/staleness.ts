@@ -9,11 +9,12 @@ import { STALENESS } from "@tabmind/config";
 export function stalenessScore(
   tab: Pick<TabSnapshot, "pinned" | "active" | "audible" | "lastAccessed">,
   now: number,
+  staleAfterHours: number = STALENESS.staleAfterHours,
 ): number {
   if (tab.pinned || tab.active || tab.audible) return 0;
   if (tab.lastAccessed == null) return 0.3; // unknown — mildly suspicious, never certain
   const hours = Math.max(0, (now - tab.lastAccessed) / 3_600_000);
-  const t = STALENESS.staleAfterHours;
+  const t = staleAfterHours;
   if (hours <= 1) return 0;
   // Smooth ramp: ~0.35 at `t/2` hours, ~0.7 at `t`, →1 as it ages past 3×t.
   const score = 1 - Math.exp(-hours / t);

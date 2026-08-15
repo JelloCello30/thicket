@@ -30,6 +30,8 @@ prepared listing. Manual steps are marked ⚠️.
 > • One-click cleanup of duplicates, empty tabs, and things you're done with — always shown before anything closes, always undoable
 > • Remembers pages you've had open, so "that apartment with the rooftop" is findable next week
 > • ⌘K command bar: find anything, close what you don't need, bring back yesterday's research
+> • Focus mode: type your task, and TabMind quietly intercepts rabbit holes until you're done — overridable in one click, fully on-device
+> • Automations: "when a group is untouched for 3 days, save it and close its tabs" — every automated close is undoable
 >
 > WITH A FREE ACCOUNT
 > • Workspaces sync across devices
@@ -70,7 +72,7 @@ prepared listing. Manual steps are marked ⚠️.
 | Asset | Requirement | Status |
 |---|---|---|
 | Icon 128×128 | PNG | ✅ `apps/extension/public/icons/icon-128.png` |
-| Screenshots (1–5) | 1280×800 PNG | ✅ `apps/extension/release/screenshots/store-*.png` — real captures from the e2e run (dashboard, command bar, onboarding, privacy settings, cleanup) |
+| Screenshots (1–5) | 1280×800 PNG | ✅ `apps/extension/release/screenshots/store-*.png` — real captures from the e2e run (dashboard, command bar, onboarding, privacy, cleanup, automations, focus); pick the best five |
 | Small promo tile 440×280 | optional | ⚠️ generate if desired (`scripts/og-template.html` can be adapted) |
 | Marquee 1400×560 | optional | ⚠️ same |
 

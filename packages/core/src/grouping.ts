@@ -1,5 +1,5 @@
 import type { AnalysisResult, AnalyzedTab, GroupColor, GroupKind, TabGroup, TabSnapshot } from "@tabmind/types";
-import { clusterTabs } from "./cluster";
+import { clusterTabs, type ClusterTuning } from "./cluster";
 import { nameCluster } from "./naming";
 import { analyzeTabs, type AnalyzeContext } from "./analyze";
 import type { SimilarityContext } from "./similarity";
@@ -22,6 +22,8 @@ export interface GroupingOptions {
   similarity?: SimilarityContext;
   /** Explicit user corrections: normalized URL → group id it must live in. */
   lockedAssignments?: Map<string, string>;
+  /** User-tunable clustering behavior ("grouping style" in Settings). */
+  tuning?: ClusterTuning;
   idFactory?: () => string;
 }
 
@@ -65,7 +67,7 @@ export function groupAnalyzedTabs(
   totalTabs: number = tabs.length,
 ): AnalysisResult {
   const idFactory = options.idFactory ?? defaultIdFactory;
-  const outcome = clusterTabs(tabs, options.similarity ?? {});
+  const outcome = clusterTabs(tabs, options.similarity ?? {}, options.tuning ?? {});
 
   interface Draft {
     tabIdx: number[];

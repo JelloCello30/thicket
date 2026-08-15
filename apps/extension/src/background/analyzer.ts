@@ -1,15 +1,17 @@
 import type { AnalysisResult, TabGroup } from "@tabmind/types";
 import {
+  GROUPING_STYLES,
   groupTabs,
   type GroupingOptions,
-  type PreviousGroup,
 } from "@tabmind/core";
 import { TIMING } from "@tabmind/config";
 import { api } from "../shared/api";
-import { readState, writeState } from "../shared/storage";
+import { readState, writeState, type RememberedGroup } from "../shared/storage";
 import { collectTabs } from "./tabs";
 import { mirrorGroups } from "./mirror";
 import { track } from "./analytics";
+import { runAutomations } from "./automations";
+import { refreshFocusGroups } from "./focus";
 
 /**
  * The analysis loop. Debounced against tab churn, stable across re-runs,
@@ -61,6 +63,7 @@ async function doAnalyze(): Promise<AnalysisResult> {
     previous: state.groupMemory,
     similarity: { pairBoosts: state.corrections.pairBoosts },
     lockedAssignments: new Map(Object.entries(state.corrections.locks)),
+    tuning: GROUPING_STYLES[state.prefs.groupingStyle] ?? GROUPING_STYLES.balanced,
   };
 
   const result = groupTabs(
@@ -69,6 +72,7 @@ async function doAnalyze(): Promise<AnalysisResult> {
       excludedDomains: new Set(state.excludedDomains),
       preferences: { paused: state.prefs.paused },
       now: Date.now(),
+      staleAfterHours: state.prefs.staleAfterHours,
     },
     options,
   );
@@ -95,6 +99,11 @@ async function doAnalyze(): Promise<AnalysisResult> {
   }
 
   notifyUi();
+
+  // Post-analysis hooks: user automations act on the fresh picture, and an
+  // active focus session re-anchors which groups count as the task.
+  void runAutomations(result).catch(() => undefined);
+  void refreshFocusGroups().catch(() => undefined);
 
   // AI refinement runs after the local result is already live.
   if (state.auth && state.prefs.aiEnabled && !state.prefs.paused) {
@@ -153,10 +162,11 @@ function linkSavedWorkspaces(result: AnalysisResult, workspaces: { id: string; o
   }
 }
 
-async function persistGroupMemory(result: AnalysisResult, previous: PreviousGroup[]): Promise<void> {
+async function persistGroupMemory(result: AnalysisResult, previous: RememberedGroup[]): Promise<void> {
   const prevById = new Map(previous.map((p) => [p.id, p]));
   const byId = new Map(result.tabs.map((t) => [t.tabId, t]));
-  const memory: PreviousGroup[] = result.groups.map((group) => ({
+  const now = Date.now();
+  const current: RememberedGroup[] = result.groups.map((group) => ({
     id: group.id,
     name: group.name,
     kind: group.kind,
@@ -166,8 +176,16 @@ async function persistGroupMemory(result: AnalysisResult, previous: PreviousGrou
       .filter((u): u is string => Boolean(u)),
     userNamed: prevById.get(group.id)?.userNamed ?? false,
     savedWorkspaceId: group.savedWorkspaceId,
+    lastSeenAt: now,
   }));
-  await writeState({ groupMemory: memory });
+  // Retain memory of groups that vanished (their tabs were closed) for a
+  // week — that's what lets an undone close or a restored workspace land
+  // back in its original group instead of re-clustering from scratch.
+  const currentIds = new Set(current.map((g) => g.id));
+  const retained = previous.filter(
+    (g) => !currentIds.has(g.id) && now - (g.lastSeenAt ?? 0) < 7 * 86_400_000,
+  );
+  await writeState({ groupMemory: [...current, ...retained].slice(0, 60) });
 }
 
 /* ───────────────────── AI refinement (non-blocking) ───────────────────── */

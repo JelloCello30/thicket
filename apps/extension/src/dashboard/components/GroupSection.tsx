@@ -11,6 +11,7 @@ export function GroupSection({
   group,
   analysis,
   busy,
+  helpAnchor,
   onFocusTab,
   onFocusGroup,
   onSave,
@@ -25,6 +26,7 @@ export function GroupSection({
   group: TabGroup;
   analysis: AnalysisResult;
   busy?: string | null;
+  helpAnchor?: boolean;
   onFocusTab: (tabId: number) => void;
   onFocusGroup: (groupId: string) => void;
   onSave: (groupId: string) => void;
@@ -72,6 +74,7 @@ export function GroupSection({
       onDrop={handleDrop}
     >
       <header
+        data-help={helpAnchor ? "group" : undefined}
         className="flex items-center gap-2.5 px-1 py-2.5"
         draggable={!group.isStale && !group.isCatchAll}
         onDragStart={(e) => {

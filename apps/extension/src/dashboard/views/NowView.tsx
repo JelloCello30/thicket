@@ -64,6 +64,7 @@ export function NowView({
             : `${realGroups.length} ${realGroups.length === 1 ? "thing" : "things"} you're working on`}
         </p>
         <button
+          data-help="cleanup"
           onClick={actions.cleanup}
           className="text-[0.8125rem] font-medium text-accent hover:underline underline-offset-2"
         >
@@ -71,9 +72,10 @@ export function NowView({
         </button>
       </div>
       <div className="border-t border-edge">
-        {groups.map((group) => (
+        {groups.map((group, index) => (
           <GroupSection
             key={group.id}
+            helpAnchor={index === 0}
             group={group}
             analysis={analysis}
             busy={busy}

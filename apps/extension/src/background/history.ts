@@ -57,10 +57,21 @@ export async function recordVisit(tabId: number, url: string, title: string): Pr
   });
 }
 
-export async function recordClosed(tabId: number, groupName?: string): Promise<void> {
+export async function recordClosed(tabId: number, groupName?: string, groupId?: string): Promise<void> {
   const known = lastKnown.get(tabId);
   lastKnown.delete(tabId);
   if (!known) return;
+  // Callers that don't know the group (e.g. a manual ⌘W): look it up from
+  // the last analysis so a later reopen can land back in the same group.
+  if (!groupId) {
+    const { readCached } = await import("./analyzer");
+    const analysis = await readCached();
+    const group = analysis?.groups.find((g) => g.tabIds.includes(tabId));
+    if (group) {
+      groupId = group.id;
+      groupName = groupName ?? group.name;
+    }
+  }
   const record: ClosedTabRecord = {
     url: known.url,
     title: known.title,
@@ -68,6 +79,7 @@ export async function recordClosed(tabId: number, groupName?: string): Promise<v
     faviconUrl: faviconFor(known.url),
     closedAt: Date.now(),
     groupName,
+    groupId,
   };
   await updateState("recentlyClosed", (closed) => {
     const next = [record, ...closed.filter((c) => c.url !== record.url)];

@@ -54,6 +54,22 @@ export function Popup() {
         <span className="text-[0.6875rem]">⌘⇧K</span>
       </button>
 
+      {state.focus ? (
+        <div className="mx-4 mt-2 flex items-center gap-2 rounded-md border border-accent/40 bg-accent-soft px-3 py-2">
+          <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
+          <span className="min-w-0 flex-1 truncate text-[0.8125rem] text-ink">{state.focus.task}</span>
+          <span className="shrink-0 text-[0.75rem] tabular-nums text-ink-faint">
+            {state.focusMinutesLeft != null ? `${state.focusMinutesLeft}m` : "on"}
+          </span>
+          <button
+            onClick={() => void sendBg({ type: "focus-end" }).then(() => window.close())}
+            className="shrink-0 text-[0.75rem] font-medium text-accent hover:underline underline-offset-2"
+          >
+            End
+          </button>
+        </div>
+      ) : null}
+
       <div className="px-2 py-2">
         {state.prefs.paused ? (
           <p className="px-2 py-6 text-center text-[0.8125rem] text-ink-secondary">

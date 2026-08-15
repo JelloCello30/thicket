@@ -7,6 +7,9 @@ import { sendBg } from "../shared/messages";
 import { useHashRoute, useTheme, useUiState } from "./state";
 import { CommandBar } from "./components/CommandBar";
 import { CleanupDialog, CompareDialog, SummaryDialog } from "./components/dialogs";
+import { FocusBar, FocusDialog } from "./components/FocusControls";
+import { HelpPanel, Spotlight, type HelpStep } from "./components/HelpPanel";
+import { AutomationsView } from "./views/AutomationsView";
 import { HistoryView } from "./views/HistoryView";
 import { NowView } from "./views/NowView";
 import { SettingsView } from "./views/SettingsView";
@@ -18,12 +21,17 @@ const NAV = [
   { key: "workspaces", label: "Workspaces" },
   { key: "history", label: "History" },
   { key: "archived", label: "Archived" },
+  { key: "automations", label: "Automations" },
 ] as const;
 
 export function App() {
   const { state, error, refresh } = useUiState();
   const [route, navigate] = useHashRoute();
   const [commandOpen, setCommandOpen] = useState(false);
+  const [focusDialogOpen, setFocusDialogOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
+  const [helpQuery, setHelpQuery] = useState<string | undefined>(undefined);
+  const [tour, setTour] = useState<HelpStep[] | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [cleanupPlan, setCleanupPlan] = useState<CleanupPlan | null>(null);
   const [summary, setSummary] = useState<{ title: string; data: GroupSummary } | null>(null);
@@ -97,11 +105,17 @@ export function App() {
         case "navigate":
           navigate(outcome.section ?? "now");
           break;
+        case "help":
+          setHelpQuery(outcome.helpQuery);
+          setHelpOpen(true);
+          break;
         case "answer":
         case "none":
         case "saved":
         case "restored":
         case "prefs":
+        case "focus-started":
+        case "focus-ended":
           if (outcome.message) push({ message: outcome.message });
           void refresh();
           break;
@@ -166,6 +180,42 @@ export function App() {
         .catch(fail),
   };
 
+  const helpActions = {
+    navigate,
+    openCommandBar: () => setCommandOpen(true),
+    openFocusDialog: () => setFocusDialogOpen(true),
+    runCleanup: () => actions.cleanup(),
+    saveFirstGroup: () => {
+      const first = state?.analysis?.groups.find((g) => !g.isCatchAll && !g.isStale);
+      if (first) actions.save(first.id);
+      else push({ message: "No groups to save yet — open a few tabs first." });
+    },
+    openAccount: () => window.open(`${state?.appUrl}/login?from=extension`, "_blank"),
+  };
+
+  const startFocus = (task: string, minutes: number | null) => {
+    setFocusDialogOpen(false);
+    void sendBg({ type: "focus-start", task, minutes })
+      .then(() => {
+        push({ message: `Focused on “${task}”` });
+        void refresh();
+      })
+      .catch(fail);
+  };
+
+  const endFocus = () => {
+    void sendBg({ type: "focus-end" })
+      .then(({ summary }) => {
+        if (summary) {
+          push({
+            message: `Focused ${summary.minutes}m · ${summary.blocked} ${summary.blocked === 1 ? "distraction" : "distractions"} blocked`,
+          });
+        }
+        void refresh();
+      })
+      .catch(fail);
+  };
+
   if (error) {
     return (
       <div className="flex min-h-screen items-center justify-center p-8 text-sm text-ink-secondary">
@@ -217,6 +267,7 @@ export function App() {
           ))}
         </nav>
         <button
+          data-help="command"
           onClick={() => setCommandOpen(true)}
           className="mt-4 flex items-center justify-between rounded-md border border-edge px-2.5 py-1.5 text-[0.8125rem] text-ink-faint hover:border-edge-strong hover:text-ink-secondary"
         >
@@ -226,7 +277,29 @@ export function App() {
             <Kbd>K</Kbd>
           </span>
         </button>
+        <button
+          data-help="focus"
+          onClick={() => (state.focus ? endFocus() : setFocusDialogOpen(true))}
+          className={cn(
+            "mt-2 flex items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-sm",
+            state.focus
+              ? "bg-accent-soft font-medium text-accent"
+              : "text-ink-secondary hover:bg-sunken hover:text-ink",
+          )}
+        >
+          <span className={cn("h-2 w-2 rounded-full", state.focus ? "bg-accent" : "bg-ink/20")} />
+          {state.focus ? "Focusing…" : "Focus"}
+        </button>
         <div className="mt-auto flex flex-col gap-0.5">
+          <button
+            onClick={() => {
+              setHelpQuery(undefined);
+              setHelpOpen(true);
+            }}
+            className="rounded-md px-2.5 py-1.5 text-left text-sm text-ink-secondary hover:bg-sunken hover:text-ink"
+          >
+            Help
+          </button>
           <a
             href="#/settings"
             aria-current={route === "settings" ? "page" : undefined}
@@ -254,7 +327,31 @@ export function App() {
 
       <main className="min-w-0 flex-1 px-8 py-6">
         <div className="mx-auto max-w-3xl">
+          {state.focus ? (
+            <FocusBar focus={state.focus} minutesLeft={state.focusMinutesLeft} onEnd={endFocus} />
+          ) : null}
           {route === "now" ? <NowView state={state} busy={busy} actions={actions} /> : null}
+          {route === "automations" ? (
+            <AutomationsView
+              rules={state.rules}
+              activity={state.ruleActivity}
+              onAdd={(condition, action) =>
+                void sendBg({ type: "rules-add", condition, action }).then(refresh).catch(fail)
+              }
+              onToggle={(id, enabled) =>
+                void sendBg({ type: "rules-toggle", id, enabled }).then(refresh).catch(fail)
+              }
+              onDelete={(id) => void sendBg({ type: "rules-delete", id }).then(refresh).catch(fail)}
+              onUndo={(batchId) =>
+                void sendBg({ type: "undo-batch", batchId })
+                  .then(({ reopened }) => {
+                    push({ message: `Reopened ${reopened} tabs` });
+                    void refresh();
+                  })
+                  .catch(fail)
+              }
+            />
+          ) : null}
           {route === "workspaces" || route === "archived" ? (
             <WorkspacesView
               workspaces={state.workspaces}
@@ -355,6 +452,20 @@ export function App() {
         onClose={() => setComparison(null)}
         onOpenUrl={(url) => void sendBg({ type: "reopen", url }).catch(fail)}
       />
+      <FocusDialog
+        open={focusDialogOpen}
+        onClose={() => setFocusDialogOpen(false)}
+        onStart={startFocus}
+        strictness={state.prefs.focusStrictness}
+      />
+      <HelpPanel
+        open={helpOpen}
+        initialQuery={helpQuery}
+        onClose={() => setHelpOpen(false)}
+        actions={helpActions}
+        onStartTour={(steps) => setTour(steps)}
+      />
+      {tour ? <Spotlight steps={tour} onDone={() => setTour(null)} navigate={navigate} /> : null}
       <ToastViewport toasts={toasts} dismiss={dismiss} />
     </div>
   );
