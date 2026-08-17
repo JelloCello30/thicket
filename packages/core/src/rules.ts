@@ -1,4 +1,4 @@
-import type { AnalysisResult } from "@tabmind/types";
+import type { AnalysisResult } from "@thicket/types";
 import { findDuplicates } from "./cleanup";
 import { tokenize } from "./text";
 

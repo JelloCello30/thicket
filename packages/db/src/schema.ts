@@ -11,7 +11,7 @@ import {
   vector,
 } from "drizzle-orm/pg-core";
 
-/** Embedding dimensionality — matches the Voyage model configured in @tabmind/ai. */
+/** Embedding dimensionality — matches the Voyage model configured in @thicket/ai. */
 export const EMBEDDING_DIMS = 1024;
 
 /* ───────────────────────── Auth (Better Auth managed) ───────────────────── */

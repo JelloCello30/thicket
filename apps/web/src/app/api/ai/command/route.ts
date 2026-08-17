@@ -1,4 +1,4 @@
-import { aiCommandRequest } from "@tabmind/types";
+import { aiCommandRequest } from "@thicket/types";
 import { aiService, enforceAiBudget, requireAiConfigured, requireAiPreference, withAiCache } from "@/lib/ai-server";
 import { corsPreflight, handled, json } from "@/lib/http";
 import { HttpError, requireUser } from "@/lib/request-auth";

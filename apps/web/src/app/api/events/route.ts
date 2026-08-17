@@ -1,5 +1,5 @@
-import { eventsBatchRequest } from "@tabmind/types";
-import { RATE_LIMITS } from "@tabmind/config";
+import { eventsBatchRequest } from "@thicket/types";
+import { RATE_LIMITS } from "@thicket/config";
 import { corsPreflight, handled, json } from "@/lib/http";
 import { HttpError, requireUser } from "@/lib/request-auth";
 import { rateLimit } from "@/lib/rate-limit";

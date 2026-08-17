@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import type { UiState } from "../../shared/messages";
-import { Button, GroupDot, Mark, Spinner } from "@tabmind/ui";
+import { Button, GroupDot, Mark, Spinner } from "@thicket/ui";
 
 /**
- * First run. No feature tour, no five screens — TabMind's own analysis of
+ * First run. No feature tour, no five screens — Thicket's own analysis of
  * the user's real tabs IS the onboarding. Reveal what it found, then get
  * out of the way.
  */
@@ -38,8 +38,8 @@ export function WelcomeView({ state, onDone }: { state: UiState; onDone: () => v
           </h1>
           <p className="mt-2 text-[0.9375rem] leading-relaxed text-ink-secondary">
             {realGroups.length === 0
-              ? "TabMind organizes tabs as you work — it groups them by what you're doing, remembers everything, and lets you close without losing."
-              : "TabMind grouped them by what you're doing. Nothing moved, nothing closed — this is just what your browser looks like, organized."}
+              ? "Thicket organizes tabs as you work — it groups them by what you're doing, remembers everything, and lets you close without losing."
+              : "Thicket grouped them by what you're doing. Nothing moved, nothing closed — this is just what your browser looks like, organized."}
           </p>
 
           {realGroups.length > 0 ? (
@@ -65,7 +65,7 @@ export function WelcomeView({ state, onDone }: { state: UiState; onDone: () => v
 
           <div className="mt-8 flex items-center gap-3">
             <Button variant="primary" onClick={onDone} data-autofocus>
-              {realGroups.length > 0 ? "Take me to my tabs" : "Open TabMind"}
+              {realGroups.length > 0 ? "Take me to my tabs" : "Open Thicket"}
             </Button>
             <p className="text-[0.8125rem] text-ink-faint">
               Titles and addresses stay on this device unless you sign in.

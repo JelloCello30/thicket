@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Terms of Service",
-  description: "The terms that govern your use of TabMind.",
+  description: "The terms that govern your use of Thicket.",
   alternates: { canonical: "/terms" },
 };
 
@@ -17,15 +17,15 @@ export default function TermsPage() {
       <div className="mt-8 space-y-8 text-[0.9375rem] leading-relaxed text-ink-secondary">
         <Section title="1. Who's agreeing to what">
           <p>
-            These terms are between you and [CUSTOMIZE: legal entity name] ("TabMind", "we"). By
+            These terms are between you and [CUSTOMIZE: legal entity name] ("Thicket", "we"). By
             installing the extension or creating an account, you agree to them. If you don't agree,
-            don't use TabMind.
+            don't use Thicket.
           </p>
         </Section>
 
         <Section title="2. The service">
           <p>
-            TabMind is a browser extension and companion web service that organizes browser tabs,
+            Thicket is a browser extension and companion web service that organizes browser tabs,
             saves workspaces, and provides optional AI-assisted features. The free plan and Pro plan
             are described on the pricing page; we may change plan contents with notice, but we won't
             silently remove things you've paid for mid-cycle.
@@ -36,7 +36,7 @@ export default function TermsPage() {
           <p>
             Keep your sign-in method secure — magic links and Google sign-in act as your password.
             You're responsible for activity under your account. You must be at least 13 (or the
-            minimum age in your country) to use TabMind.
+            minimum age in your country) to use Thicket.
           </p>
         </Section>
 
@@ -44,8 +44,8 @@ export default function TermsPage() {
           <p>
             Pro is billed by Stripe, monthly or yearly, and renews automatically until you cancel.
             Cancel anytime from Settings → Manage billing; you keep Pro until the end of the paid
-            period. If TabMind isn't working out in your first 14 days of Pro, email
-            support@tabmind.app for a full refund. Prices may change with at least 30 days' notice —
+            period. If Thicket isn't working out in your first 14 days of Pro, email
+            support@jellocello30.github.io/thicket for a full refund. Prices may change with at least 30 days' notice —
             never mid-cycle.
           </p>
         </Section>
@@ -60,7 +60,7 @@ export default function TermsPage() {
         </Section>
 
         <Section title="6. Acceptable use">
-          <p>Don't use TabMind to break the law, probe or overload our systems, resell the service, or reverse-engineer non-open components. Automated scraping of the service is not allowed.</p>
+          <p>Don't use Thicket to break the law, probe or overload our systems, resell the service, or reverse-engineer non-open components. Automated scraping of the service is not allowed.</p>
         </Section>
 
         <Section title="7. AI features">
@@ -73,7 +73,7 @@ export default function TermsPage() {
 
         <Section title="8. Disclaimers">
           <p>
-            TabMind is provided "as is." To the maximum extent allowed by law we disclaim implied
+            Thicket is provided "as is." To the maximum extent allowed by law we disclaim implied
             warranties, and we don't promise uninterrupted or error-free operation. Browsers change;
             we work to keep up, but a browser update may temporarily affect features.
           </p>
@@ -89,7 +89,7 @@ export default function TermsPage() {
 
         <Section title="10. Ending things">
           <p>
-            You can stop using TabMind and delete your account at any time. We can suspend or
+            You can stop using Thicket and delete your account at any time. We can suspend or
             terminate accounts that violate these terms; if we discontinue the service, we'll give at
             least 60 days' notice and keep export available through that period.
           </p>
@@ -106,7 +106,7 @@ export default function TermsPage() {
         <Section title="12. Changes to these terms">
           <p>
             If we change these terms materially, we'll email account holders at least 14 days before
-            the changes take effect. Continuing to use TabMind after that means you accept them.
+            the changes take effect. Continuing to use Thicket after that means you accept them.
           </p>
         </Section>
 

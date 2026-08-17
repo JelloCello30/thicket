@@ -47,7 +47,7 @@ embedded in URLs, (3) account takeover via the extension bridge, (4) entitlement
 - Minimum permissions; no host permissions by default. `<all_urls>` is an *optional*
   permission requested only when the user enables content analysis, and content capture
   is a one-shot function injection (no persistent content scripts).
-- `externally_connectable` restricted to tabmind.app + localhost; the only externally
+- `externally_connectable` restricted to jellocello30.github.io/thicket + localhost; the only externally
   triggerable actions are link-code redemption and a version ping.
 - Messages from web pages can't reach the internal router (typed router ignores
   non-request messages; external listener handles only the two known types).
@@ -56,4 +56,4 @@ embedded in URLs, (3) account takeover via the extension bridge, (4) entitlement
 
 ## Reporting
 
-security@tabmind.app — [CUSTOMIZE: set up this alias before launch.]
+security@jellocello30.github.io/thicket — [CUSTOMIZE: set up this alias before launch.]

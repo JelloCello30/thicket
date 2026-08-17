@@ -38,16 +38,16 @@ importers:
 
   apps/extension:
     dependencies:
-      '@tabmind/config':
+      '@thicket/config':
         specifier: workspace:*
         version: link:../../packages/config
-      '@tabmind/core':
+      '@thicket/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@tabmind/types':
+      '@thicket/types':
         specifier: workspace:*
         version: link:../../packages/types
-      '@tabmind/ui':
+      '@thicket/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       react:
@@ -90,22 +90,22 @@ importers:
       '@sentry/nextjs':
         specifier: ^9.0.0
         version: 9.47.1(@opentelemetry/context-async-hooks@1.30.1(@opentelemetry/api@1.9.1))(@opentelemetry/core@1.30.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.1))(next@15.5.23(@babel/core@7.29.7(supports-color@8.1.1))(@opentelemetry/api@1.9.1)(@playwright/test@1.62.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)(supports-color@8.1.1)(webpack@5.109.2(esbuild@0.28.2)(lightningcss@1.32.0)(postcss@8.5.26))
-      '@tabmind/ai':
+      '@thicket/ai':
         specifier: workspace:*
         version: link:../../packages/ai
-      '@tabmind/config':
+      '@thicket/config':
         specifier: workspace:*
         version: link:../../packages/config
-      '@tabmind/core':
+      '@thicket/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@tabmind/db':
+      '@thicket/db':
         specifier: workspace:*
         version: link:../../packages/db
-      '@tabmind/types':
+      '@thicket/types':
         specifier: workspace:*
         version: link:../../packages/types
-      '@tabmind/ui':
+      '@thicket/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       better-auth:
@@ -157,13 +157,13 @@ importers:
       '@anthropic-ai/sdk':
         specifier: ^0.116.0
         version: 0.116.0(zod@3.25.76)
-      '@tabmind/config':
+      '@thicket/config':
         specifier: workspace:*
         version: link:../config
-      '@tabmind/core':
+      '@thicket/core':
         specifier: workspace:*
         version: link:../core
-      '@tabmind/types':
+      '@thicket/types':
         specifier: workspace:*
         version: link:../types
       zod:
@@ -176,7 +176,7 @@ importers:
 
   packages/config:
     dependencies:
-      '@tabmind/types':
+      '@thicket/types':
         specifier: workspace:*
         version: link:../types
       zod:
@@ -185,10 +185,10 @@ importers:
 
   packages/core:
     dependencies:
-      '@tabmind/config':
+      '@thicket/config':
         specifier: workspace:*
         version: link:../config
-      '@tabmind/types':
+      '@thicket/types':
         specifier: workspace:*
         version: link:../types
     devDependencies:
@@ -201,10 +201,10 @@ importers:
       '@electric-sql/pglite':
         specifier: ^0.3.0
         version: 0.3.16
-      '@tabmind/config':
+      '@thicket/config':
         specifier: workspace:*
         version: link:../config
-      '@tabmind/types':
+      '@thicket/types':
         specifier: workspace:*
         version: link:../types
       drizzle-orm:
@@ -235,7 +235,7 @@ importers:
 
   packages/ui:
     dependencies:
-      '@tabmind/types':
+      '@thicket/types':
         specifier: workspace:*
         version: link:../types
       clsx:

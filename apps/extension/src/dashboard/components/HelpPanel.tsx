@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Button, Dialog, cn } from "@tabmind/ui";
-import { searchDocs } from "@tabmind/core";
+import { Button, Dialog, cn } from "@thicket/ui";
+import { searchDocs } from "@thicket/core";
 
 /**
  * The help system. Every topic can explain itself, point at the real
@@ -58,7 +58,7 @@ const TOPICS: HelpTopic[] = [
     title: "Bring back something you closed",
     keywords: "restore reopen recover undo closed lost history bring back",
     explain:
-      "History keeps everything TabMind has closed — single tabs and whole batches. Reopened tabs go back into the group they came from, not into a loose pile.",
+      "History keeps everything Thicket has closed — single tabs and whole batches. Reopened tabs go back into the group they came from, not into a loose pile.",
     action: { label: "Open History", run: (a) => a.navigate("history") },
   },
   {
@@ -95,12 +95,12 @@ const TOPICS: HelpTopic[] = [
     title: "Fix a wrong group",
     keywords: "move drag rename wrong group merge correct fix",
     explain:
-      "Drag a tab onto another group to move it, drag one group header onto another to merge them, and double-click a name to rename. TabMind learns from every correction — the same mistake gets rarer.",
+      "Drag a tab onto another group to move it, drag one group header onto another to merge them, and double-click a name to rename. Thicket learns from every correction — the same mistake gets rarer.",
     steps: [{ anchor: "group", text: "Drag rows between groups right here.", route: "now" }],
   },
   {
     id: "exclude",
-    title: "Keep a site out of TabMind",
+    title: "Keep a site out of Thicket",
     keywords: "exclude private ignore site domain privacy hide bank",
     explain:
       "Excluded sites are never grouped, never remembered, never sent anywhere. Banks and health portals are excluded automatically; add any domain in Settings → Excluded sites.",
@@ -111,7 +111,7 @@ const TOPICS: HelpTopic[] = [
     title: "Sync across devices",
     keywords: "sync account sign in connect devices login cloud",
     explain:
-      "Sign in at tabmind.app, then connect this extension — workspaces sync everywhere and AI naming, summaries, and semantic search unlock. TabMind works fully without it.",
+      "Sign in at jellocello30.github.io/thicket, then connect this extension — workspaces sync everywhere and AI naming, summaries, and semantic search unlock. Thicket works fully without it.",
     action: { label: "Sign in", run: (a) => a.openAccount() },
   },
   {

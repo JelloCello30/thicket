@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { BRAND } from "@tabmind/config";
-import { Mark } from "@tabmind/ui";
+import { BRAND } from "@thicket/config";
+import { Mark } from "@thicket/ui";
 
 export const metadata: Metadata = {
   title: "Download",
-  description: "Install the TabMind extension for Chrome. Free, works without an account, ten-second setup.",
+  description: "Install the Thicket extension for Chrome. Free, works without an account, ten-second setup.",
   alternates: { canonical: "/download" },
 };
 
@@ -13,7 +13,7 @@ export default function DownloadPage() {
   return (
     <main className="mx-auto w-full max-w-2xl px-6 py-16 sm:py-20">
       <Mark size={40} />
-      <h1 className="mt-6 text-4xl font-semibold tracking-tight text-ink">Get TabMind for Chrome</h1>
+      <h1 className="mt-6 text-4xl font-semibold tracking-tight text-ink">Get Thicket for Chrome</h1>
       <p className="mt-4 text-pretty text-[1.0625rem] leading-relaxed text-ink-secondary">
         Install it, and within seconds your open tabs become a short list of the things you're
         actually doing. No setup, no account required.
@@ -38,7 +38,7 @@ export default function DownloadPage() {
             The Chrome Web Store listing is on its way.
           </p>
           <p className="mt-1.5 text-[0.9375rem] leading-relaxed text-ink-secondary">
-            Until it's live, you can run TabMind from source in about a minute — everything works,
+            Until it's live, you can run Thicket from source in about a minute — everything works,
             including updates when you pull:
           </p>
           <ol className="mt-3 list-decimal space-y-1.5 pl-5 text-[0.875rem] leading-relaxed text-ink-secondary">
@@ -65,7 +65,7 @@ export default function DownloadPage() {
         <h2 className="text-lg font-semibold tracking-tight text-ink">What happens next</h2>
         <ol className="mt-4 space-y-3">
           {[
-            "TabMind looks at your open tabs — titles and addresses, right on your device.",
+            "Thicket looks at your open tabs — titles and addresses, right on your device.",
             "A few seconds later: your tabs, grouped into the projects behind them.",
             "Close a group when you're done with it. Everything stays recoverable.",
           ].map((step, i) => (
@@ -82,15 +82,15 @@ export default function DownloadPage() {
       <section className="mt-14">
         <h2 className="text-lg font-semibold tracking-tight text-ink">The permissions, explained</h2>
         <p className="mt-2 text-[0.9375rem] leading-relaxed text-ink-secondary">
-          Chrome will show you what TabMind can access. Here's the honest version of why:
+          Chrome will show you what Thicket can access. Here's the honest version of why:
         </p>
         <dl className="mt-5 space-y-4">
           <Permission name="Read your browsing history (tabs)">
             This is Chrome's blanket wording for seeing tab titles and addresses — the raw material
-            for grouping. TabMind reads your open tabs; it does not read your browser history file.
+            for grouping. Thicket reads your open tabs; it does not read your browser history file.
           </Permission>
           <Permission name="Tab groups">
-            So your TabMind groups can appear as native colored groups in the tab strip. You can turn
+            So your Thicket groups can appear as native colored groups in the tab strip. You can turn
             the mirroring off.
           </Permission>
           <Permission name="Storage">

@@ -6,8 +6,8 @@ import type {
   GroupSummary,
   UserPreferences,
   WorkspaceData,
-} from "@tabmind/types";
-import type { AutomationRule, ScoredDoc } from "@tabmind/core";
+} from "@thicket/types";
+import type { AutomationRule, ScoredDoc } from "@thicket/core";
 import type { AuthState, ClosedBatch, RuleActivityEntry } from "./storage";
 
 /**
@@ -165,7 +165,7 @@ export async function sendBg<T extends BgRequest["type"]>(
     try {
       const response = (await chrome.runtime.sendMessage(request)) as BgResponse<T> | undefined;
       if (response === undefined) {
-        lastError = new Error("TabMind is waking up — try that again.");
+        lastError = new Error("Thicket is waking up — try that again.");
         continue;
       }
       if (isBgError(response)) {
@@ -179,8 +179,8 @@ export async function sendBg<T extends BgRequest["type"]>(
       lastError = error;
     }
   }
-  throw lastError instanceof Error ? lastError : new Error("TabMind didn't respond.");
+  throw lastError instanceof Error ? lastError : new Error("Thicket didn't respond.");
 }
 
 /** Broadcast from background → all UI surfaces when state changes. */
-export const STATE_CHANGED = "tabmind:state-changed";
+export const STATE_CHANGED = "thicket:state-changed";

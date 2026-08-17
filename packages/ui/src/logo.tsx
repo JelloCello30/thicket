@@ -1,7 +1,7 @@
 import { cn } from "./cn";
 
 /**
- * The TabMind mark: three bars settling into order — the middle one is the
+ * The Thicket mark: three bars settling into order — the middle one is the
  * short, bright one you were looking for. Works at 16px, one idea, no fluff.
  */
 export function Mark({ size = 24, className }: { size?: number; className?: string }) {
@@ -43,7 +43,7 @@ export function Glyph({ size = 16, className }: { size?: number; className?: str
 export function Wordmark({ className }: { className?: string }) {
   return (
     <span className={cn("font-sans font-semibold tracking-[-0.02em] text-ink", className)}>
-      TabMind
+      Thicket
     </span>
   );
 }

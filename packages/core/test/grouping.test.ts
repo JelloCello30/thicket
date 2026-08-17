@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { AnalysisResult, TabGroup } from "@tabmind/types";
+import type { AnalysisResult, TabGroup } from "@thicket/types";
 import { DEMO_NOW, demoTabs } from "../src/fixtures/demo";
 import { groupTabs } from "../src/grouping";
 import { analyzeTabs } from "../src/analyze";

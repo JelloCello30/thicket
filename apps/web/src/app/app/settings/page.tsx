@@ -1,5 +1,5 @@
 import { and, eq, isNull } from "drizzle-orm";
-import { device, excludedDomain, preference } from "@tabmind/db/schema";
+import { device, excludedDomain, preference } from "@thicket/db/schema";
 import { db } from "@/lib/db";
 import { requireSessionUser } from "@/lib/request-auth";
 import { billingConfigured } from "@/lib/stripe";

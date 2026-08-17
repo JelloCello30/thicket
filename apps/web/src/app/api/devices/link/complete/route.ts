@@ -1,12 +1,12 @@
 import { randomBytes, randomUUID } from "node:crypto";
 import { and, eq, gt, isNull } from "drizzle-orm";
-import { deviceLinkCompleteRequest } from "@tabmind/types";
-import { device, deviceLinkCode, preference } from "@tabmind/db/schema";
+import { deviceLinkCompleteRequest } from "@thicket/types";
+import { device, deviceLinkCode, preference } from "@thicket/db/schema";
 import { db } from "@/lib/db";
 import { corsPreflight, handled, json } from "@/lib/http";
 import { HttpError, resolvePlan, sha256 } from "@/lib/request-auth";
 import { track } from "@/lib/track";
-import { user as userTable } from "@tabmind/db/schema";
+import { user as userTable } from "@thicket/db/schema";
 
 export const OPTIONS = corsPreflight();
 
@@ -29,7 +29,7 @@ export const POST = handled(async (request) => {
     )
     .limit(1);
   const code = rows[0];
-  if (!code) throw new HttpError(400, "invalid-code", "That code is invalid or expired. Get a fresh one from tabmind.app.");
+  if (!code) throw new HttpError(400, "invalid-code", "That code is invalid or expired. Get a fresh one from jellocello30.github.io/thicket.");
 
   await database
     .update(deviceLinkCode)

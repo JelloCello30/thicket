@@ -1,4 +1,4 @@
-import type { SiteCategory } from "@tabmind/types";
+import type { SiteCategory } from "@thicket/types";
 
 /**
  * Curated knowledge about well-known sites. This is a strong deterministic

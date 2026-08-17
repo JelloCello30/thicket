@@ -1,8 +1,8 @@
 import { and, eq, gte, sql } from "drizzle-orm";
-import { searchRequest, type SearchResultItem } from "@tabmind/types";
-import { searchDocs, type SearchDoc } from "@tabmind/core";
-import { RATE_LIMITS } from "@tabmind/config";
-import { pageRecord, workspace, workspaceTab } from "@tabmind/db/schema";
+import { searchRequest, type SearchResultItem } from "@thicket/types";
+import { searchDocs, type SearchDoc } from "@thicket/core";
+import { RATE_LIMITS } from "@thicket/config";
+import { pageRecord, workspace, workspaceTab } from "@thicket/db/schema";
 import { db } from "@/lib/db";
 import { embeddings } from "@/lib/ai-server";
 import { corsPreflight, handled, json } from "@/lib/http";

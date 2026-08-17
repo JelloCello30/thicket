@@ -1,11 +1,11 @@
-import { normalizeUrl, sanitizeForStorage } from "@tabmind/core";
-import { LIMITS } from "@tabmind/config";
-import type { ClosedTabRecord } from "@tabmind/types";
+import { normalizeUrl, sanitizeForStorage } from "@thicket/core";
+import { LIMITS } from "@thicket/config";
+import type { ClosedTabRecord } from "@thicket/types";
 import { readState, updateState, type LocalPage } from "../shared/storage";
 import { faviconFor } from "./tabs";
 
 /**
- * Page memory: a privacy-filtered record of pages TabMind has seen, so
+ * Page memory: a privacy-filtered record of pages Thicket has seen, so
  * closed tabs stay findable. Local ring buffer always; synced to the
  * account (via sync.ts) only when signed in with history+sync enabled.
  */
@@ -139,7 +139,7 @@ export async function clearHistory(): Promise<void> {
   void flushPageDeletes();
 }
 
-/** Wipe everything TabMind remembers locally (Delete My Data). */
+/** Wipe everything Thicket remembers locally (Delete My Data). */
 export async function wipeLocalData(): Promise<void> {
   await chrome.storage.local.clear();
   await chrome.storage.session.clear();

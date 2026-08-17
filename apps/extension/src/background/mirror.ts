@@ -1,7 +1,7 @@
-import type { AnalysisResult, GroupColor } from "@tabmind/types";
+import type { AnalysisResult, GroupColor } from "@thicket/types";
 
 /**
- * Mirror TabMind's groups onto native Chrome tab groups so the organization
+ * Mirror Thicket's groups onto native Chrome tab groups so the organization
  * is visible in the tab strip itself. We only ever touch groups we created
  * (tracked in session storage) — user-made groups are left alone.
  */
@@ -34,7 +34,7 @@ export async function mirrorGroups(result: AnalysisResult): Promise<void> {
   const byId = new Map(result.tabs.map((t) => [t.tabId, t]));
 
   // Any native group we didn't create is the user's. Its tabs are untouchable —
-  // pulling them into a TabMind group would dismantle the user's own strip.
+  // pulling them into a Thicket group would dismantle the user's own strip.
   const ours = new Set(Object.values(mirrorMap));
   const userGroupIds = new Set(
     (await chrome.tabGroups.query({})).map((g) => g.id).filter((id) => !ours.has(id)),
@@ -92,7 +92,7 @@ async function groupStillExists(chromeGroupId: number): Promise<boolean> {
   }
 }
 
-/** Remove all TabMind-managed native groups (used when mirroring is turned off). */
+/** Remove all Thicket-managed native groups (used when mirroring is turned off). */
 export async function unmirrorAll(): Promise<void> {
   const mirrorMap = await readMirrorMap();
   for (const chromeGroupId of Object.values(mirrorMap)) {

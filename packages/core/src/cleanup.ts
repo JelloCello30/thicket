@@ -1,5 +1,5 @@
-import type { AnalyzedTab, CleanupCandidate, CleanupPlan, CleanupReason } from "@tabmind/types";
-import { STALENESS } from "@tabmind/config";
+import type { AnalyzedTab, CleanupCandidate, CleanupPlan, CleanupReason } from "@thicket/types";
+import { STALENESS } from "@thicket/config";
 import { isNewTabPage } from "./url";
 
 /** Exact duplicates by normalized URL. The most recently used copy stays. */

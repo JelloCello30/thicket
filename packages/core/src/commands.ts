@@ -1,4 +1,4 @@
-import type { CommandIntent } from "@tabmind/types";
+import type { CommandIntent } from "@thicket/types";
 import { tokenize } from "./text";
 
 export interface CommandContext {

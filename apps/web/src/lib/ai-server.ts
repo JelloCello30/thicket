@@ -9,17 +9,17 @@ import {
   createProvider,
   type AiService,
   type AiTaskName,
-} from "@tabmind/ai";
-import { AI_CACHE_TTL_HOURS, RATE_LIMITS } from "@tabmind/config";
-import { serverEnv } from "@tabmind/config/env";
-import { aiCache, aiUsage } from "@tabmind/db/schema";
+} from "@thicket/ai";
+import { AI_CACHE_TTL_HOURS, RATE_LIMITS } from "@thicket/config";
+import { serverEnv } from "@thicket/config/env";
+import { aiCache, aiUsage } from "@thicket/db/schema";
 import { db } from "./db";
 import { rateLimit } from "./rate-limit";
 import { HttpError, type RequestUser } from "./request-auth";
 
 /**
  * Server-side AI orchestration: entitlement checks, durable daily caps,
- * result caching, and usage/cost accounting around @tabmind/ai.
+ * result caching, and usage/cost accounting around @thicket/ai.
  */
 
 const env = serverEnv();

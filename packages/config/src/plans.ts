@@ -1,4 +1,4 @@
-import type { Entitlements, Plan } from "@tabmind/types";
+import type { Entitlements, Plan } from "@thicket/types";
 
 /**
  * Pricing + entitlements in one place. Prices are display config;

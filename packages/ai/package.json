@@ -1,5 +1,5 @@
 {
-  "name": "@tabmind/ai",
+  "name": "@thicket/ai",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -15,9 +15,9 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.116.0",
-    "@tabmind/config": "workspace:*",
-    "@tabmind/core": "workspace:*",
-    "@tabmind/types": "workspace:*",
+    "@thicket/config": "workspace:*",
+    "@thicket/core": "workspace:*",
+    "@thicket/types": "workspace:*",
     "zod": "^3.25.0"
   },
   "devDependencies": {

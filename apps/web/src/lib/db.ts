@@ -1,5 +1,5 @@
 import "server-only";
-import { getDb, migrate, type DbHandle } from "@tabmind/db";
+import { getDb, migrate, type DbHandle } from "@thicket/db";
 
 /**
  * One shared handle for the whole app, created lazily on first use — never

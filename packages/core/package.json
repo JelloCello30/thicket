@@ -1,5 +1,5 @@
 {
-  "name": "@tabmind/core",
+  "name": "@thicket/core",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -15,8 +15,8 @@
     "lint": "eslint src"
   },
   "dependencies": {
-    "@tabmind/config": "workspace:*",
-    "@tabmind/types": "workspace:*"
+    "@thicket/config": "workspace:*",
+    "@thicket/types": "workspace:*"
   },
   "devDependencies": {
     "vitest": "^3.0.0"

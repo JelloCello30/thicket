@@ -1,8 +1,8 @@
 import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
-import { subscription } from "@tabmind/db/schema";
-import { serverEnv } from "@tabmind/config/env";
+import { subscription } from "@thicket/db/schema";
+import { serverEnv } from "@thicket/config/env";
 import { db } from "@/lib/db";
 import { handled, json } from "@/lib/http";
 import { HttpError, requireSessionUser } from "@/lib/request-auth";
@@ -29,7 +29,7 @@ export const POST = handled(async (request) => {
     const customer = await stripe.customers.create({
       email: user.email,
       name: user.name,
-      metadata: { tabmindUserId: user.id },
+      metadata: { thicketUserId: user.id },
     });
     customerId = customer.id;
     await database
@@ -50,7 +50,7 @@ export const POST = handled(async (request) => {
     success_url: `${env.NEXT_PUBLIC_APP_URL}/app/settings?upgraded=1`,
     cancel_url: `${env.NEXT_PUBLIC_APP_URL}/pricing`,
     allow_promotion_codes: true,
-    subscription_data: { metadata: { tabmindUserId: user.id } },
+    subscription_data: { metadata: { thicketUserId: user.id } },
   });
   await track("upgrade_started", { interval: parsed.data.interval }, { userId: user.id });
   if (!session.url) throw new HttpError(500, "internal", "Stripe didn't return a checkout URL.");

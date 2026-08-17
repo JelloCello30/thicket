@@ -1,5 +1,5 @@
-import type { WorkspaceData } from "@tabmind/types";
-import { LIMITS } from "@tabmind/config";
+import type { WorkspaceData } from "@thicket/types";
+import { LIMITS } from "@thicket/config";
 import { api, ApiError } from "../shared/api";
 import { readState, updateState, writeState } from "../shared/storage";
 

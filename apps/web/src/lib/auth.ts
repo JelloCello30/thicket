@@ -2,8 +2,8 @@ import "server-only";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { magicLink } from "better-auth/plugins";
-import { serverEnv } from "@tabmind/config/env";
-import * as schema from "@tabmind/db/schema";
+import { serverEnv } from "@thicket/config/env";
+import * as schema from "@thicket/db/schema";
 import { dbHandle } from "./db";
 import { sendMagicLinkEmail } from "./email";
 

@@ -1,21 +1,23 @@
 import Link from "next/link";
-import { BRAND } from "@tabmind/config";
-import { Lockup, Mark } from "@tabmind/ui";
+import { BRAND, LOCAL_ONLY } from "@thicket/config";
+import { Lockup, Mark } from "@thicket/ui";
 
 export default function MarketingLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-40 border-b border-edge bg-overlay backdrop-blur-md">
         <div className="mx-auto flex h-14 w-full max-w-5xl items-center justify-between px-6">
-          <Link href="/" aria-label="TabMind home">
+          <Link href="/" aria-label="Thicket home">
             <Lockup size={22} />
           </Link>
           <nav className="flex items-center gap-1 sm:gap-2" aria-label="Main">
-            <HeaderLink href="/pricing">Pricing</HeaderLink>
+            {LOCAL_ONLY ? null : <HeaderLink href="/pricing">Pricing</HeaderLink>}
             <HeaderLink href="/download">Download</HeaderLink>
-            <HeaderLink href="/login" className="hidden sm:inline-block">
-              Sign in
-            </HeaderLink>
+            {LOCAL_ONLY ? null : (
+              <HeaderLink href="/login" className="hidden sm:inline-block">
+                Sign in
+              </HeaderLink>
+            )}
             <Link
               href="/download"
               className="ml-1 whitespace-nowrap rounded-md bg-accent px-3 py-1.5 text-[0.8125rem] font-medium text-accent-ink transition-colors hover:bg-accent-hover"
@@ -39,9 +41,9 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
             </div>
             <div className="grid grid-cols-2 gap-x-16 gap-y-2 text-[0.8125rem]">
               <div className="flex flex-col gap-2">
-                <FooterLink href="/pricing">Pricing</FooterLink>
+                {LOCAL_ONLY ? null : <FooterLink href="/pricing">Pricing</FooterLink>}
                 <FooterLink href="/download">Download</FooterLink>
-                <FooterLink href="/login">Sign in</FooterLink>
+                {LOCAL_ONLY ? null : <FooterLink href="/login">Sign in</FooterLink>}
               </div>
               <div className="flex flex-col gap-2">
                 <FooterLink href="/privacy">Privacy</FooterLink>
@@ -53,7 +55,8 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
             </div>
           </div>
           <p className="mt-10 text-[0.75rem] text-ink-faint">
-            © {new Date().getFullYear()} TabMind. Your tabs stay on your device unless you say otherwise.
+            © {new Date().getFullYear()} {BRAND.name}.{" "}
+            {LOCAL_ONLY ? "Your tabs never leave your device." : "Your tabs stay on your device unless you say otherwise."}
           </p>
         </div>
       </footer>

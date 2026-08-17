@@ -1,5 +1,5 @@
-import { buildCleanupPlan, normalizeExcludedDomainInput, normalizeUrl } from "@tabmind/core";
-import type { UserPreferences } from "@tabmind/types";
+import { buildCleanupPlan, normalizeExcludedDomainInput, normalizeUrl } from "@thicket/core";
+import type { UserPreferences } from "@thicket/types";
 import { api } from "../shared/api";
 import type { BgError, BgRequest, UiState } from "../shared/messages";
 import { readState, updateState, writeState } from "../shared/storage";
@@ -33,22 +33,22 @@ chrome.runtime.onInstalled.addListener((details) => {
     // The aha moment: open the dashboard immediately and analyze what's there.
     void chrome.tabs.create({ url: chrome.runtime.getURL("dashboard.html#/welcome") });
   }
-  void chrome.alarms.create("tabmind-sync", { periodInMinutes: 1 });
-  void chrome.alarms.create("tabmind-daily", { periodInMinutes: 60 * 24 });
+  void chrome.alarms.create("thicket-sync", { periodInMinutes: 1 });
+  void chrome.alarms.create("thicket-daily", { periodInMinutes: 60 * 24 });
   scheduleAnalysis("installed");
 });
 
 chrome.runtime.onStartup.addListener(() => {
-  void chrome.alarms.create("tabmind-sync", { periodInMinutes: 1 });
+  void chrome.alarms.create("thicket-sync", { periodInMinutes: 1 });
   scheduleAnalysis("startup");
 });
 
 chrome.alarms.onAlarm.addListener((alarm) => {
-  if (alarm.name === "tabmind-sync") {
+  if (alarm.name === "thicket-sync") {
     void flushSync();
     void flushEvents();
   }
-  if (alarm.name === "tabmind-daily") {
+  if (alarm.name === "thicket-daily") {
     void (async () => {
       const { auth } = await readState("auth");
       await pruneHistory(auth?.user.plan === "pro" ? 90 : 7);
@@ -79,20 +79,20 @@ chrome.tabs.onActivated.addListener(({ tabId }) => {
 chrome.tabs.onReplaced.addListener(() => scheduleAnalysis("replaced"));
 
 chrome.commands.onCommand.addListener((command) => {
-  // The global shortcut's promise is "ask TabMind anything" — land ready to type.
+  // The global shortcut's promise is "ask Thicket anything" — land ready to type.
   if (command === "open-dashboard") void openDashboard("now", { command: true });
 });
 
 /* ─────────────────── device linking (web → ext) ─────────────────── */
 
 chrome.runtime.onMessageExternal.addListener((message, _sender, sendResponse) => {
-  if (message?.type === "tabmind:link" && typeof message.code === "string") {
+  if (message?.type === "thicket:link" && typeof message.code === "string") {
     void linkDevice(message.code)
       .then((auth) => sendResponse({ ok: true, email: auth.user.email }))
       .catch((error: Error) => sendResponse({ ok: false, error: error.message }));
     return true;
   }
-  if (message?.type === "tabmind:ping") {
+  if (message?.type === "thicket:ping") {
     sendResponse({ ok: true, version: EXT_VERSION });
   }
   return undefined;
@@ -116,7 +116,7 @@ async function linkDevice(code: string) {
 
 chrome.runtime.onMessage.addListener((message: BgRequest | { type: string }, sender, sendResponse) => {
   if (!message || typeof (message as { type?: unknown }).type !== "string") return undefined;
-  if ((message as { type: string }).type.startsWith("tabmind:")) return undefined; // broadcasts
+  if ((message as { type: string }).type.startsWith("thicket:")) return undefined; // broadcasts
 
   void handle(message as BgRequest)
     .then(sendResponse)
@@ -376,7 +376,7 @@ async function renameGroup(groupId: string, name: string): Promise<void> {
     const group = analysis.groups.find((g) => g.id === groupId);
     if (group) {
       group.name = clean;
-      // Renaming their own native group through TabMind is an explicit ask —
+      // Renaming their own native group through Thicket is an explicit ask —
       // apply it to the real thing so the strip and dashboard agree.
       if (group.nativeGroupId != null) {
         await chrome.tabGroups.update(group.nativeGroupId, { title: clean }).catch(() => undefined);

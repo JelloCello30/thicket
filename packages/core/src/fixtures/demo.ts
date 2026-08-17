@@ -1,4 +1,4 @@
-import type { TabSnapshot } from "@tabmind/types";
+import type { TabSnapshot } from "@thicket/types";
 
 /**
  * A realistic 47-tab browser session. Used by unit tests (clustering quality

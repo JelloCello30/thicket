@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
-import { subscription } from "@tabmind/db/schema";
-import { serverEnv } from "@tabmind/config/env";
+import { subscription } from "@thicket/db/schema";
+import { serverEnv } from "@thicket/config/env";
 import { db } from "@/lib/db";
 import { handled, json } from "@/lib/http";
 import { HttpError, requireSessionUser } from "@/lib/request-auth";

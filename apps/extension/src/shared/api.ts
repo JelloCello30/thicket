@@ -9,7 +9,7 @@ import type {
   SearchResultItem,
   SyncPagesRequest,
   SyncWorkspacesRequest,
-} from "@tabmind/types";
+} from "@thicket/types";
 import { APP_URL, EXT_VERSION } from "./env";
 import { readState } from "./storage";
 
@@ -35,7 +35,7 @@ async function request<T>(path: string, init: RequestInit & { auth?: boolean } =
   const url = `${await baseUrl()}${path}`;
   const headers: Record<string, string> = {
     "content-type": "application/json",
-    "x-tabmind-version": EXT_VERSION,
+    "x-thicket-version": EXT_VERSION,
     ...(init.headers as Record<string, string> | undefined),
   };
   if (init.auth !== false) {
@@ -47,7 +47,7 @@ async function request<T>(path: string, init: RequestInit & { auth?: boolean } =
   try {
     response = await fetch(url, { ...init, headers });
   } catch {
-    throw new ApiError(0, "network", "Couldn't reach TabMind. Check your connection.");
+    throw new ApiError(0, "network", "Couldn't reach Thicket. Check your connection.");
   }
   if (!response.ok) {
     let code = "internal";
@@ -79,7 +79,7 @@ export const api = {
   syncWorkspaces: (body: SyncWorkspacesRequest) =>
     request<{ workspaces: unknown[] }>("/api/sync/workspaces", { method: "POST", body: JSON.stringify(body) }),
   pullWorkspaces: () =>
-    request<{ workspaces: import("@tabmind/types").WorkspaceData[] }>("/api/sync/workspaces"),
+    request<{ workspaces: import("@thicket/types").WorkspaceData[] }>("/api/sync/workspaces"),
   syncPages: (body: SyncPagesRequest) =>
     request<{ recorded: number }>("/api/sync/pages", { method: "POST", body: JSON.stringify(body) }),
   deletePages: (body: { urls?: string[]; all?: boolean }) =>

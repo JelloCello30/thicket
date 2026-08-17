@@ -1,4 +1,4 @@
-import type { AnalyzedTab, SiteCategory } from "@tabmind/types";
+import type { AnalyzedTab, SiteCategory } from "@thicket/types";
 import { HUB_CATEGORIES } from "./sites";
 import { tokenize } from "./text";
 import { tabEvidenceThemes, tabThemes, type Theme } from "./themes";

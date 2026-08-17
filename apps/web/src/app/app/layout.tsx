@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { Lockup } from "@tabmind/ui";
+import { Lockup } from "@thicket/ui";
 import { getAuth } from "@/lib/auth";
 import { SignOutButton } from "./sign-out";
 

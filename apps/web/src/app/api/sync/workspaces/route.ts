@@ -1,7 +1,7 @@
 import { and, eq, inArray } from "drizzle-orm";
-import { syncWorkspacesRequest, type WorkspaceData } from "@tabmind/types";
-import { workspace, workspaceTab } from "@tabmind/db/schema";
-import { RATE_LIMITS } from "@tabmind/config";
+import { syncWorkspacesRequest, type WorkspaceData } from "@thicket/types";
+import { workspace, workspaceTab } from "@thicket/db/schema";
+import { RATE_LIMITS } from "@thicket/config";
 import { db } from "@/lib/db";
 import { corsPreflight, handled, json } from "@/lib/http";
 import { HttpError, requireUser } from "@/lib/request-auth";

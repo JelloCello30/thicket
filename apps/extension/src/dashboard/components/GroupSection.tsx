@@ -1,6 +1,6 @@
 import { useState, type DragEvent } from "react";
-import type { AnalysisResult, TabGroup } from "@tabmind/types";
-import { Button, Favicon, GroupDot, cn } from "@tabmind/ui";
+import type { AnalysisResult, TabGroup } from "@thicket/types";
+import { Button, Favicon, GroupDot, cn } from "@thicket/ui";
 import { formatRelative, useFavicon } from "../state";
 
 /**
@@ -53,10 +53,10 @@ export function GroupSection({
   const handleDrop = (e: DragEvent) => {
     e.preventDefault();
     setDropActive(false);
-    const tabId = Number(e.dataTransfer.getData("tabmind/tab"));
-    const fromGroup = e.dataTransfer.getData("tabmind/from-group");
+    const tabId = Number(e.dataTransfer.getData("thicket/tab"));
+    const fromGroup = e.dataTransfer.getData("thicket/from-group");
     if (tabId && fromGroup !== group.id) onMoveTab(tabId, group.id);
-    const mergeGroup = e.dataTransfer.getData("tabmind/group");
+    const mergeGroup = e.dataTransfer.getData("thicket/group");
     if (mergeGroup && mergeGroup !== group.id) onMerge(mergeGroup, group.id);
   };
 
@@ -78,7 +78,7 @@ export function GroupSection({
         className="flex items-center gap-2.5 px-1 py-2.5"
         draggable={!group.isStale && !group.isCatchAll}
         onDragStart={(e) => {
-          e.dataTransfer.setData("tabmind/group", group.id);
+          e.dataTransfer.setData("thicket/group", group.id);
           e.dataTransfer.effectAllowed = "move";
         }}
       >
@@ -139,7 +139,7 @@ export function GroupSection({
         {group.nativeGroupId != null ? (
           <span
             className="rounded-full border border-edge px-1.5 py-px text-[0.6875rem] font-medium text-ink-faint"
-            title="You made this group in Chrome. TabMind shows it but never reorganizes it."
+            title="You made this group in Chrome. Thicket shows it but never reorganizes it."
           >
             yours
           </span>
@@ -181,8 +181,8 @@ export function GroupSection({
               key={tab.tabId}
               draggable
               onDragStart={(e) => {
-                e.dataTransfer.setData("tabmind/tab", String(tab.tabId));
-                e.dataTransfer.setData("tabmind/from-group", group.id);
+                e.dataTransfer.setData("thicket/tab", String(tab.tabId));
+                e.dataTransfer.setData("thicket/from-group", group.id);
                 e.dataTransfer.effectAllowed = "move";
               }}
               className="group/tab flex cursor-default items-center gap-2.5 rounded-md py-[0.3rem] pl-[3.25rem] pr-2 hover:bg-sunken"
@@ -191,7 +191,7 @@ export function GroupSection({
               <button
                 onClick={() => onFocusTab(tab.tabId)}
                 className="min-w-0 flex-1 truncate text-left text-[0.8125rem] text-ink hover:text-accent"
-                title={tab.excluded ? "Excluded from TabMind" : tab.title}
+                title={tab.excluded ? "Excluded from Thicket" : tab.title}
               >
                 {tab.excluded ? <span className="italic text-ink-faint">Private page ({tab.domain || "excluded"})</span> : tab.title}
               </button>

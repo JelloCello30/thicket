@@ -1,6 +1,6 @@
 import { useState } from "react";
-import type { WorkspaceData } from "@tabmind/types";
-import { Button, EmptyState, Favicon, GroupDot, cn } from "@tabmind/ui";
+import type { WorkspaceData } from "@thicket/types";
+import { Button, EmptyState, Favicon, GroupDot, cn } from "@thicket/ui";
 import { formatRelative, useFavicon } from "../state";
 
 export function WorkspacesView({

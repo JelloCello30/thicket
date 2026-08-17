@@ -1,4 +1,4 @@
-import { aiCompareRequest } from "@tabmind/types";
+import { aiCompareRequest } from "@thicket/types";
 import {
   aiService,
   enforceAiBudget,

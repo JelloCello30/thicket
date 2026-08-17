@@ -1,4 +1,4 @@
-import type { AnalysisResult, AnalyzedTab, ComparisonTable, GroupSummary } from "@tabmind/types";
+import type { AnalysisResult, AnalyzedTab, ComparisonTable, GroupSummary } from "@thicket/types";
 
 /**
  * On-device summaries and comparisons. Signed out (or offline), the

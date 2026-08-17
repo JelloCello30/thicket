@@ -1,4 +1,4 @@
-// Zip dist/ into release/tabmind-<version>.zip for the Chrome Web Store.
+// Zip dist/ into release/thicket-<version>.zip for the Chrome Web Store.
 import { execFileSync } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync, existsSync, rmSync } from "node:fs";
 import path from "node:path";
@@ -29,7 +29,7 @@ if (after.length === 0) {
   throw new Error("externally_connectable has no production origin — the sign-in handoff would be dead.");
 }
 
-const zipPath = path.join(out, `tabmind-${manifest.version}.zip`);
+const zipPath = path.join(out, `thicket-${manifest.version}.zip`);
 if (existsSync(zipPath)) rmSync(zipPath);
 execFileSync("zip", ["-r", "-q", zipPath, "."], { cwd: path.join(dir, "dist") });
 console.log(`✓ ${path.relative(process.cwd(), zipPath)}`);

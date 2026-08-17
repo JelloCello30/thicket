@@ -1,6 +1,6 @@
 import { useState } from "react";
-import type { CleanupPlan, ComparisonTable, GroupSummary } from "@tabmind/types";
-import { Button, Dialog, Favicon, cn } from "@tabmind/ui";
+import type { CleanupPlan, ComparisonTable, GroupSummary } from "@thicket/types";
+import { Button, Dialog, Favicon, cn } from "@thicket/ui";
 import { useFavicon } from "../state";
 
 /** Cleanup review: show exactly what closes before anything closes. */

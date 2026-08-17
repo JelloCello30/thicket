@@ -1,4 +1,4 @@
-import { searchDocs, type SearchDoc } from "@tabmind/core";
+import { searchDocs, type SearchDoc } from "@thicket/core";
 import { api } from "../shared/api";
 import { readState } from "../shared/storage";
 import { readCached } from "./analyzer";

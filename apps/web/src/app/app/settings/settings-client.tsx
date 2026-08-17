@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Input, Switch } from "@tabmind/ui";
-import { PLAN_FEATURES, PRICING } from "@tabmind/config";
+import { Button, Input, Switch } from "@thicket/ui";
+import { PLAN_FEATURES, PRICING } from "@thicket/config";
 
 interface Props {
   user: { email: string; name: string; plan: "free" | "pro" };
@@ -71,7 +71,7 @@ export function SettingsClient({ user, billingConfigured, devices, preferences, 
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-sm text-ink">
-              {user.plan === "pro" ? "TabMind Pro" : "Free plan"}
+              {user.plan === "pro" ? "Thicket Pro" : "Free plan"}
               <span className="ml-2 text-ink-faint">{user.email}</span>
             </p>
             <ul className="mt-2 space-y-1">
@@ -114,7 +114,7 @@ export function SettingsClient({ user, billingConfigured, devices, preferences, 
       <Section title="Privacy">
         <Row
           label="AI processing"
-          hint="Allow TabMind to analyze page titles and web addresses server-side for organization, naming, and search."
+          hint="Allow Thicket to analyze page titles and web addresses server-side for organization, naming, and search."
         >
           <Switch checked={prefs.aiEnabled} onChange={(v) => void patchPrefs({ aiEnabled: v })} aria-label="AI processing" />
         </Row>

@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
-import { preferencesPatch } from "@tabmind/types";
-import { preference } from "@tabmind/db/schema";
+import { preferencesPatch } from "@thicket/types";
+import { preference } from "@thicket/db/schema";
 import { db } from "@/lib/db";
 import { handled, json, corsPreflight } from "@/lib/http";
 import { HttpError, requireUser } from "@/lib/request-auth";

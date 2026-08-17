@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { DEMO_NOW, demoTabs } from "../src/fixtures/demo";
 import { analyzeTabs } from "../src/analyze";
 import { buildCleanupPlan, findDuplicates } from "../src/cleanup";
-import type { TabSnapshot } from "@tabmind/types";
+import type { TabSnapshot } from "@thicket/types";
 
 const ctx = { excludedDomains: new Set<string>(), preferences: { paused: false }, now: DEMO_NOW };
 

@@ -134,7 +134,7 @@ export interface TabGroup {
   isStale?: boolean;
   /**
    * Set when this group mirrors a native Chrome tab group the USER created.
-   * TabMind never renames, recolors, moves, or auto-archives these.
+   * Thicket never renames, recolors, moves, or auto-archives these.
    */
   nativeGroupId?: number;
 }
@@ -275,11 +275,11 @@ export interface UserPreferences {
   aiEnabled: boolean;
   /** Opt-in: allow page content to be read for better organization. */
   contentAnalysis: boolean;
-  /** Keep a local/synced history of pages TabMind has seen. */
+  /** Keep a local/synced history of pages Thicket has seen. */
   historyEnabled: boolean;
   /** Sync workspaces + history to the account. */
   syncEnabled: boolean;
-  /** Mirror TabMind groups onto native browser tab groups. */
+  /** Mirror Thicket groups onto native browser tab groups. */
   mirrorTabGroups: boolean;
   /** Everything off, nothing observed. */
   paused: boolean;

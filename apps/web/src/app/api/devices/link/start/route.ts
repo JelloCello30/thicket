@@ -1,5 +1,5 @@
 import { randomBytes, randomUUID } from "node:crypto";
-import { deviceLinkCode } from "@tabmind/db/schema";
+import { deviceLinkCode } from "@thicket/db/schema";
 import { db } from "@/lib/db";
 import { handled, json } from "@/lib/http";
 import { requireSessionUser, sha256 } from "@/lib/request-auth";

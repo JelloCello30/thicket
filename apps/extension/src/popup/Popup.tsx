@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { GroupDot, Lockup, Spinner, Switch } from "@tabmind/ui";
+import { GroupDot, Lockup, Spinner, Switch } from "@thicket/ui";
 import type { UiState } from "../shared/messages";
 import { sendBg } from "../shared/messages";
 import { useTheme } from "../dashboard/state";
@@ -31,7 +31,7 @@ export function Popup() {
   return (
     <div className="bg-bg text-ink">
       <header className="flex items-center justify-between border-b border-edge px-4 py-3">
-        <button onClick={() => openDashboard()} aria-label="Open TabMind dashboard">
+        <button onClick={() => openDashboard()} aria-label="Open Thicket dashboard">
           <Lockup size={20} textClassName="text-[0.95rem]" />
         </button>
         <div className="flex items-center gap-2">
@@ -41,7 +41,7 @@ export function Popup() {
             onChange={(on) =>
               void sendBg({ type: "set-prefs", patch: { paused: !on } }).then(setState)
             }
-            aria-label={state.prefs.paused ? "Resume TabMind" : "Pause TabMind"}
+            aria-label={state.prefs.paused ? "Resume Thicket" : "Pause Thicket"}
           />
         </div>
       </header>
@@ -50,18 +50,18 @@ export function Popup() {
         onClick={() => openDashboard("now", true)}
         className="mx-4 mt-3 flex w-[calc(100%-2rem)] items-center justify-between rounded-md border border-edge px-3 py-2 text-left text-[0.8125rem] text-ink-faint hover:border-edge-strong"
       >
-        Ask TabMind or find anything…
+        Ask Thicket or find anything…
         <span className="text-[0.6875rem]">⌘⇧K</span>
       </button>
 
       <div className="px-2 py-2">
         {state.prefs.paused ? (
           <p className="px-2 py-6 text-center text-[0.8125rem] text-ink-secondary">
-            TabMind is paused — nothing is being observed.
+            Thicket is paused — nothing is being observed.
           </p>
         ) : groups.length === 0 ? (
           <p className="px-2 py-6 text-center text-[0.8125rem] text-ink-secondary">
-            Open a few tabs and TabMind will start making sense of them.
+            Open a few tabs and Thicket will start making sense of them.
           </p>
         ) : (
           <ul>
@@ -86,7 +86,7 @@ export function Popup() {
           onClick={() => openDashboard("now")}
           className="text-[0.8125rem] font-medium text-accent hover:underline underline-offset-2"
         >
-          Open TabMind
+          Open Thicket
         </button>
         <button
           onClick={() => openDashboard("settings")}

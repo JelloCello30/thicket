@@ -1,5 +1,5 @@
-import type { TabSnapshot } from "@tabmind/types";
-import { STALENESS } from "@tabmind/config";
+import type { TabSnapshot } from "@thicket/types";
+import { STALENESS } from "@thicket/config";
 
 /**
  * How done is the user with this tab? 0 = clearly in use, 1 = almost

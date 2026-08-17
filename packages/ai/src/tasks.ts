@@ -5,7 +5,7 @@ import type {
   AiCompareRequest,
   AiOrganizeRequest,
   AiSummarizeRequest,
-} from "@tabmind/types";
+} from "@thicket/types";
 import { resolveModels, TASK_TIERS, type AiTaskName } from "./models";
 import type { AiProvider, CompletionResult } from "./provider";
 

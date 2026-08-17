@@ -3,9 +3,9 @@ import type {
   GroupColor,
   UserPreferences,
   WorkspaceData,
-} from "@tabmind/types";
-import type { AutomationRule, PreviousGroup } from "@tabmind/core";
-import { DEFAULT_PREFERENCES } from "@tabmind/types";
+} from "@thicket/types";
+import type { AutomationRule, PreviousGroup } from "@thicket/core";
+import { DEFAULT_PREFERENCES } from "@thicket/types";
 
 /** Typed facade over chrome.storage — one place that knows the keys. */
 

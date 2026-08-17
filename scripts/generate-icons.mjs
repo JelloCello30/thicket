@@ -1,4 +1,4 @@
-// Rasterize the TabMind mark into the PNG sizes Chrome requires.
+// Rasterize the Thicket mark into the PNG sizes Chrome requires.
 // Run: node scripts/generate-icons.mjs
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";

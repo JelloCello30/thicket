@@ -1,5 +1,5 @@
 import "server-only";
-import { serverEnv } from "@tabmind/config/env";
+import { serverEnv } from "@thicket/config/env";
 
 /**
  * Error monitoring seam. With SENTRY_DSN set, @sentry/nextjs is initialized

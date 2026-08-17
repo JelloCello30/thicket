@@ -2,9 +2,9 @@ import "server-only";
 import { createHash } from "node:crypto";
 import { and, eq, isNull } from "drizzle-orm";
 import { headers } from "next/headers";
-import { device, preference, subscription, user } from "@tabmind/db/schema";
-import { entitlementsFor } from "@tabmind/config";
-import type { Entitlements, Plan } from "@tabmind/types";
+import { device, preference, subscription, user } from "@thicket/db/schema";
+import { entitlementsFor } from "@thicket/config";
+import type { Entitlements, Plan } from "@thicket/types";
 import { getAuth } from "./auth";
 import { db } from "./db";
 

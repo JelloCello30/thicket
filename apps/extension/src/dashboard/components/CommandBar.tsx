@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Favicon, Kbd, Spinner, cn } from "@tabmind/ui";
+import { Favicon, Kbd, Spinner, cn } from "@thicket/ui";
 import type { CommandOutcome, SearchOutcome } from "../../shared/messages";
 import { sendBg } from "../../shared/messages";
 import { useFavicon } from "../state";
@@ -128,8 +128,8 @@ export function CommandBar({
                 else void runCommand();
               }
             }}
-            placeholder={aiAvailable ? "Ask TabMind or find anything…" : "Search tabs, history, workspaces — or type a command…"}
-            aria-label="Search or ask TabMind"
+            placeholder={aiAvailable ? "Ask Thicket or find anything…" : "Search tabs, history, workspaces — or type a command…"}
+            aria-label="Search or ask Thicket"
             className="h-12 w-full bg-transparent text-[0.9375rem] text-ink placeholder:text-ink-faint outline-none"
           />
           {running ? <Spinner size={16} className="text-ink-faint" /> : <Kbd>esc</Kbd>}
@@ -177,7 +177,7 @@ export function CommandBar({
             <p className="mt-1 text-[0.8125rem] text-ink-faint">
               {aiAvailable ? (
                 <>
-                  Press <Kbd>↵</Kbd> and TabMind will work out what you meant.
+                  Press <Kbd>↵</Kbd> and Thicket will work out what you meant.
                 </>
               ) : (
                 "Commands still work on Enter — and signing in adds AI search across everything you've closed."

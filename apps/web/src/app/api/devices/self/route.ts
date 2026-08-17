@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { device } from "@tabmind/db/schema";
+import { device } from "@thicket/db/schema";
 import { db } from "@/lib/db";
 import { corsPreflight, handled, json } from "@/lib/http";
 import { HttpError, requireUser } from "@/lib/request-auth";

@@ -1,4 +1,4 @@
-import type { AnalyzedTab, TabSnapshot, UserPreferences } from "@tabmind/types";
+import type { AnalyzedTab, TabSnapshot, UserPreferences } from "@thicket/types";
 import { getDomain, getHostname, getSearchQuery, isBrowserInternal, isNewTabPage, normalizeUrl } from "./url";
 import { sanitizeForStorage, type PrivacyContext } from "./privacy";
 import { lookupSite } from "./sites";

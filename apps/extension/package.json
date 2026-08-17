@@ -1,5 +1,5 @@
 {
-  "name": "@tabmind/extension",
+  "name": "@thicket/extension",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -11,10 +11,10 @@
     "lint": "eslint src"
   },
   "dependencies": {
-    "@tabmind/config": "workspace:*",
-    "@tabmind/core": "workspace:*",
-    "@tabmind/types": "workspace:*",
-    "@tabmind/ui": "workspace:*",
+    "@thicket/config": "workspace:*",
+    "@thicket/core": "workspace:*",
+    "@thicket/types": "workspace:*",
+    "@thicket/ui": "workspace:*",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

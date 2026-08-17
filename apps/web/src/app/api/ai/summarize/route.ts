@@ -1,4 +1,4 @@
-import { aiSummarizeRequest } from "@tabmind/types";
+import { aiSummarizeRequest } from "@thicket/types";
 import {
   aiService,
   enforceAiBudget,

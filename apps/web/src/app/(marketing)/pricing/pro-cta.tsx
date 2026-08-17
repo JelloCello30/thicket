@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@tabmind/ui";
+import { Button } from "@thicket/ui";
 
 /**
  * Starts checkout when signed in; routes through login when not. The server

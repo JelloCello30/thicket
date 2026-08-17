@@ -1,5 +1,5 @@
 {
-  "name": "@tabmind/db",
+  "name": "@thicket/db",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -19,8 +19,8 @@
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.3.0",
-    "@tabmind/config": "workspace:*",
-    "@tabmind/types": "workspace:*",
+    "@thicket/config": "workspace:*",
+    "@thicket/types": "workspace:*",
     "drizzle-orm": "^0.44.0",
     "pg": "^8.13.0"
   },

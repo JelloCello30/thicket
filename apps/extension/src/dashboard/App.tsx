@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
-import type { CleanupPlan, ComparisonTable, GroupSummary } from "@tabmind/types";
-import { Kbd, Lockup, Spinner, ToastViewport, cn, useToasts } from "@tabmind/ui";
-import { TIMING } from "@tabmind/config";
+import type { CleanupPlan, ComparisonTable, GroupSummary } from "@thicket/types";
+import { Kbd, Lockup, Spinner, ToastViewport, cn, useToasts } from "@thicket/ui";
+import { TIMING } from "@thicket/config";
 import type { CommandOutcome } from "../shared/messages";
 import { sendBg } from "../shared/messages";
 import { useHashRoute, useTheme, useUiState } from "./state";
@@ -48,7 +48,7 @@ export function App() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  // The popup's "Ask TabMind" row and the global shortcut land here with
+  // The popup's "Ask Thicket" row and the global shortcut land here with
   // #/now?cmd=1 — open the bar and clean the address so reloads stay calm.
   useEffect(() => {
     const openIfAsked = () => {

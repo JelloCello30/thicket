@@ -1,8 +1,8 @@
 import { randomUUID } from "node:crypto";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
-import { normalizeExcludedDomainInput } from "@tabmind/core";
-import { excludedDomain } from "@tabmind/db/schema";
+import { normalizeExcludedDomainInput } from "@thicket/core";
+import { excludedDomain } from "@thicket/db/schema";
 import { db } from "@/lib/db";
 import { corsPreflight, handled, json } from "@/lib/http";
 import { HttpError, requireUser } from "@/lib/request-auth";

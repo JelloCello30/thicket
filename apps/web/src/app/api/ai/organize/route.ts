@@ -1,4 +1,4 @@
-import { aiOrganizeRequest } from "@tabmind/types";
+import { aiOrganizeRequest } from "@thicket/types";
 import {
   aiService,
   enforceAiBudget,

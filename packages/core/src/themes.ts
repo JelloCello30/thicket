@@ -1,4 +1,4 @@
-import type { AnalyzedTab } from "@tabmind/types";
+import type { AnalyzedTab } from "@thicket/types";
 
 /**
  * Intent lexicons: deterministic vocabulary that links tabs which belong to

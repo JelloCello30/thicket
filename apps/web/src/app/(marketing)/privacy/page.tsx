@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
-  description: "How TabMind handles your data: what stays on your device, what syncs, and what you control.",
+  description: "How Thicket handles your data: what stays on your device, what syncs, and what you control.",
   alternates: { canonical: "/privacy" },
 };
 
@@ -17,7 +17,7 @@ export default function PrivacyPage() {
       <div className="prose-tabmind mt-8 space-y-8 text-[0.9375rem] leading-relaxed text-ink-secondary">
         <Section title="The short version">
           <p>
-            TabMind organizes your browser tabs. Signed out, everything happens on your device and we
+            Thicket organizes your browser tabs. Signed out, everything happens on your device and we
             receive nothing. Signed in, we store the minimum needed to sync and search: page titles,
             addresses, and your saved workspaces. Page <em>content</em> is only ever processed if you
             switch that on. We don't sell data, we don't run ads, and we don't use your data to train
@@ -27,8 +27,8 @@ export default function PrivacyPage() {
 
         <Section title="Who we are">
           <p>
-            TabMind is operated by [CUSTOMIZE: legal entity name and address]. For anything in this
-            policy, contact <a href="mailto:privacy@tabmind.app" className="text-accent">privacy@tabmind.app</a>.
+            Thicket is operated by [CUSTOMIZE: legal entity name and address]. For anything in this
+            policy, contact <a href="mailto:privacy@jellocello30.github.io/thicket" className="text-accent">privacy@jellocello30.github.io/thicket</a>.
           </p>
         </Section>
 
@@ -83,13 +83,13 @@ export default function PrivacyPage() {
             <li>Sell or rent your data, to anyone, for anything</li>
             <li>Show ads or share data with ad networks</li>
             <li>Use your data to train AI models</li>
-            <li>Read your browser's full history file — only tabs that are open while TabMind runs</li>
-            <li>Collect data while TabMind is paused</li>
+            <li>Read your browser's full history file — only tabs that are open while Thicket runs</li>
+            <li>Collect data while Thicket is paused</li>
           </ul>
         </Section>
 
         <Section title="Service providers">
-          <p>We use a small set of processors to run TabMind:</p>
+          <p>We use a small set of processors to run Thicket:</p>
           <ul className="list-disc space-y-1 pl-5">
             <li>[CUSTOMIZE: hosting provider, e.g. Vercel] — application hosting</li>
             <li>[CUSTOMIZE: database provider, e.g. Neon] — database hosting</li>
@@ -115,7 +115,7 @@ export default function PrivacyPage() {
             Depending on where you live (GDPR, UK GDPR, CCPA and similar), you have rights to access,
             correct, delete, and port your data, and to object to processing. The export and delete
             buttons in Settings cover most of this instantly; for anything else, email{" "}
-            <a href="mailto:privacy@tabmind.app" className="text-accent">privacy@tabmind.app</a> and
+            <a href="mailto:privacy@jellocello30.github.io/thicket" className="text-accent">privacy@jellocello30.github.io/thicket</a> and
             we'll respond within 30 days. [CUSTOMIZE: add your EU/UK representative if required.]
           </p>
         </Section>
@@ -129,7 +129,7 @@ export default function PrivacyPage() {
         </Section>
 
         <Section title="Children">
-          <p>TabMind isn't directed at children under 13, and we don't knowingly collect their data.</p>
+          <p>Thicket isn't directed at children under 13, and we don't knowingly collect their data.</p>
         </Section>
 
         <Section title="Changes">

@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
-import { errorReportRequest } from "@tabmind/types";
-import { errorReport } from "@tabmind/db/schema";
+import { errorReportRequest } from "@thicket/types";
+import { errorReport } from "@thicket/db/schema";
 import { db } from "@/lib/db";
 import { corsPreflight, handled, json } from "@/lib/http";
 import { HttpError } from "@/lib/request-auth";

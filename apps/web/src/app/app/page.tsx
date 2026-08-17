@@ -1,7 +1,7 @@
 import { eq, inArray } from "drizzle-orm";
 import Link from "next/link";
-import { workspace, workspaceTab } from "@tabmind/db/schema";
-import { GroupDot } from "@tabmind/ui";
+import { workspace, workspaceTab } from "@thicket/db/schema";
+import { GroupDot } from "@thicket/ui";
 import { db } from "@/lib/db";
 import { requireSessionUser } from "@/lib/request-auth";
 
@@ -33,7 +33,7 @@ export default async function AppHome() {
         <div className="mt-10 max-w-md">
           <p className="text-sm font-medium text-ink">Nothing saved yet</p>
           <p className="mt-1 text-sm leading-relaxed text-ink-secondary">
-            Save a group from the TabMind extension and it will appear here — findable from any
+            Save a group from the Thicket extension and it will appear here — findable from any
             machine, long after the tabs are closed.
           </p>
           <Link

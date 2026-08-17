@@ -9,7 +9,7 @@ import {
   user as userTable,
   workspace,
   workspaceTab,
-} from "@tabmind/db/schema";
+} from "@thicket/db/schema";
 import { db } from "@/lib/db";
 import { handled } from "@/lib/http";
 import { requireSessionUser } from "@/lib/request-auth";
@@ -64,7 +64,7 @@ export const GET = handled(async () => {
   return new NextResponse(JSON.stringify(payload, null, 2), {
     headers: {
       "content-type": "application/json",
-      "content-disposition": `attachment; filename="tabmind-export-${new Date().toISOString().slice(0, 10)}.json"`,
+      "content-disposition": `attachment; filename="thicket-export-${new Date().toISOString().slice(0, 10)}.json"`,
     },
   }) as NextResponse;
 });

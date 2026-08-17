@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Button, Input } from "@tabmind/ui";
+import { Button, Input } from "@thicket/ui";
 import { authClient } from "@/lib/auth-client";
 
 export function LoginForm({ googleEnabled, redirectTo }: { googleEnabled: boolean; redirectTo: string }) {

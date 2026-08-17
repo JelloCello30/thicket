@@ -6,7 +6,7 @@ import * as t from "./schema";
 
 /**
  * Realistic local development data: one demo user with saved workspaces and
- * page history that mirror what TabMind actually produces. No lorem ipsum.
+ * page history that mirror what Thicket actually produces. No lorem ipsum.
  */
 
 const now = Date.now();
@@ -127,7 +127,7 @@ export async function seed(): Promise<void> {
       .values({
         id: userId,
         name: "Demo User",
-        email: "demo@tabmind.app",
+        email: "demo@jellocello30.github.io/thicket",
         emailVerified: true,
       })
       .onConflictDoNothing();
@@ -191,7 +191,7 @@ export async function seed(): Promise<void> {
     }
 
     console.log(
-      `✓ seeded demo user demo@tabmind.app with ${workspaces.length} workspaces and ${allPages.length} history pages (${handle.kind})`,
+      `✓ seeded demo user demo@jellocello30.github.io/thicket with ${workspaces.length} workspaces and ${allPages.length} history pages (${handle.kind})`,
     );
   } finally {
     await handle.close();

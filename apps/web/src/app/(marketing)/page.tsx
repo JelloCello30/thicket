@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { GroupDot, Kbd } from "@tabmind/ui";
-import { PRICING } from "@tabmind/config";
+import { GroupDot, Kbd } from "@thicket/ui";
+import { LOCAL_ONLY, PRICING } from "@thicket/config";
 import { TabDemo } from "./tab-demo";
 
 export default function HomePage() {
@@ -13,7 +13,7 @@ export default function HomePage() {
             Your tabs, organized by what you're actually doing.
           </h1>
           <p className="mt-5 max-w-xl text-pretty text-[1.0625rem] leading-relaxed text-ink-secondary">
-            TabMind understands why your tabs are open, groups them into projects, and remembers them
+            Thicket understands why your tabs are open, groups them into projects, and remembers them
             when you're ready to close everything.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -52,7 +52,7 @@ export default function HomePage() {
               <p className="mt-5 max-w-md text-pretty leading-relaxed text-ink-secondary">
                 Tabs aren't really tabs. They're unfinished intentions — an apartment you're hunting
                 for, a trip you're planning, a launch you're shipping. Your browser shows them as a
-                flat row of favicons. TabMind shows you the intentions.
+                flat row of favicons. Thicket shows you the intentions.
               </p>
             </div>
             <ul className="space-y-2.5 border-l border-edge pl-6 sm:mt-2">
@@ -120,7 +120,7 @@ export default function HomePage() {
               </h2>
               <p className="mt-4 max-w-md text-pretty leading-relaxed text-ink-secondary">
                 Describe what you remember — "the article about local-first software," "that apartment
-                with the rooftop" — and TabMind finds it, even if those words never appeared in the
+                with the rooftop" — and Thicket finds it, even if those words never appeared in the
                 title. Open tabs, closed tabs, last week's research: one search.
               </p>
               <p className="mt-3 text-[0.8125rem] text-ink-faint">
@@ -145,7 +145,7 @@ export default function HomePage() {
                 exactly as they were.
               </p>
               <p className="mt-3 max-w-md text-pretty text-[0.9375rem] leading-relaxed text-ink-secondary">
-                That's the deal TabMind makes with you: closing a tab should never mean losing it.
+                That's the deal Thicket makes with you: closing a tab should never mean losing it.
               </p>
             </div>
             <div className="rounded-lg border border-edge bg-raised p-4 shadow-md">
@@ -176,7 +176,7 @@ export default function HomePage() {
               Research without the mess.
             </h2>
             <p className="mt-4 text-pretty leading-relaxed text-ink-secondary">
-              Comparing five cameras across five tabs? TabMind reads what's already on your screen
+              Comparing five cameras across five tabs? Thicket reads what's already on your screen
               and lays it out side by side. Blank cells stay blank — it never invents a spec.
             </p>
           </div>
@@ -225,7 +225,7 @@ export default function HomePage() {
               The tidying you'd do anyway, done for you.
             </h2>
             <p className="mt-4 text-pretty leading-relaxed text-ink-secondary">
-              Write the rule once, in plain terms. TabMind runs it quietly and keeps a log of
+              Write the rule once, in plain terms. Thicket runs it quietly and keeps a log of
               everything it did — with an undo button next to each entry, because automation you
               can't reverse is automation you can't trust.
             </p>
@@ -277,7 +277,7 @@ export default function HomePage() {
                 },
                 {
                   title: "AI is opt-in, and it sees titles — not pages",
-                  body: "Sign in and TabMind's servers see page titles and addresses to help name and search. Reading page content is a separate switch, off by default, with its own browser permission.",
+                  body: "Sign in and Thicket's servers see page titles and addresses to help name and search. Reading page content is a separate switch, off by default, with its own browser permission.",
                 },
                 {
                   title: "Banking and health sites are excluded automatically",
@@ -308,20 +308,29 @@ export default function HomePage() {
           <div className="flex flex-col items-start justify-between gap-8 sm:flex-row sm:items-end">
             <div>
               <h2 className="text-3xl font-semibold leading-tight tracking-tight text-ink">
-                Free to stay organized.
+                {LOCAL_ONLY ? "Free, and it stays on your machine." : "Free to stay organized."}
               </h2>
               <p className="mt-3 max-w-md text-pretty leading-relaxed text-ink-secondary">
-                Automatic grouping, automations, three saved workspaces, and cleanup — free,
-                forever. Pro adds
-                unlimited workspaces, AI search across your history, summaries, and comparisons for $
-                {PRICING.pro.monthlyUsd}/month.
+                {LOCAL_ONLY ? (
+                  <>
+                    Grouping, workspaces, search, cleanup, automations, summaries and
+                    comparisons all run on your device. No account, no subscription, nothing
+                    uploaded — there is no server to upload to.
+                  </>
+                ) : (
+                  <>
+                    Automatic grouping, automations, three saved workspaces, and cleanup — free,
+                    forever. Pro adds unlimited workspaces, AI search across your history,
+                    summaries, and comparisons for ${PRICING.pro.monthlyUsd}/month.
+                  </>
+                )}
               </p>
             </div>
             <Link
-              href="/pricing"
+              href={LOCAL_ONLY ? "/download" : "/pricing"}
               className="shrink-0 rounded-md border border-edge-strong bg-raised px-4 py-2 text-[0.9375rem] font-medium text-ink transition-colors hover:border-ink/30"
             >
-              See pricing
+              {LOCAL_ONLY ? "Install it" : "See pricing"}
             </Link>
           </div>
         </div>

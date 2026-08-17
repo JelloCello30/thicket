@@ -14,7 +14,7 @@ export default async function ConnectPage() {
     <div className="max-w-lg">
       <h1 className="text-xl font-semibold tracking-tight text-ink">Connect the extension</h1>
       <p className="mt-1.5 text-sm leading-relaxed text-ink-secondary">
-        Linking gives the TabMind extension a private key for this account — it's how workspaces sync
+        Linking gives the Thicket extension a private key for this account — it's how workspaces sync
         and AI features unlock. You can disconnect any device from Settings at any time.
       </p>
       <ConnectFlow extensionIds={extensionIds} />

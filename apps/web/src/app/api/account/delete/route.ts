@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { z } from "zod";
-import { subscription, user as userTable } from "@tabmind/db/schema";
+import { subscription, user as userTable } from "@thicket/db/schema";
 import { db } from "@/lib/db";
 import { handled, json } from "@/lib/http";
 import { HttpError, requireSessionUser } from "@/lib/request-auth";

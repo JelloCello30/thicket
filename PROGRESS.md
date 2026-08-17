@@ -1,4 +1,24 @@
-# TabMind — Build Progress
+# Thicket — Build Progress
+
+## Status: ✅ v1.5 — renamed to Thicket, static site ready to deploy
+
+**The name changed.** "TabMind" turned out to be unusable: six live Chrome Web Store
+extensions already carry it (the largest has 251 users and 64 ratings), tabmind.app and
+tabmind.co are two *different* companies marketing tab managers under it, and an
+extension with nearly identical positioning renamed itself off "TabMind" to "Wren AI" on
+2026-08-01. Verified in a live browser, not assumed. The product is now **Thicket** —
+zero results in the store, checked the same way.
+
+**Launch shape: local-only v1.** There is no deployed backend and no AI key, so the
+extension ships as a fully on-device product: grouping, workspaces, search, cleanup,
+automations, and deterministic summaries/comparisons all run locally. The site is a
+static export (no account, no pricing page, no sign-in links) served from GitHub Pages,
+which also provides the privacy-policy URL the store review requires. The full
+server app (auth, sync, Stripe) stays in the repo behind `STATIC_EXPORT`, unchanged and
+ready for when a backend exists.
+
+**Remaining manual step:** the founder creates an empty public repo named `thicket`;
+the Pages workflow then builds and deploys on push, and enables Pages itself.
 
 ## Status: ✅ v1.4 COMPLETE — ready for external setup (see docs/LAUNCH_CHECKLIST.md)
 
@@ -85,13 +105,13 @@ than separates.
 - **Pre-existing native tab groups are sacred**: groups the user made in Chrome come
   through analysis as locked groups (their title, color, membership — verbatim, with a
   "yours" badge), clustering never splits or absorbs them, the mirror never moves their
-  tabs, and automations treat their tabs as protected. Renames/drags done in the TabMind
+  tabs, and automations treat their tabs as protected. Renames/drags done in the Thicket
   dashboard on a native group apply natively (explicit actions). E2E-proven: a hand-made
   zillow+kayak "My mix" group survives analysis + mirroring untouched.
 - **Search/ask reliability**: sendBg retries while the MV3 worker wakes; empty results
   state tells the truth (what was searched, whether AI can help); when local search
   finds nothing and AI is on, the request escalates to server interpretation once; the
-  popup "Ask TabMind" row and ⌘⇧K now open the dashboard WITH the command bar open.
+  popup "Ask Thicket" row and ⌘⇧K now open the dashboard WITH the command bar open.
 - **Focus lockdown**: third strictness level — only the task's groups and explicitly
   allowed domains pass. Strictness is chosen per session in the Focus dialog (defaults
   from Settings; default is now Strict).
@@ -102,7 +122,7 @@ than separates.
 
 ### v1.1 (focus, automations, help, tuning) — verified
 
-- **Focus mode**: type a task → TabMind maps it to your groups; off-task navigations are
+- **Focus mode**: type a task → Thicket maps it to your groups; off-task navigations are
   intercepted by a calm page with four honest ways out (back to work, this-is-on-task,
   timed break, end focus). Badge shows minutes left. All on-device.
   **Behaviorally e2e-tested**: during a "compare mirrorless cameras" session the harness

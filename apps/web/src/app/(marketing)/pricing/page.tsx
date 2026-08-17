@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { PLAN_FEATURES, PRICING } from "@tabmind/config";
+import { PLAN_FEATURES, PRICING } from "@thicket/config";
 import { ProCta } from "./pro-cta";
 
 export const metadata: Metadata = {
   title: "Pricing",
   description:
-    "TabMind is free to use — automatic tab organization, three saved workspaces, and cleanup. Pro adds unlimited workspaces, AI search, summaries, and comparisons for $8/month.",
+    "Thicket is free to use — automatic tab organization, three saved workspaces, and cleanup. Pro adds unlimited workspaces, AI search, summaries, and comparisons for $8/month.",
   alternates: { canonical: "/pricing" },
 };
 
@@ -72,7 +72,7 @@ export default function PricingPage() {
             free limit of three, and the Pro features switch off.
           </Faq>
           <Faq q="Can I get a refund?">
-            If TabMind isn't working out in your first 14 days, email support@tabmind.app and we'll
+            If Thicket isn't working out in your first 14 days, email support@jellocello30.github.io/thicket and we'll
             refund you, no questions.
           </Faq>
         </dl>

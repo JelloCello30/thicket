@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { describeRule, VALID_ACTIONS, type AutomationRule } from "@tabmind/core";
-import { Button, EmptyState, Switch } from "@tabmind/ui";
+import { describeRule, VALID_ACTIONS, type AutomationRule } from "@thicket/core";
+import { Button, EmptyState, Switch } from "@thicket/ui";
 import type { RuleActivityEntry } from "../../shared/storage";
 import { formatRelative } from "../state";
 

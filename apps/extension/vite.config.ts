@@ -23,7 +23,7 @@ export default defineConfig(({ mode }) => ({
   ],
   define: {
     __APP_URL__: JSON.stringify(
-      mode === "development" ? "http://localhost:3000" : "https://tabmind.app",
+      mode === "development" ? "http://localhost:3000" : "https://jellocello30.github.io/thicket",
     ),
     __EXT_VERSION__: JSON.stringify(process.env.npm_package_version ?? "0.1.0"),
   },

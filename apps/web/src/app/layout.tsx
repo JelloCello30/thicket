@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import { BRAND, SEO } from "@tabmind/config";
-import { serverEnv } from "@tabmind/config/env";
+import { BRAND, SEO } from "@thicket/config";
+import { serverEnv } from "@thicket/config/env";
 import "./globals.css";
 
 const env = serverEnv();
@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(env.NEXT_PUBLIC_APP_URL),
   title: {
     default: SEO.title,
-    template: "%s — TabMind",
+    template: "%s — Thicket",
   },
   description: SEO.description,
   applicationName: BRAND.name,
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     title: SEO.title,
     description: SEO.description,
     url: env.NEXT_PUBLIC_APP_URL,
-    images: [{ url: "/og.png", width: 1200, height: 630, alt: "42 tabs. 4 actual things. TabMind." }],
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: "42 tabs. 4 actual things. Thicket." }],
   },
   twitter: {
     card: "summary_large_image",

@@ -1,10 +1,10 @@
-import type { AnalysisResult, GroupColor, TabGroup } from "@tabmind/types";
+import type { AnalysisResult, GroupColor, TabGroup } from "@thicket/types";
 import {
   GROUPING_STYLES,
   groupTabs,
   type GroupingOptions,
-} from "@tabmind/core";
-import { TIMING } from "@tabmind/config";
+} from "@thicket/core";
+import { TIMING } from "@thicket/config";
 import { api } from "../shared/api";
 import { readState, writeState, type RememberedGroup } from "../shared/storage";
 import { collectTabs } from "./tabs";
@@ -60,7 +60,7 @@ async function doAnalyze(): Promise<AnalysisResult> {
     readMirrorMap(),
   ]);
 
-  // Native groups TabMind didn't create belong to the user — honor them as
+  // Native groups Thicket didn't create belong to the user — honor them as
   // locked groups (their title, their color, never split or renamed).
   const ours = new Set(Object.values(mirrorMap));
   const userNativeGroups = allNativeGroups
@@ -329,7 +329,7 @@ function applyNamesOnly(
 /* ───────────────────────────── UI notify ───────────────────────────── */
 
 export function notifyUi(): void {
-  chrome.runtime.sendMessage({ type: "tabmind:state-changed" }).catch(() => {
+  chrome.runtime.sendMessage({ type: "thicket:state-changed" }).catch(() => {
     /* no UI surface open — fine */
   });
 }

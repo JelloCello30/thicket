@@ -1,7 +1,7 @@
 import { and, eq, inArray, lt, sql } from "drizzle-orm";
 import { NextResponse } from "next/server";
-import { entitlementsFor } from "@tabmind/config";
-import { aiCache, deviceLinkCode, pageRecord, subscription, user } from "@tabmind/db/schema";
+import { entitlementsFor } from "@thicket/config";
+import { aiCache, deviceLinkCode, pageRecord, subscription, user } from "@thicket/db/schema";
 import { db } from "@/lib/db";
 
 /**

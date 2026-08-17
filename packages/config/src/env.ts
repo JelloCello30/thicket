@@ -21,13 +21,13 @@ const serverEnvSchema = z.object({
 
   /** Magic-link email. Absent in dev → link printed to server console. */
   RESEND_API_KEY: z.string().optional(),
-  EMAIL_FROM: z.string().default("TabMind <login@tabmind.app>"),
+  EMAIL_FROM: z.string().default("Thicket <login@jellocello30.github.io/thicket>"),
 
   /** AI. Absent → local heuristics only; AI endpoints return 503 with a clear code. */
   ANTHROPIC_API_KEY: z.string().optional(),
   /** Embeddings for semantic search. Absent → lexical search only. */
   VOYAGE_API_KEY: z.string().optional(),
-  /** Model tier overrides; defaults live in @tabmind/ai. */
+  /** Model tier overrides; defaults live in @thicket/ai. */
   AI_MODEL_FAST: z.string().optional(),
   AI_MODEL_SMART: z.string().optional(),
 

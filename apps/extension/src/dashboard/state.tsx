@@ -12,14 +12,14 @@ export function useUiState() {
       setState(await sendBg({ type: "get-state" }));
       setError(null);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Couldn't reach TabMind.");
+      setError(e instanceof Error ? e.message : "Couldn't reach Thicket.");
     }
   }, []);
 
   useEffect(() => {
     void refresh();
     const listener = (message: { type?: string }) => {
-      if (message?.type === "tabmind:state-changed") void refresh();
+      if (message?.type === "thicket:state-changed") void refresh();
     };
     chrome.runtime.onMessage.addListener(listener);
     return () => chrome.runtime.onMessage.removeListener(listener);

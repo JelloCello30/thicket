@@ -1,4 +1,4 @@
-import type { AnalyzedTab, GroupKind } from "@tabmind/types";
+import type { AnalyzedTab, GroupKind } from "@thicket/types";
 import { titleCase } from "./text";
 import { THEME_LABELS, type Theme } from "./themes";
 import type { TabFeatures } from "./similarity";

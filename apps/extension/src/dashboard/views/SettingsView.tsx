@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { UiState } from "../../shared/messages";
-import { Button, Input, Switch } from "@tabmind/ui";
+import { Button, Input, Switch } from "@thicket/ui";
 
 /**
  * The privacy center. Every switch says what it really does; the scary
@@ -60,11 +60,11 @@ export function SettingsView({
           <div className="space-y-2.5">
             <p className="text-[0.8125rem] leading-snug text-ink-secondary">
               Sign in to sync workspaces across devices and unlock AI organization, summaries, and semantic
-              search. TabMind works fully on-device without an account.
+              search. Thicket works fully on-device without an account.
             </p>
             <div className="flex gap-2">
               <Button size="sm" variant="primary" onClick={() => window.open(`${state.appUrl}/login?from=extension`, "_blank")}>
-                Sign in on tabmind.app
+                Sign in on jellocello30.github.io/thicket
               </Button>
             </div>
             <form
@@ -91,20 +91,20 @@ export function SettingsView({
 
       <Section title="Privacy">
         <Row
-          label="Pause TabMind"
+          label="Pause Thicket"
           hint="Stops all observation, grouping, and syncing until you resume."
         >
-          <Switch checked={prefs.paused} onChange={(v) => onPref({ paused: v })} aria-label="Pause TabMind" />
+          <Switch checked={prefs.paused} onChange={(v) => onPref({ paused: v })} aria-label="Pause Thicket" />
         </Row>
         <Row
           label="AI processing"
-          hint="Send page titles and web addresses to TabMind's servers for smarter grouping, names, and search. Never page contents unless you turn that on below."
+          hint="Send page titles and web addresses to Thicket's servers for smarter grouping, names, and search. Never page contents unless you turn that on below."
         >
           <Switch checked={prefs.aiEnabled} onChange={(v) => onPref({ aiEnabled: v })} aria-label="AI processing" />
         </Row>
         <Row
           label="Page content"
-          hint="Off by default. When on, TabMind may read the visible text of a page to improve summaries and comparisons. Requires a browser permission."
+          hint="Off by default. When on, Thicket may read the visible text of a page to improve summaries and comparisons. Requires a browser permission."
         >
           {prefs.contentAnalysis && state.contentPermission ? (
             <Switch checked onChange={() => onPref({ contentAnalysis: false })} aria-label="Page content analysis" />
@@ -116,7 +116,7 @@ export function SettingsView({
         </Row>
         <Row
           label="Remember pages"
-          hint="Keep a local history of pages TabMind has seen so closed tabs stay findable."
+          hint="Keep a local history of pages Thicket has seen so closed tabs stay findable."
         >
           <Switch checked={prefs.historyEnabled} onChange={(v) => onPref({ historyEnabled: v })} aria-label="Remember pages" />
         </Row>
@@ -214,7 +214,7 @@ export function SettingsView({
       </Section>
 
       <Section title="Behavior">
-        <Row label="Mirror groups in the tab strip" hint="Show TabMind's groups as native Chrome tab groups.">
+        <Row label="Mirror groups in the tab strip" hint="Show Thicket's groups as native Chrome tab groups.">
           <Switch
             checked={prefs.mirrorTabGroups}
             onChange={(v) => onPref({ mirrorTabGroups: v })}
@@ -242,7 +242,7 @@ export function SettingsView({
 
       <Section title="Your data">
         <p className="text-[0.8125rem] leading-snug text-ink-secondary">
-          Export or permanently delete everything TabMind knows —{" "}
+          Export or permanently delete everything Thicket knows —{" "}
           {state.auth ? (
             <>
               manage it from{" "}
@@ -258,7 +258,7 @@ export function SettingsView({
             "signed out, everything lives in this browser's local storage and is removed when you uninstall the extension."
           )}
         </p>
-        <p className="mt-2 text-[0.75rem] text-ink-faint">TabMind v{state.version}</p>
+        <p className="mt-2 text-[0.75rem] text-ink-faint">Thicket v{state.version}</p>
       </Section>
     </div>
   );

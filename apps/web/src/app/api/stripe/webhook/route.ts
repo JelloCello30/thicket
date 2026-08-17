@@ -2,8 +2,8 @@ import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
 import type Stripe from "stripe";
 import { NextResponse } from "next/server";
-import { stripeEvent, subscription } from "@tabmind/db/schema";
-import { serverEnv } from "@tabmind/config/env";
+import { stripeEvent, subscription } from "@thicket/db/schema";
+import { serverEnv } from "@thicket/config/env";
 import { db } from "@/lib/db";
 import { intervalForPrice, stripe } from "@/lib/stripe";
 import { track } from "@/lib/track";
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object;
-        const userId = session.client_reference_id ?? session.metadata?.tabmindUserId;
+        const userId = session.client_reference_id ?? session.metadata?.thicketUserId;
         if (userId && session.subscription) {
           const sub = await stripe.subscriptions.retrieve(session.subscription as string);
           await applySubscription(userId, sub);
@@ -58,7 +58,7 @@ export async function POST(request: Request) {
       case "customer.subscription.updated":
       case "customer.subscription.deleted": {
         const sub = event.data.object;
-        const userId = sub.metadata?.tabmindUserId ?? (await userIdForCustomer(sub.customer as string));
+        const userId = sub.metadata?.thicketUserId ?? (await userIdForCustomer(sub.customer as string));
         if (userId) await applySubscription(userId, sub);
         break;
       }

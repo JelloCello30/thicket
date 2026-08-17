@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { TabSnapshot } from "@tabmind/types";
+import type { TabSnapshot } from "@thicket/types";
 import { DEMO_NOW, demoTabs } from "../src/fixtures/demo";
 import { groupTabs } from "../src/grouping";
 import { describeRule, evaluateRules, type AutomationRule } from "../src/rules";

@@ -1,5 +1,8 @@
 import type { MetadataRoute } from "next";
-import { BRAND, SEO } from "@tabmind/config";
+import { BRAND, SEO } from "@thicket/config";
+
+/** Inherently static; `output: export` requires saying so explicitly. */
+export const dynamic = "force-static";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {

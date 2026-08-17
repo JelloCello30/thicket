@@ -1,5 +1,5 @@
-import type { AnalyzedTab } from "@tabmind/types";
-import { LIMITS, STALENESS } from "@tabmind/config";
+import type { AnalyzedTab } from "@thicket/types";
+import { LIMITS, STALENESS } from "@thicket/config";
 import { READING_CATEGORIES } from "./sites";
 import { featuresFor, pairScore, sessionTokenDf, type SimilarityContext, type TabFeatures } from "./similarity";
 

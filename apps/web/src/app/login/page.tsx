@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
-import { featureAvailability, serverEnv } from "@tabmind/config/env";
-import { Lockup } from "@tabmind/ui";
+import { featureAvailability, serverEnv } from "@thicket/config/env";
+import { Lockup } from "@thicket/ui";
 import { getAuth } from "@/lib/auth";
 import { LoginForm } from "./login-form";
 
 export const metadata: Metadata = {
   title: "Sign in",
-  description: "Sign in to TabMind to sync workspaces and unlock AI organization.",
+  description: "Sign in to Thicket to sync workspaces and unlock AI organization.",
   robots: { index: false },
 };
 

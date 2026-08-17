@@ -46,7 +46,7 @@ const STUB_TABS = [
 const titleByUrl = new Map(STUB_TABS);
 
 function stubHtml(title) {
-  return `<!doctype html><html><head><meta charset="utf-8"><title>${title}</title></head><body style="font-family:sans-serif;padding:40px;color:#444"><h1 style="font-size:18px">${title}</h1><p>Stubbed page for the TabMind e2e run.</p></body></html>`;
+  return `<!doctype html><html><head><meta charset="utf-8"><title>${title}</title></head><body style="font-family:sans-serif;padding:40px;color:#444"><h1 style="font-size:18px">${title}</h1><p>Stubbed page for the Thicket e2e run.</p></body></html>`;
 }
 
 async function main() {
@@ -245,7 +245,7 @@ async function main() {
 
   // ————— Pre-existing native tab groups: honored, never dismantled —————
   // Group a zillow tab with a kayak tab by hand — an arrangement clustering
-  // would never produce. TabMind must show it verbatim and leave it alone.
+  // would never produce. Thicket must show it verbatim and leave it alone.
   const nativeSetup = await dashboard.evaluate(async () => {
     const tabs = await chrome.tabs.query({ windowType: "normal" });
     const zillow = tabs.find((t) => t.url?.includes("3421-Sunset-Blvd"));

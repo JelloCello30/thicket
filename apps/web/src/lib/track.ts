@@ -1,7 +1,7 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
-import { event } from "@tabmind/db/schema";
-import { serverEnv } from "@tabmind/config/env";
+import { event } from "@thicket/db/schema";
+import { serverEnv } from "@thicket/config/env";
 import { db } from "./db";
 
 /**

@@ -1,5 +1,5 @@
-import { buildCleanupPlan, normalizeUrl, parseCommand } from "@tabmind/core";
-import type { AnalysisResult, CommandIntent } from "@tabmind/types";
+import { buildCleanupPlan, normalizeUrl, parseCommand } from "@thicket/core";
+import type { AnalysisResult, CommandIntent } from "@thicket/types";
 import { api } from "../shared/api";
 import { readState, writeState } from "../shared/storage";
 import type { CommandOutcome } from "../shared/messages";
@@ -174,7 +174,7 @@ async function execute(intent: CommandIntent, analysis: AnalysisResult): Promise
       await writeState({ prefs: { ...prefs, paused: intent.type === "pause" } });
       await runAnalysis();
       notifyUi();
-      return { kind: "prefs", message: intent.type === "pause" ? "TabMind paused" : "TabMind resumed" };
+      return { kind: "prefs", message: intent.type === "pause" ? "Thicket paused" : "Thicket resumed" };
     }
     case "help":
       return { kind: "help", helpQuery: intent.query };

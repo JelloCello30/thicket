@@ -1,5 +1,5 @@
-import type { AnalysisResult, WorkspaceData, WorkspaceTabData } from "@tabmind/types";
-import { entitlementsFor } from "@tabmind/config";
+import type { AnalysisResult, WorkspaceData, WorkspaceTabData } from "@thicket/types";
+import { entitlementsFor } from "@thicket/config";
 import { readState, updateState, writeState, type ClosedBatch } from "../shared/storage";
 import { faviconFor } from "./tabs";
 import { recordClosed } from "./history";
@@ -143,7 +143,7 @@ export async function closeTabs(
 
 /** Pin reopened URLs to the group they came from, so re-analysis lands them home. */
 export async function lockUrlsToGroup(urls: string[], groupId: string): Promise<void> {
-  const { normalizeUrl } = await import("@tabmind/core");
+  const { normalizeUrl } = await import("@thicket/core");
   await updateState("corrections", (corrections) => {
     const locks = { ...corrections.locks };
     for (const url of urls) locks[normalizeUrl(url)] = groupId;

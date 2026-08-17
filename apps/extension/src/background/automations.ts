@@ -1,5 +1,5 @@
-import { evaluateRules, type AutomationRule } from "@tabmind/core";
-import type { AnalysisResult } from "@tabmind/types";
+import { evaluateRules, type AutomationRule } from "@thicket/core";
+import type { AnalysisResult } from "@thicket/types";
 import { readState, updateState, type RuleActivityEntry } from "../shared/storage";
 import { notifyUi } from "./analyzer";
 import { closeTabs, saveWorkspaceFromGroup } from "./workspaces";

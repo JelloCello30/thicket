@@ -1,4 +1,4 @@
-import type { TabSnapshot } from "@tabmind/types";
+import type { TabSnapshot } from "@thicket/types";
 
 /**
  * Tab collection + focus bookkeeping. Chrome 121+ reports `lastAccessed`;

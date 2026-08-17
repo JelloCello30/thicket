@@ -1,0 +1,73 @@
+name: Deploy site to GitHub Pages
+
+# The marketing site (home, pricing, privacy, terms, download) is exported as
+# static files and served from Pages. The full app — auth, sync, billing — needs
+# a server and is NOT part of this deployment; see apps/web/scripts/build-static.mjs.
+#
+# The Chrome Web Store listing requires a reachable privacy-policy URL, and this
+# is what serves it.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/web/**"
+      - "packages/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never let two deploys race; always finish the newest.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build static marketing site
+        working-directory: apps/web
+        env:
+          # Project Pages are served from /<repo>, so the site is built with
+          # that base path and an absolute URL for sitemap/robots/OG tags.
+          PAGES_BASE_PATH: /${{ github.event.repository.name }}
+          NEXT_PUBLIC_APP_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
+        run: node scripts/build-static.mjs
+
+      # enablement: true turns Pages on for the repo the first time this runs,
+      # so no manual toggle in Settings is needed.
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: apps/web/out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

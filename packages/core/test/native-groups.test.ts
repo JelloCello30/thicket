@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import type { TabSnapshot } from "@tabmind/types";
+import type { TabSnapshot } from "@thicket/types";
 import { DEMO_NOW } from "../src/fixtures/demo";
 import { groupTabs } from "../src/grouping";
 
 /**
- * Tab groups the user created in Chrome before (or outside) TabMind are
+ * Tab groups the user created in Chrome before (or outside) Thicket are
  * sacred: they come through analysis as locked groups with the user's own
  * title and color, clustering never splits or absorbs them, and automations
  * treat their tabs as protected.
@@ -64,7 +64,7 @@ describe("user-created native groups", () => {
     expect(apartments).toBeDefined();
   });
 
-  it("names unnamed native groups honestly and ignores TabMind-owned mirrors", () => {
+  it("names unnamed native groups honestly and ignores Thicket-owned mirrors", () => {
     nextId = 1;
     const tabs = [
       snap("https://www.kayak.com/flights", "LAX to Tokyo flights", 3),

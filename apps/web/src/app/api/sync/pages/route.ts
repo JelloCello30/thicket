@@ -1,9 +1,9 @@
 import { createHash, randomUUID } from "node:crypto";
 import { and, eq, inArray, sql } from "drizzle-orm";
-import { deletePagesRequest, syncPagesRequest } from "@tabmind/types";
-import { normalizeUrl, sanitizeForStorage, allowedOffDevice } from "@tabmind/core";
-import { RATE_LIMITS } from "@tabmind/config";
-import { excludedDomain, pageRecord } from "@tabmind/db/schema";
+import { deletePagesRequest, syncPagesRequest } from "@thicket/types";
+import { normalizeUrl, sanitizeForStorage, allowedOffDevice } from "@thicket/core";
+import { RATE_LIMITS } from "@thicket/config";
+import { excludedDomain, pageRecord } from "@thicket/db/schema";
 import { db } from "@/lib/db";
 import { embeddings } from "@/lib/ai-server";
 import { corsPreflight, handled, json } from "@/lib/http";

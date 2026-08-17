@@ -43,6 +43,6 @@ export const AI_CACHE_TTL_HOURS = 24 * 7;
 
 export const EXTENSION = {
   /** Chrome extension IDs allowed to talk to the web app (dev id set via env). */
-  storeName: "TabMind — Your tabs, organized",
+  storeName: "Thicket — Your tabs, organized",
   version: "0.1.0",
 } as const;

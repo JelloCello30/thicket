@@ -1,5 +1,5 @@
 {
-  "name": "@tabmind/web",
+  "name": "@thicket/web",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -13,12 +13,12 @@
   "dependencies": {
     "@electric-sql/pglite": "^0.3.16",
     "@sentry/nextjs": "^9.0.0",
-    "@tabmind/ai": "workspace:*",
-    "@tabmind/config": "workspace:*",
-    "@tabmind/core": "workspace:*",
-    "@tabmind/db": "workspace:*",
-    "@tabmind/types": "workspace:*",
-    "@tabmind/ui": "workspace:*",
+    "@thicket/ai": "workspace:*",
+    "@thicket/config": "workspace:*",
+    "@thicket/core": "workspace:*",
+    "@thicket/db": "workspace:*",
+    "@thicket/types": "workspace:*",
+    "@thicket/ui": "workspace:*",
     "better-auth": "^1.3.0",
     "drizzle-orm": "^0.44.0",
     "next": "^15.1.0",

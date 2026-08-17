@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { beforeAll, describe, expect, it } from "vitest";
 import Stripe from "stripe";
-import { device, pageRecord, subscription, user, workspace } from "@tabmind/db/schema";
+import { device, pageRecord, subscription, user, workspace } from "@thicket/db/schema";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { sha256 } from "@/lib/request-auth";
@@ -300,7 +300,7 @@ describe("event intake", () => {
     );
     expect(response.status).toBe(200);
     const database = await db();
-    const { event } = await import("@tabmind/db/schema");
+    const { event } = await import("@thicket/db/schema");
     const rows = await database.select().from(event);
     const names = rows.map((r) => r.name);
     expect(names).toContain("workspace_saved");
@@ -310,7 +310,7 @@ describe("event intake", () => {
 
 describe("stripe webhook", () => {
   const stripe = new Stripe("sk_test_51_fake_key_for_signature_tests_only");
-  const secret = "whsec_test_secret_for_tabmind_tests";
+  const secret = "whsec_test_secret_for_thicket_tests";
 
   function subscriptionEvent(id: string): string {
     return JSON.stringify({
@@ -324,7 +324,7 @@ describe("stripe webhook", () => {
           customer: "cus_free_upgrade",
           status: "active",
           cancel_at_period_end: false,
-          metadata: { tabmindUserId: "u-free" },
+          metadata: { thicketUserId: "u-free" },
           items: {
             data: [
               {

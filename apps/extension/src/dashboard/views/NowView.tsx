@@ -1,5 +1,5 @@
 import type { UiState } from "../../shared/messages";
-import { EmptyState } from "@tabmind/ui";
+import { EmptyState } from "@thicket/ui";
 import { GroupSection } from "../components/GroupSection";
 
 export function NowView({
@@ -30,7 +30,7 @@ export function NowView({
   if (state.prefs.paused) {
     return (
       <EmptyState
-        title="TabMind is paused"
+        title="Thicket is paused"
         body="Nothing is being observed or organized. Resume from Settings whenever you're ready."
       />
     );
@@ -40,7 +40,7 @@ export function NowView({
     return (
       <EmptyState
         title="No tabs yet"
-        body="Open a few tabs and TabMind will start making sense of them."
+        body="Open a few tabs and Thicket will start making sense of them."
       />
     );
   }
@@ -49,7 +49,7 @@ export function NowView({
     return (
       <EmptyState
         title="Nothing to organize yet"
-        body="Open a few tabs and TabMind will start making sense of them."
+        body="Open a few tabs and Thicket will start making sense of them."
       />
     );
   }

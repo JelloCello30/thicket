@@ -1,4 +1,4 @@
-import type { AnalysisResult, AnalyzedTab, GroupColor, GroupKind, TabGroup, TabSnapshot } from "@tabmind/types";
+import type { AnalysisResult, AnalyzedTab, GroupColor, GroupKind, TabGroup, TabSnapshot } from "@thicket/types";
 import { clusterTabs, type ClusterTuning } from "./cluster";
 import { nameCluster } from "./naming";
 import { analyzeTabs, type AnalyzeContext } from "./analyze";
@@ -25,7 +25,7 @@ export interface GroupingOptions {
   /** User-tunable clustering behavior ("grouping style" in Settings). */
   tuning?: ClusterTuning;
   /**
-   * Native Chrome tab groups the USER created (not TabMind's mirrors).
+   * Native Chrome tab groups the USER created (not Thicket's mirrors).
    * Their members are honored as-is: one locked group each, the user's own
    * title and color, never split, renamed, or judged stale.
    */
@@ -200,7 +200,7 @@ export function groupAnalyzedTabs(
       kind: dominantKind(members),
       tabIds: members.map((t) => t.tabId),
       confidence: 1,
-      signals: ["You grouped these in Chrome — TabMind keeps hands off"],
+      signals: ["You grouped these in Chrome — Thicket keeps hands off"],
       color: native.color,
       nativeGroupId: nativeId,
     });

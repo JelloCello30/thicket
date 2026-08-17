@@ -1,6 +1,6 @@
 import "server-only";
 import Stripe from "stripe";
-import { serverEnv } from "@tabmind/config/env";
+import { serverEnv } from "@thicket/config/env";
 import { HttpError } from "./request-auth";
 
 const env = serverEnv();

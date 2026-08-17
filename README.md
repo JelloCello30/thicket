@@ -1,8 +1,8 @@
-# TabMind
+# Thicket
 
 **Your tabs, organized by what you're actually doing.**
 
-TabMind is a Chrome extension + web service that understands *why* your tabs are open, groups
+Thicket is a Chrome extension + web service that understands *why* your tabs are open, groups
 them into projects automatically, and remembers everything when you're ready to close it all.
 Tabs aren't really tabs — they're unfinished intentions.
 
@@ -38,13 +38,13 @@ Requirements: Node ≥ 20.9, pnpm ≥ 9. No database or Docker needed — dev us
 
 ```bash
 pnpm install
-pnpm db:seed        # optional: demo user (demo@tabmind.app) + realistic workspaces
+pnpm db:seed        # optional: demo user (demo@jellocello30.github.io/thicket) + realistic workspaces
 pnpm dev            # web app on http://localhost:3000 (+ extension watch build)
 ```
 
 Sign-in works immediately: magic links print to the server console when no email key is set.
 
-**Load the extension:** `pnpm --filter @tabmind/extension build`, then
+**Load the extension:** `pnpm --filter @thicket/extension build`, then
 chrome://extensions → Developer mode → *Load unpacked* → `apps/extension/dist`.
 Dev builds talk to `http://localhost:3000` automatically.
 
@@ -70,4 +70,4 @@ pnpm typecheck && pnpm build    # strict TS + production builds
 - [docs/LAUNCH_CHECKLIST.md](docs/LAUNCH_CHECKLIST.md) — the exact remaining steps to go live
 - [PROGRESS.md](PROGRESS.md) — build log
 
-© TabMind. All rights reserved.
+© Thicket. All rights reserved.

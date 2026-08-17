@@ -1,6 +1,6 @@
 import "server-only";
 import { NextResponse } from "next/server";
-import { serverEnv } from "@tabmind/config/env";
+import { serverEnv } from "@thicket/config/env";
 import { HttpError } from "./request-auth";
 import { captureServerError } from "./monitoring";
 
@@ -53,7 +53,7 @@ export function withCors(request: Request, response: NextResponse): NextResponse
     return response;
   }
   response.headers.set("access-control-allow-origin", origin);
-  response.headers.set("access-control-allow-headers", "authorization, content-type, x-tabmind-version");
+  response.headers.set("access-control-allow-headers", "authorization, content-type, x-thicket-version");
   response.headers.set("access-control-allow-methods", "GET, POST, PATCH, DELETE, OPTIONS");
   response.headers.set("vary", "origin");
   return response;

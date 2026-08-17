@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import type { UiState } from "../../shared/messages";
-import { Button, EmptyState, Favicon } from "@tabmind/ui";
+import { Button, EmptyState, Favicon } from "@thicket/ui";
 import { formatRelative, useFavicon } from "../state";
 
-/** Recently closed with TabMind — the "nothing is ever lost" screen. */
+/** Recently closed with Thicket — the "nothing is ever lost" screen. */
 export function HistoryView({
   state,
   onReopen,
@@ -30,7 +30,7 @@ export function HistoryView({
     return (
       <EmptyState
         title="Nothing closed yet"
-        body="When TabMind closes tabs for you, they land here — one click brings anything back."
+        body="When Thicket closes tabs for you, they land here — one click brings anything back."
       />
     );
   }
@@ -41,7 +41,7 @@ export function HistoryView({
         {confirmClear ? (
           <span className="flex items-center gap-2">
             <span className="text-[0.8125rem] text-ink-secondary">
-              Forgets every closed tab and TabMind's page memory
+              Forgets every closed tab and Thicket's page memory
               {state.auth ? ", here and on your account" : ""}. Sure?
             </span>
             <Button

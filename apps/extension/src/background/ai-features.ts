@@ -1,5 +1,5 @@
-import type { AnalysisResult, ComparisonTable, GroupSummary } from "@tabmind/types";
-import { localComparison, localGroupSummary } from "@tabmind/core";
+import type { AnalysisResult, ComparisonTable, GroupSummary } from "@thicket/types";
+import { localComparison, localGroupSummary } from "@thicket/core";
 import { api, ApiError } from "../shared/api";
 import { readState } from "../shared/storage";
 

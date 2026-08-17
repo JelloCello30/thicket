@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { GroupDot, cn } from "@tabmind/ui";
+import { GroupDot, cn } from "@thicket/ui";
 
 /**
  * The hero demonstration: 47 real-looking tabs crammed into a tab strip,
@@ -195,7 +195,7 @@ export function TabDemo() {
   const height = organized ? tidy.height : chaos.height;
 
   return (
-    <figure aria-label="47 browser tabs being organized into five groups by TabMind">
+    <figure aria-label="47 browser tabs being organized into five groups by Thicket">
       <div className="rounded-xl border border-edge bg-raised p-3 shadow-md sm:p-4">
         <div className="mb-1 flex items-center gap-1.5 px-0.5" aria-hidden="true">
           <span className="h-2.5 w-2.5 rounded-full bg-ink/15" />
@@ -273,7 +273,7 @@ export function TabDemo() {
         </div>
       </div>
       <figcaption className="mt-2.5 text-center text-[0.75rem] text-ink-faint">
-        Real session, real grouping — this is what installing TabMind feels like.
+        Real session, real grouping — this is what installing Thicket feels like.
       </figcaption>
     </figure>
   );

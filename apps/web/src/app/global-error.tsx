@@ -22,7 +22,7 @@ export default function GlobalError({
         <h1 style={{ fontSize: "1.1rem", fontWeight: 600 }}>Something broke on our side.</h1>
         <p style={{ color: "#5d5a51", marginTop: 8, fontSize: "0.9rem", lineHeight: 1.5 }}>
           Your tabs and workspaces are safe. Try again — if this keeps happening, email
-          support@tabmind.app.
+          support@jellocello30.github.io/thicket.
         </p>
         <button
           onClick={reset}

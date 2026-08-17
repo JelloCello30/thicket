@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Button, Spinner } from "@tabmind/ui";
+import { Button, Spinner } from "@thicket/ui";
 
 type Phase = "idle" | "requesting" | "trying" | "linked" | "manual" | "error";
 
@@ -48,7 +48,7 @@ export function ConnectFlow({ extensionIds }: { extensionIds: string[] }) {
             return;
           }
           try {
-            runtime.sendMessage!(extensionIds[index]!, { type: "tabmind:link", code: freshCode }, (reply) => {
+            runtime.sendMessage!(extensionIds[index]!, { type: "thicket:link", code: freshCode }, (reply) => {
               if (reply?.ok) {
                 setEmail(reply.email ?? "");
                 setPhase("linked");
@@ -115,7 +115,7 @@ export function ConnectFlow({ extensionIds }: { extensionIds: string[] }) {
         <p className="mt-2 select-all font-mono text-2xl font-semibold tracking-[0.15em] text-ink">{code}</p>
       </div>
       <ol className="list-decimal space-y-1.5 pl-5 text-sm leading-relaxed text-ink-secondary">
-        <li>Open the TabMind extension in your browser</li>
+        <li>Open the Thicket extension in your browser</li>
         <li>
           Go to <span className="font-medium text-ink">Settings → Account</span>
         </li>
