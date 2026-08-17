@@ -48,8 +48,8 @@ function build(db: Awaited<ReturnType<typeof dbHandle>>["db"]) {
 
 export type Auth = ReturnType<typeof build>;
 
-const globalCache = globalThis as unknown as { __tabmindAuth?: Promise<Auth> };
+const globalCache = globalThis as unknown as { __thicketAuth?: Promise<Auth> };
 
 export function getAuth(): Promise<Auth> {
-  return (globalCache.__tabmindAuth ??= dbHandle().then(({ db }) => build(db)));
+  return (globalCache.__thicketAuth ??= dbHandle().then(({ db }) => build(db)));
 }

@@ -15,10 +15,10 @@ async function initialize(): Promise<DbHandle> {
   return handle;
 }
 
-const globalCache = globalThis as unknown as { __tabmindDbInit?: Promise<DbHandle> };
+const globalCache = globalThis as unknown as { __thicketDbInit?: Promise<DbHandle> };
 
 export function dbHandle(): Promise<DbHandle> {
-  return (globalCache.__tabmindDbInit ??= initialize());
+  return (globalCache.__thicketDbInit ??= initialize());
 }
 
 export async function db() {

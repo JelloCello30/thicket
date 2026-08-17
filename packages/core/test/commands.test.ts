@@ -95,7 +95,7 @@ describe("parseCommand", () => {
 
   it("pauses and resumes", () => {
     expect(parseCommand("pause", ctx)).toEqual({ type: "pause" });
-    expect(parseCommand("pause tabmind", ctx)).toEqual({ type: "pause" });
+    expect(parseCommand("pause thicket", ctx)).toEqual({ type: "pause" });
     expect(parseCommand("resume", ctx)).toEqual({ type: "resume" });
   });
 });

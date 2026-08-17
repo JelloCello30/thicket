@@ -19,8 +19,8 @@ export function parseCommand(raw: string, ctx: CommandContext): CommandIntent {
   if (/^(open |show |go to )?settings$/.test(lower)) return { type: "open_dashboard", section: "settings" };
   if (/^(open |show |go to )?(history|recently closed)$/.test(lower)) return { type: "open_dashboard", section: "history" };
   if (/^(open |show |go to )?workspaces$/.test(lower)) return { type: "open_dashboard", section: "workspaces" };
-  if (/^pause( tabmind)?$/.test(lower)) return { type: "pause" };
-  if (/^(resume|unpause)( tabmind)?$/.test(lower)) return { type: "resume" };
+  if (/^pause( thicket)?$/.test(lower)) return { type: "pause" };
+  if (/^(resume|unpause)( thicket)?$/.test(lower)) return { type: "resume" };
   if (/^(open |show |go to )?automations?$/.test(lower)) return { type: "open_dashboard", section: "automations" };
 
   // Help

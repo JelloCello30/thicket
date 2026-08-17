@@ -14,7 +14,7 @@ export default function PrivacyPage() {
       <h1 className="text-3xl font-semibold tracking-tight text-ink">Privacy Policy</h1>
       <p className="mt-2 text-[0.8125rem] text-ink-faint">Effective {EFFECTIVE_DATE}</p>
 
-      <div className="prose-tabmind mt-8 space-y-8 text-[0.9375rem] leading-relaxed text-ink-secondary">
+      <div className="prose-thicket mt-8 space-y-8 text-[0.9375rem] leading-relaxed text-ink-secondary">
         <Section title="The short version">
           <p>
             Thicket organizes your browser tabs. Signed out, everything happens on your device and we

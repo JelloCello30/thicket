@@ -4,7 +4,7 @@
     {
       "name": "web",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["--filter", "@tabmind/web", "dev"],
+      "runtimeArgs": ["--filter", "@thicket/web", "dev"],
       "port": 3000
     }
   ]

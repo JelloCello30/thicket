@@ -1,5 +1,5 @@
 {
-  "name": "tabmind",
+  "name": "thicket",
   "private": true,
   "version": "0.1.0",
   "packageManager": "pnpm@11.18.0",
@@ -15,9 +15,9 @@
     "test:e2e": "playwright test",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "db:generate": "pnpm --filter @tabmind/db generate",
-    "db:migrate": "pnpm --filter @tabmind/db migrate",
-    "db:seed": "pnpm --filter @tabmind/db seed",
+    "db:generate": "pnpm --filter @thicket/db generate",
+    "db:migrate": "pnpm --filter @thicket/db migrate",
+    "db:seed": "pnpm --filter @thicket/db seed",
     "assets": "node scripts/generate-assets.mjs"
   },
   "devDependencies": {

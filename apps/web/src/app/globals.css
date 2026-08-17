@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@import "@tabmind/ui/fonts.css";
-@import "@tabmind/ui/styles.css";
+@import "@thicket/ui/fonts.css";
+@import "@thicket/ui/styles.css";
 
 @source "../../../../packages/ui/src";

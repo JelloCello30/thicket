@@ -20,7 +20,7 @@ export interface DbHandle {
 }
 
 interface GlobalDbCache {
-  __tabmindDb?: DbHandle;
+  __thicketDb?: DbHandle;
 }
 
 const globalCache = globalThis as unknown as GlobalDbCache;
@@ -69,9 +69,9 @@ export async function connect(options: ConnectOptions = {}): Promise<DbHandle> {
 
 /** Shared connection for the app — cached across HMR reloads in dev. */
 export async function getDb(options: ConnectOptions = {}): Promise<DbHandle> {
-  if (globalCache.__tabmindDb) return globalCache.__tabmindDb;
+  if (globalCache.__thicketDb) return globalCache.__thicketDb;
   const handle = await connect(options);
-  globalCache.__tabmindDb = handle;
+  globalCache.__thicketDb = handle;
   return handle;
 }
 

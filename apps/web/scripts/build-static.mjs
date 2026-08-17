@@ -11,7 +11,7 @@
  * to compile every route under app/, and route handlers are illegal in an
  * export) and restored afterwards, even if the build fails.
  *
- *   PAGES_BASE_PATH=/tabmind node scripts/build-static.mjs
+ *   PAGES_BASE_PATH=/thicket node scripts/build-static.mjs
  *
  * Output: apps/web/out
  */
