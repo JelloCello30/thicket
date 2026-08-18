@@ -65,6 +65,11 @@ async function request<T>(path: string, init: RequestInit & { auth?: boolean } =
 }
 
 export const api = {
+  capabilities: () =>
+    request<{ accounts: boolean; ai: boolean; embeddings: boolean; billing: boolean }>(
+      "/api/capabilities",
+      { auth: false },
+    ),
   linkDevice: (code: string, device: { name: string; browser: string }) =>
     request<{ token: string; deviceId: string; user: { email: string; name: string; plan: "free" | "pro" } }>(
       "/api/devices/link/complete",

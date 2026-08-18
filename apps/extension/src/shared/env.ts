@@ -5,12 +5,24 @@ export const APP_URL = __APP_URL__;
 export const EXT_VERSION = __EXT_VERSION__;
 
 /**
- * Accounts, sync, and server-side AI are switched OFF until a backend exists.
+ * What the configured server can do. Discovered at runtime from
+ * GET /api/capabilities, never hardcoded — see that route for why.
  *
- * Nothing behind them is deployed, so every control that depends on one would
- * either fail or, worse, quietly send the user to a sign-in page that cannot
- * work. Thicket is a complete on-device product without them; offering them
- * would be the only dishonest thing in the interface. Flip this to true in the
- * same change that ships the server.
+ * Everything defaults to OFF, which is also what a static deployment (no
+ * server at all) reports by failing to answer. Thicket is a complete on-device
+ * product in that state; the paid tier simply isn't offered, rather than being
+ * offered and broken.
  */
-export const ACCOUNTS_ENABLED = false;
+export interface Capabilities {
+  accounts: boolean;
+  ai: boolean;
+  embeddings: boolean;
+  billing: boolean;
+}
+
+export const NO_CAPABILITIES: Capabilities = {
+  accounts: false,
+  ai: false,
+  embeddings: false,
+  billing: false,
+};

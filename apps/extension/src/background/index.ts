@@ -11,7 +11,7 @@ import { recordClosed, recordVisit, pruneHistory } from "./history";
 import { unmirrorAll } from "./mirror";
 import { addRule, deleteRule, toggleRule } from "./automations";
 import { runSearch } from "./search";
-import { flushSync, pullWorkspaces } from "./sync";
+import { flushSync, pullWorkspaces, refreshCapabilities } from "./sync";
 import { noteActivated, noteRemoved } from "./tabs";
 import {
   closeTabs,
@@ -36,6 +36,7 @@ chrome.runtime.onInstalled.addListener((details) => {
   void chrome.alarms.create("thicket-sync", { periodInMinutes: 1 });
   void chrome.alarms.create("thicket-daily", { periodInMinutes: 60 * 24 });
   scheduleAnalysis("installed");
+  void refreshCapabilities(true);
 });
 
 chrome.runtime.onStartup.addListener(() => {
@@ -332,6 +333,19 @@ async function handle(request: BgRequest): Promise<unknown> {
       notifyUi();
       return { ok: true };
     }
+    case "history-restore": {
+      // Undo for "forget": put the record back exactly as it was.
+      await updateState("recentlyClosed", (closed) =>
+        closed.some((c) => c.url === request.record.url)
+          ? closed
+          : [request.record, ...closed].sort((a, b) => b.closedAt - a.closedAt),
+      );
+      await updateState("pendingPageDeletes", (queue) =>
+        queue.filter((u) => u !== normalizeUrl(request.record.url)),
+      );
+      notifyUi();
+      return uiState();
+    }
     case "history-clear": {
       const { clearHistory } = await import("./history");
       await clearHistory();
@@ -364,6 +378,7 @@ async function uiState(): Promise<UiState> {
       "workspaces",
       "recentlyClosed",
       "closedBatches",
+      "capabilities",
       "rules",
       "ruleActivity",
       "onboarded",
@@ -379,6 +394,7 @@ async function uiState(): Promise<UiState> {
     workspaces: state.workspaces,
     recentlyClosed: state.recentlyClosed,
     closedBatches: state.closedBatches,
+    capabilities: state.capabilities,
     rules: state.rules,
     ruleActivity: state.ruleActivity,
     onboarded: state.onboarded,

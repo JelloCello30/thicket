@@ -94,8 +94,20 @@ function topicPath(url: string): string {
   }
 }
 
-function isHubSite(domain: string, category: SiteCategory): boolean {
-  return HUB_CATEGORIES.has(category) || HUB_DOMAINS.has(domain);
+/**
+ * Hub-ness is a property of the HOSTNAME, not the registrable domain.
+ * google.com is a hub — two results there share nothing. docs.google.com is a
+ * single tool, and lumping it in meant a user's own documents scored as
+ * unrelated to each other and never condensed.
+ */
+function isHubSite(tab: Pick<AnalyzedTab, "domain" | "hostname" | "category">): boolean {
+  if (tab.hostname && HUB_DOMAINS.has(tab.domain) && !HUB_DOMAINS.has(tab.hostname)) {
+    // A subdomain of a hub that is its own product (docs./mail./drive.) is not
+    // itself a hub; the bare host and its www form are.
+    const bare = tab.hostname.replace(/^www\./, "");
+    if (bare !== tab.domain) return HUB_CATEGORIES.has(tab.category);
+  }
+  return HUB_CATEGORIES.has(tab.category) || HUB_DOMAINS.has(tab.domain);
 }
 
 /** Categories that behave as one "work suite" for clustering. */
@@ -182,8 +194,8 @@ export function pairScore(fa: TabFeatures, fb: TabFeatures, ctx: SimilarityConte
   if (
     a.normalizedUrl &&
     a.normalizedUrl === b.normalizedUrl &&
-    !isHubSite(a.domain, a.category) &&
-    !isHubSite(b.domain, b.category)
+    !isHubSite(a) &&
+    !isHubSite(b)
   ) {
     return 1;
   }
@@ -193,7 +205,7 @@ export function pairScore(fa: TabFeatures, fb: TabFeatures, ctx: SimilarityConte
   // Same site is a strong signal — unless it's a hub, where two tabs can
   // serve totally unrelated intents (two subreddits, two YouTube videos).
   if (a.domain && a.domain === b.domain) {
-    const hub = isHubSite(a.domain, a.category) || isHubSite(b.domain, b.category);
+    const hub = isHubSite(a) || isHubSite(b);
     if (hub) {
       score += 0.08;
     } else if (MULTI_TOPIC_DOMAINS.has(a.domain)) {

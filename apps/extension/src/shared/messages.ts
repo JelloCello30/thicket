@@ -9,6 +9,7 @@ import type {
 } from "@thicket/types";
 import type { AutomationRule, ScoredDoc } from "@thicket/core";
 import type { AuthState, ClosedBatch, RuleActivityEntry } from "./storage";
+import type { Capabilities } from "./env";
 
 /**
  * The typed protocol between UI surfaces and the background service worker.
@@ -23,6 +24,8 @@ export interface UiState {
   workspaces: WorkspaceData[];
   recentlyClosed: ClosedTabRecord[];
   closedBatches: ClosedBatch[];
+  /** What the configured server supports — drives whether the paid tier shows. */
+  capabilities: Capabilities;
   rules: AutomationRule[];
   ruleActivity: RuleActivityEntry[];
   onboarded: boolean;
@@ -99,6 +102,7 @@ export type BgRequest =
   | { type: "rules-toggle"; id: string; enabled: boolean }
   | { type: "rules-delete"; id: string }
   | { type: "history-delete"; url: string }
+  | { type: "history-restore"; record: ClosedTabRecord }
   | { type: "history-clear" }
   | { type: "data-export" }
   | { type: "data-wipe" };
@@ -136,6 +140,7 @@ export interface BgResponses {
   "rules-toggle": UiState;
   "rules-delete": UiState;
   "history-delete": UiState;
+  "history-restore": UiState;
   "history-clear": UiState;
   "data-export": { json: string };
   "data-wipe": { ok: true };

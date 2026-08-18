@@ -4,7 +4,6 @@ import { Kbd, Lockup, Spinner, ToastViewport, cn, useToasts } from "@thicket/ui"
 import { TIMING } from "@thicket/config";
 import type { CommandOutcome } from "../shared/messages";
 import { sendBg } from "../shared/messages";
-import { ACCOUNTS_ENABLED } from "../shared/env";
 import { useHashRoute, useTheme, useUiState } from "./state";
 import { CommandBar } from "./components/CommandBar";
 import { CleanupDialog, CompareDialog, SummaryDialog } from "./components/dialogs";
@@ -328,7 +327,23 @@ export function App() {
               }}
               onArchive={(id, archived) =>
                 void sendBg({ type: "set-workspace-state", workspaceId: id, state: archived ? "archived" : "active" })
-                  .then(refresh)
+                  .then(() => {
+                    push({
+                      message: archived ? "Archived — it's under Archived." : "Unarchived.",
+                      duration: TIMING.undoWindow,
+                      action: {
+                        label: "Undo",
+                        onClick: () => {
+                          void sendBg({
+                            type: "set-workspace-state",
+                            workspaceId: id,
+                            state: archived ? "active" : "archived",
+                          }).then(refresh);
+                        },
+                      },
+                    });
+                    void refresh();
+                  })
                   .catch(fail)
               }
               onDelete={(id) =>
@@ -352,10 +367,19 @@ export function App() {
                   })
                   .catch(fail)
               }
-              onForget={(url) =>
-                void sendBg({ type: "history-delete", url })
+              onForget={(record) =>
+                void sendBg({ type: "history-delete", url: record.url })
                   .then(() => {
-                    push({ message: "Forgotten — removed from history and search." });
+                    push({
+                      message: `Forgot “${record.title.slice(0, 40)}”`,
+                      duration: TIMING.undoWindow,
+                      action: {
+                        label: "Undo",
+                        onClick: () => {
+                          void sendBg({ type: "history-restore", record }).then(refresh);
+                        },
+                      },
+                    });
                     void refresh();
                   })
                   .catch(fail)

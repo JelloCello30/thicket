@@ -43,7 +43,16 @@ export default function DownloadPage() {
           </p>
           <ol className="mt-3 list-decimal space-y-1.5 pl-5 text-[0.875rem] leading-relaxed text-ink-secondary">
             <li>
-              Clone the repo and build:{" "}
+              Clone{" "}
+              <a
+                href="https://github.com/JelloCello30/thicket"
+                target="_blank"
+                rel="noreferrer"
+                className="text-accent hover:underline"
+              >
+                github.com/JelloCello30/thicket
+              </a>{" "}
+              and run{" "}
               <code className="rounded bg-sunken px-1.5 py-0.5 text-[0.8125rem]">pnpm install && pnpm build</code>
             </li>
             <li>

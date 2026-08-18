@@ -1,7 +1,6 @@
 import { useState } from "react";
 import type { UiState } from "../../shared/messages";
 import { Button, Input, Switch } from "@thicket/ui";
-import { ACCOUNTS_ENABLED } from "../../shared/env";
 
 /**
  * The privacy center. Every switch says what it really does; the scary
@@ -37,7 +36,7 @@ export function SettingsView({
 
   return (
     <div className="max-w-xl space-y-8">
-      {ACCOUNTS_ENABLED ? (
+      {state.capabilities.accounts ? (
         <Section title="Account">
           {state.auth ? (
             <div className="flex items-center justify-between gap-3">
@@ -115,7 +114,7 @@ export function SettingsView({
         >
           <Switch checked={prefs.paused} onChange={(v) => onPref({ paused: v })} aria-label="Pause Thicket" />
         </Row>
-        {ACCOUNTS_ENABLED ? (
+        {state.capabilities.accounts ? (
           <Row
             label="AI processing"
             hint="Send page titles and web addresses to Thicket's servers for smarter grouping, names, and search. Never page contents unless you turn that on below."
@@ -141,7 +140,7 @@ export function SettingsView({
         >
           <Switch checked={prefs.historyEnabled} onChange={(v) => onPref({ historyEnabled: v })} aria-label="Remember pages" />
         </Row>
-        {ACCOUNTS_ENABLED ? (
+        {state.capabilities.accounts ? (
           <Row label="Sync" hint="Back workspaces and history up to your account (signed in only).">
             <Switch checked={prefs.syncEnabled} onChange={(v) => onPref({ syncEnabled: v })} aria-label="Sync" />
           </Row>

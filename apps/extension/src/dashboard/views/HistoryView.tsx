@@ -14,7 +14,7 @@ export function HistoryView({
   state: UiState;
   onReopen: (url: string) => void;
   onUndoBatch: (batchId: string) => void;
-  onForget: (url: string) => void;
+  onForget: (record: UiState["recentlyClosed"][number]) => void;
   onClear: () => void;
 }) {
   const favicon = useFavicon();
@@ -112,7 +112,7 @@ export function HistoryView({
               <button
                 aria-label={`Forget ${record.title}`}
                 title="Forget this page — removed from history and search, everywhere"
-                onClick={() => onForget(record.url)}
+                onClick={() => onForget(record)}
                 className="invisible shrink-0 rounded p-1 text-ink-faint hover:text-ink focus-visible:visible group-hover/row:visible"
               >
                 <svg width="11" height="11" viewBox="0 0 10 10" fill="none" aria-hidden>

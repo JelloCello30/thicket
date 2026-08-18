@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { BRAND, LOCAL_ONLY } from "@thicket/config";
 
 export const metadata: Metadata = {
   title: "Terms of Service",
@@ -6,9 +7,52 @@ export const metadata: Metadata = {
   alternates: { canonical: "/terms" },
 };
 
-const EFFECTIVE_DATE = "August 14, 2026"; // [CUSTOMIZE] Set to your actual launch date.
+const EFFECTIVE_DATE = "August 15, 2026";
 
 export default function TermsPage() {
+  // No account, no payment, no service to be unavailable — most of the long
+  // terms describe a relationship that does not exist in this build.
+  if (LOCAL_ONLY) {
+    return (
+      <main className="mx-auto w-full max-w-2xl px-6 py-16">
+        <h1 className="text-3xl font-semibold tracking-tight text-ink">Terms</h1>
+        <p className="mt-2 text-[0.8125rem] text-ink-faint">Effective {EFFECTIVE_DATE}</p>
+        <div className="prose-thicket mt-8 space-y-8 text-[0.9375rem] leading-relaxed text-ink-secondary">
+          <Section title="What you are getting">
+            <p>
+              Thicket is a free browser extension that organizes your open tabs on your own
+              computer. There is no account, no subscription, and no service running on your behalf,
+              so there is nothing to sign up for and nothing to cancel.
+            </p>
+          </Section>
+          <Section title="No warranty">
+            <p>
+              Thicket is provided as it is, without warranty of any kind. It closes tabs only when
+              you ask it to or when a rule you created says to, and every close it performs can be
+              undone — but you should not rely on it as the only copy of anything important.
+            </p>
+          </Section>
+          <Section title="Your data is yours">
+            <p>
+              Everything the extension stores stays on your machine and belongs to you. See the{" "}
+              <a href="/privacy" className="text-accent hover:underline">
+                Privacy Policy
+              </a>
+              .
+            </p>
+          </Section>
+          <Section title="Contact">
+            <p>
+              <a href={`mailto:${BRAND.supportEmail}`} className="text-accent hover:underline">
+                {BRAND.supportEmail}
+              </a>
+            </p>
+          </Section>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="mx-auto w-full max-w-2xl px-6 py-16">
       <h1 className="text-3xl font-semibold tracking-tight text-ink">Terms of Service</h1>
@@ -45,7 +89,7 @@ export default function TermsPage() {
             Pro is billed by Stripe, monthly or yearly, and renews automatically until you cancel.
             Cancel anytime from Settings → Manage billing; you keep Pro until the end of the paid
             period. If Thicket isn't working out in your first 14 days of Pro, email
-            support@jellocello30.github.io/thicket for a full refund. Prices may change with at least 30 days' notice —
+            nolan.h.woo@gmail.com for a full refund. Prices may change with at least 30 days' notice —
             never mid-cycle.
           </p>
         </Section>

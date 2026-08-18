@@ -15,12 +15,39 @@ export async function markWorkspacesDirty(ids: string[]): Promise<void> {
   }));
 }
 
+/**
+ * Ask the configured server what it supports. Cheap, cached for an hour, and
+ * failure is meaningful: a static deployment (or no server) simply never
+ * answers, which correctly leaves the paid tier hidden.
+ */
+export async function refreshCapabilities(force = false): Promise<void> {
+  const { capabilitiesCheckedAt } = await readState("capabilitiesCheckedAt");
+  if (!force && Date.now() - capabilitiesCheckedAt < 60 * 60_000) return;
+  try {
+    const caps = await api.capabilities();
+    await writeState({
+      capabilities: {
+        accounts: Boolean(caps.accounts),
+        ai: Boolean(caps.ai),
+        embeddings: Boolean(caps.embeddings),
+        billing: Boolean(caps.billing),
+      },
+      capabilitiesCheckedAt: Date.now(),
+    });
+  } catch {
+    // No server, or offline. Keep the last known answer; if there never was
+    // one this stays all-false, which is the honest default.
+    await writeState({ capabilitiesCheckedAt: Date.now() });
+  }
+}
+
 let flushing = false;
 
 export async function flushSync(): Promise<void> {
   if (flushing) return;
   flushing = true;
   try {
+    await refreshCapabilities();
     const { auth, prefs } = await readState("auth", "prefs");
     if (!auth) return;
     // Deletions are privacy actions: they propagate even when sync is off.

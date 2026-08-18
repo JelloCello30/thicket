@@ -43,13 +43,27 @@ export function handled(
  * come from TABMIND_EXTENSION_IDS; in development any extension origin is
  * allowed so unpacked builds (whose IDs churn) can talk to localhost.
  */
+/** Best-effort caller identity for rate limiting. */
+export function clientIp(request: Request): string {
+  const forwarded = request.headers.get("x-forwarded-for");
+  if (forwarded) return forwarded.split(",")[0]!.trim();
+  return request.headers.get("x-real-ip") ?? "unknown";
+}
+
 export function withCors(request: Request, response: NextResponse): NextResponse {
   const origin = request.headers.get("origin");
   if (!origin?.startsWith("chrome-extension://")) return response;
   const env = serverEnv();
   const allowed = env.TABMIND_EXTENSION_IDS.split(",").map((s) => s.trim()).filter(Boolean);
   const id = origin.replace("chrome-extension://", "");
-  if (env.NODE_ENV === "production" && allowed.length > 0 && !allowed.includes(id)) {
+  /**
+   * In production the allowlist is authoritative, INCLUDING when it is empty.
+   * The old condition (`allowed.length > 0 && ...`) meant an unset
+   * TABMIND_EXTENSION_IDS handed access-control-allow-origin to any extension
+   * that asked — a hostile one could then read the API as the signed-in user.
+   * Fail closed: no allowlist, no cross-origin access.
+   */
+  if (env.NODE_ENV === "production" && !allowed.includes(id)) {
     return response;
   }
   response.headers.set("access-control-allow-origin", origin);

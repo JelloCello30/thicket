@@ -1,6 +1,5 @@
 import type { AnalysisResult, WorkspaceData, WorkspaceTabData } from "@thicket/types";
 import { entitlementsFor } from "@thicket/config";
-import { ACCOUNTS_ENABLED } from "../shared/env";
 import { rememberMirroredGroup } from "./mirror";
 import { readState, updateState, writeState, type ClosedBatch } from "../shared/storage";
 import { faviconFor } from "./tabs";
@@ -37,7 +36,8 @@ export async function saveWorkspaceFromGroup(
    * promise ("close it, we'll remember it") to sell something that does not
    * exist. Restored when accounts ship.
    */
-  if (!existing && ACCOUNTS_ENABLED) {
+  const { capabilities } = await readState("capabilities");
+  if (!existing && capabilities.billing) {
     const plan = auth?.user.plan ?? "free";
     const cap = entitlementsFor(plan).maxWorkspaces;
     if (cap != null && workspaces.length >= cap) {

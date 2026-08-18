@@ -1,4 +1,7 @@
 import "server-only";
+
+/** Device tokens idle longer than this are revoked on next use (180 days). */
+const DEVICE_TOKEN_MAX_IDLE_MS = 180 * 24 * 60 * 60 * 1000;
 import { createHash } from "node:crypto";
 import { and, eq, isNull } from "drizzle-orm";
 import { headers } from "next/headers";
@@ -88,12 +91,27 @@ export async function requireUser(request: Request): Promise<RequestUser> {
     const tokenHash = sha256(token);
     const database = await db();
     const rows = await database
-      .select({ id: device.id, userId: device.userId })
+      .select({ id: device.id, userId: device.userId, lastSeenAt: device.lastSeenAt })
       .from(device)
       .where(and(eq(device.tokenHash, tokenHash), isNull(device.revokedAt)))
       .limit(1);
     const record = rows[0];
     if (!record) throw new HttpError(401, "auth-required", "This device is no longer connected.");
+    /**
+     * A device token that has gone unused for a long time is far more likely
+     * to be a forgotten or leaked credential than a returning user, and it
+     * used to authenticate forever. Expire the dormant ones; an active
+     * extension heartbeats on every sync, so a real user never hits this.
+     */
+    const dormantFor = Date.now() - (record.lastSeenAt?.getTime() ?? 0);
+    if (dormantFor > DEVICE_TOKEN_MAX_IDLE_MS) {
+      await database
+        .update(device)
+        .set({ revokedAt: new Date() })
+        .where(eq(device.id, record.id))
+        .catch(() => undefined);
+      throw new HttpError(401, "auth-required", "This device was disconnected after a long idle period. Reconnect it from Settings.");
+    }
     // Touch lastSeenAt at most once a minute (cheap heartbeat).
     void database
       .update(device)

@@ -72,7 +72,7 @@ export default function PricingPage() {
             free limit of three, and the Pro features switch off.
           </Faq>
           <Faq q="Can I get a refund?">
-            If Thicket isn't working out in your first 14 days, email support@jellocello30.github.io/thicket and we'll
+            If Thicket isn't working out in your first 14 days, email nolan.h.woo@gmail.com and we'll
             refund you, no questions.
           </Faq>
         </dl>

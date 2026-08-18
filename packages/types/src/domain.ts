@@ -53,6 +53,8 @@ export interface AnalyzedTab {
   title: string;
   /** Registrable domain, e.g. "zillow.com". */
   domain: string;
+  /** Full hostname, e.g. "docs.google.com" — distinct products share a domain. */
+  hostname: string;
   /** Human site name when known, e.g. "Zillow". */
   siteName: string;
   category: SiteCategory;

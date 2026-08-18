@@ -5,6 +5,8 @@ import { device, deviceLinkCode, preference } from "@thicket/db/schema";
 import { db } from "@/lib/db";
 import { corsPreflight, handled, json } from "@/lib/http";
 import { HttpError, resolvePlan, sha256 } from "@/lib/request-auth";
+import { rateLimit } from "@/lib/rate-limit";
+import { clientIp } from "@/lib/http";
 import { track } from "@/lib/track";
 import { user as userTable } from "@thicket/db/schema";
 
@@ -12,14 +14,26 @@ export const OPTIONS = corsPreflight();
 
 /** The extension redeems a link code for a long-lived, revocable device token. */
 export const POST = handled(async (request) => {
+  // Codes are short and human-typed, so this endpoint is guessable by volume.
+  // Throttle per caller before touching the database at all.
+  rateLimit(`link:${clientIp(request)}`, 10, 60_000);
+
   const body = deviceLinkCompleteRequest.safeParse(await request.json());
   if (!body.success) throw new HttpError(400, "invalid", "Invalid link request.");
 
   const database = await db();
   const codeHash = sha256(body.data.code.trim().toUpperCase());
-  const rows = await database
-    .select()
-    .from(deviceLinkCode)
+
+  /**
+   * Claim the code ATOMICALLY. Reading it and then marking it used is a
+   * time-of-check/time-of-use race: five simultaneous redemptions of one
+   * single-use code all passed the check and each minted a live device token.
+   * A conditional UPDATE ... RETURNING lets exactly one caller win, because
+   * the database applies the `usedAt IS NULL` predicate at write time.
+   */
+  const claimed = await database
+    .update(deviceLinkCode)
+    .set({ usedAt: new Date() })
     .where(
       and(
         eq(deviceLinkCode.codeHash, codeHash),
@@ -27,14 +41,9 @@ export const POST = handled(async (request) => {
         gt(deviceLinkCode.expiresAt, new Date()),
       ),
     )
-    .limit(1);
-  const code = rows[0];
+    .returning({ id: deviceLinkCode.id, userId: deviceLinkCode.userId });
+  const code = claimed[0];
   if (!code) throw new HttpError(400, "invalid-code", "That code is invalid or expired. Get a fresh one from jellocello30.github.io/thicket.");
-
-  await database
-    .update(deviceLinkCode)
-    .set({ usedAt: new Date() })
-    .where(eq(deviceLinkCode.id, code.id));
 
   const token = `tbm_${randomBytes(32).toString("base64url")}`;
   const deviceId = randomUUID();

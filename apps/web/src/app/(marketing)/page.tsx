@@ -285,10 +285,15 @@ export default function HomePage() {
                   title: "Organization happens on your device",
                   body: "Grouping runs locally in the extension. Signed out, nothing ever leaves your browser.",
                 },
-                {
-                  title: "AI is opt-in, and it sees titles — not pages",
-                  body: "Sign in and Thicket's servers see page titles and addresses to help name and search. Reading page content is a separate switch, off by default, with its own browser permission.",
-                },
+                LOCAL_ONLY
+                  ? {
+                      title: "There is no account, and no server",
+                      body: "Nothing is uploaded because there is nowhere to upload it. Grouping, search, summaries and comparisons all run in your browser.",
+                    }
+                  : {
+                      title: "AI is opt-in, and it sees titles — not pages",
+                      body: "Sign in and Thicket's servers see page titles and addresses to help name and search. Reading page content is a separate switch, off by default, with its own browser permission.",
+                    },
                 {
                   title: "Banking and health sites are excluded automatically",
                   body: "A built-in list keeps sensitive sites out of everything. Add your own exclusions — company tools, anything — in two clicks.",
@@ -299,7 +304,9 @@ export default function HomePage() {
                 },
                 {
                   title: "Export or delete everything, for real",
-                  body: "One button downloads all your data as JSON. Another deletes your account and everything with it — workspaces, history, the lot.",
+                  body: LOCAL_ONLY
+                    ? "Settings has two buttons: download everything Thicket holds as JSON, or erase all of it. No request to file — nobody else has a copy."
+                    : "One button downloads all your data as JSON. Another deletes your account and everything with it — workspaces, history, the lot.",
                 },
               ].map((item) => (
                 <li key={item.title} className="border-l-2 border-accent/40 pl-4">

@@ -42,6 +42,13 @@ export function GroupSection({
   onMerge: (fromGroupId: string, intoGroupId: string) => void;
   saved: boolean;
 }) {
+  // Dragging worked but nothing said so. Every correction is now a visible
+  // control as well: a "Move to" picker on each row and a menu on the header.
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [movingTab, setMovingTab] = useState<number | null>(null);
+  const otherGroups = analysis.groups.filter(
+    (g) => g.id !== group.id && !g.isCatchAll && !g.isStale,
+  );
   const favicon = useFavicon();
   const [expanded, setExpanded] = useState(
     (defaultExpanded ?? true) && !group.isStale && !group.isCatchAll,
@@ -168,6 +175,41 @@ export function GroupSection({
             emphasis
             onClick={() => onClose(group.id, !group.isStale)}
           />
+          <span className="relative">
+            <HeaderAction label="⋯" onClick={() => setMenuOpen((v) => !v)} />
+            {menuOpen ? (
+              <>
+                <span className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} aria-hidden />
+                <div className="absolute right-0 z-20 mt-1 w-56 rounded-lg border border-edge bg-raised py-1 shadow-lg">
+                  <MenuItem
+                    label="Rename group"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      setDraft(group.name);
+                      setRenaming(true);
+                    }}
+                  />
+                  {otherGroups.length > 0 ? (
+                    <>
+                      <p className="px-3 pb-1 pt-2 text-[0.6875rem] font-medium uppercase tracking-wider text-ink-faint">
+                        Merge into
+                      </p>
+                      {otherGroups.slice(0, 6).map((other) => (
+                        <MenuItem
+                          key={other.id}
+                          label={other.name}
+                          onClick={() => {
+                            setMenuOpen(false);
+                            onMerge(group.id, other.id);
+                          }}
+                        />
+                      ))}
+                    </>
+                  ) : null}
+                </div>
+              </>
+            ) : null}
+          </span>
         </span>
       </header>
 
@@ -205,6 +247,34 @@ export function GroupSection({
                 {tab.excluded ? <span className="italic text-ink-faint">Private page ({tab.domain || "excluded"})</span> : tab.title}
               </button>
               {tab.pinned ? <span className="text-[0.6875rem] text-ink-faint">pinned</span> : null}
+              {otherGroups.length > 0 ? (
+                <span className="relative shrink-0">
+                  <button
+                    onClick={() => setMovingTab(movingTab === tab.tabId ? null : tab.tabId)}
+                    className="invisible rounded px-1.5 py-0.5 text-[0.75rem] text-ink-faint hover:bg-sunken hover:text-ink focus-visible:visible group-hover/tab:visible"
+                    aria-label={`Move ${tab.title} to another group`}
+                  >
+                    Move to ▾
+                  </button>
+                  {movingTab === tab.tabId ? (
+                    <>
+                      <span className="fixed inset-0 z-10" onClick={() => setMovingTab(null)} aria-hidden />
+                      <div className="absolute right-0 z-20 mt-1 w-52 rounded-lg border border-edge bg-raised py-1 shadow-lg">
+                        {otherGroups.slice(0, 8).map((other) => (
+                          <MenuItem
+                            key={other.id}
+                            label={other.name}
+                            onClick={() => {
+                              setMovingTab(null);
+                              onMoveTab(tab.tabId, other.id);
+                            }}
+                          />
+                        ))}
+                      </div>
+                    </>
+                  ) : null}
+                </span>
+              ) : null}
               <span className="hidden w-16 shrink-0 text-right text-[0.75rem] tabular-nums text-ink-faint sm:block">
                 {formatRelative(tab.lastAccessed)}
               </span>
@@ -213,6 +283,17 @@ export function GroupSection({
         </ul>
       ) : null}
     </section>
+  );
+}
+
+function MenuItem({ label, onClick }: { label: string; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="block w-full truncate px-3 py-1.5 text-left text-[0.8125rem] text-ink hover:bg-sunken"
+    >
+      {label}
+    </button>
   );
 }
 

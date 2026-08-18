@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { BRAND, LOCAL_ONLY } from "@thicket/config";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
@@ -6,9 +7,69 @@ export const metadata: Metadata = {
   alternates: { canonical: "/privacy" },
 };
 
-const EFFECTIVE_DATE = "August 14, 2026"; // [CUSTOMIZE] Set to your actual launch date.
+const EFFECTIVE_DATE = "August 15, 2026";
 
 export default function PrivacyPage() {
+  /**
+   * The shipped build has no account, no server, and no analytics, so the long
+   * policy — processors, retention, transfers, deletion requests — describes
+   * machinery that does not exist. Saying less here is not a shortcut; it is
+   * the only accurate description of what happens, and it keeps unfinished
+   * clauses off a live legal page.
+   */
+  if (LOCAL_ONLY) {
+    return (
+      <main className="mx-auto w-full max-w-2xl px-6 py-16">
+        <h1 className="text-3xl font-semibold tracking-tight text-ink">Privacy Policy</h1>
+        <p className="mt-2 text-[0.8125rem] text-ink-faint">Effective {EFFECTIVE_DATE}</p>
+        <div className="prose-thicket mt-8 space-y-8 text-[0.9375rem] leading-relaxed text-ink-secondary">
+          <Section title="The short version">
+            <p>
+              Thicket collects nothing. It has no account system and no server. Everything it
+              knows — your tab groups, saved workspaces, and page memory — is stored by your own
+              browser on your own computer, and none of it is transmitted anywhere.
+            </p>
+          </Section>
+          <Section title="What Thicket reads, and where it goes">
+            <p>
+              To group your tabs, the extension reads the titles and web addresses of the tabs you
+              have open. That reading happens inside your browser and the result is written to your
+              browser&rsquo;s local storage. There is no network request carrying it, because there
+              is nowhere for it to go.
+            </p>
+            <p>
+              Private windows are never observed. Banking and healthcare sites are excluded
+              automatically, and any site you exclude yourself is neither grouped nor remembered —
+              excluding a site also erases whatever Thicket had already stored about it.
+            </p>
+            <p>
+              Page <em>contents</em> are only read if you switch on &ldquo;Page content&rdquo; in
+              Settings, which asks for a separate browser permission. That text is used to write a
+              summary on your machine and is never stored.
+            </p>
+          </Section>
+          <Section title="Your control">
+            <p>
+              Settings → Your data has two buttons that do exactly what they say: export everything
+              Thicket holds as a JSON file, or erase all of it. Uninstalling the extension removes
+              it too. Nobody has to process a request, because nobody else has a copy.
+            </p>
+          </Section>
+          <Section title="Changes and contact">
+            <p>
+              If Thicket ever adds optional accounts or cloud sync, this page will say so plainly
+              before that ships, and those features will be opt-in. Questions:{" "}
+              <a href={`mailto:${BRAND.supportEmail}`} className="text-accent hover:underline">
+                {BRAND.supportEmail}
+              </a>
+              .
+            </p>
+          </Section>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="mx-auto w-full max-w-2xl px-6 py-16">
       <h1 className="text-3xl font-semibold tracking-tight text-ink">Privacy Policy</h1>
@@ -28,7 +89,7 @@ export default function PrivacyPage() {
         <Section title="Who we are">
           <p>
             Thicket is operated by [CUSTOMIZE: legal entity name and address]. For anything in this
-            policy, contact <a href="mailto:privacy@jellocello30.github.io/thicket" className="text-accent">privacy@jellocello30.github.io/thicket</a>.
+            policy, contact <a href="mailto:nolan.h.woo@gmail.com" className="text-accent">nolan.h.woo@gmail.com</a>.
           </p>
         </Section>
 
@@ -115,7 +176,7 @@ export default function PrivacyPage() {
             Depending on where you live (GDPR, UK GDPR, CCPA and similar), you have rights to access,
             correct, delete, and port your data, and to object to processing. The export and delete
             buttons in Settings cover most of this instantly; for anything else, email{" "}
-            <a href="mailto:privacy@jellocello30.github.io/thicket" className="text-accent">privacy@jellocello30.github.io/thicket</a> and
+            <a href="mailto:nolan.h.woo@gmail.com" className="text-accent">nolan.h.woo@gmail.com</a> and
             we'll respond within 30 days. [CUSTOMIZE: add your EU/UK representative if required.]
           </p>
         </Section>

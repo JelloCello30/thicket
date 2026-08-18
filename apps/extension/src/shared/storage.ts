@@ -5,6 +5,7 @@ import type {
   WorkspaceData,
 } from "@thicket/types";
 import type { AutomationRule, PreviousGroup } from "@thicket/core";
+import { NO_CAPABILITIES, type Capabilities } from "./env";
 import { DEFAULT_PREFERENCES } from "@thicket/types";
 
 /** Typed facade over chrome.storage — one place that knows the keys. */
@@ -69,6 +70,9 @@ export interface LocalState {
   localHistory: LocalPage[];
   /** Normalized urls queued for server-side deletion ("*" = everything). */
   pendingPageDeletes: string[];
+  /** What the configured server can do, as last reported by it. */
+  capabilities: Capabilities;
+  capabilitiesCheckedAt: number;
   closedBatches: ClosedBatch[];
   groupMemory: RememberedGroup[];
   corrections: CorrectionState;
@@ -89,6 +93,8 @@ export const DEFAULT_LOCAL_STATE: LocalState = {
   recentlyClosed: [],
   localHistory: [],
   pendingPageDeletes: [],
+  capabilities: NO_CAPABILITIES,
+  capabilitiesCheckedAt: 0,
   closedBatches: [],
   groupMemory: [],
   corrections: { locks: {}, pairBoosts: [] },

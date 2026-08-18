@@ -22,6 +22,7 @@ export function analyzeTab(tab: TabSnapshot, ctx: AnalyzeContext): AnalyzedTab {
     normalizedUrl: normalizeUrl(tab.url),
     title: tab.title || tab.url,
     domain: getDomain(tab.url),
+    hostname: "",
     siteName: "",
     category: "other",
     tokens: [],
@@ -66,6 +67,7 @@ export function analyzeTab(tab: TabSnapshot, ctx: AnalyzeContext): AnalyzedTab {
 
   return {
     ...base,
+    hostname,
     url: verdict.url,
     normalizedUrl: normalizeUrl(verdict.url),
     title: verdict.title || base.title,
