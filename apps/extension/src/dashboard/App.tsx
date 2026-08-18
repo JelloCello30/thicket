@@ -253,7 +253,7 @@ export function App() {
           onClick={() => setCommandOpen(true)}
           className="mt-4 flex items-center justify-between rounded-md border border-edge px-2.5 py-1.5 text-[0.8125rem] text-ink-faint hover:border-edge-strong hover:text-ink-secondary"
         >
-          Search or ask…
+          Search your tabs…
           <span className="flex gap-0.5">
             <Kbd>⌘</Kbd>
             <Kbd>K</Kbd>

@@ -26,6 +26,8 @@ export function Popup() {
   }
 
   const groups = (state.analysis?.groups ?? []).filter((g) => !g.isCatchAll);
+  const shownTabs = groups.reduce((n, g) => n + g.tabIds.length, 0);
+  const leftover = (state.analysis?.totalTabs ?? 0) - shownTabs;
   const totalTabs = state.analysis?.totalTabs ?? 0;
 
   return (
@@ -64,8 +66,8 @@ export function Popup() {
             Open a few tabs and Thicket will start making sense of them.
           </p>
         ) : (
-          <ul>
-            {groups.slice(0, 6).map((group) => (
+          <ul className="max-h-[420px] overflow-y-auto">
+            {groups.map((group) => (
               <li key={group.id}>
                 <button
                   onClick={() => void sendBg({ type: "focus-group", groupId: group.id }).then(() => window.close())}
@@ -77,6 +79,11 @@ export function Popup() {
                 </button>
               </li>
             ))}
+            {leftover > 0 ? (
+              <li className="px-2 py-1.5 text-[0.75rem] text-ink-faint">
+                {leftover} more {leftover === 1 ? "tab" : "tabs"} not grouped yet
+              </li>
+            ) : null}
           </ul>
         )}
       </div>

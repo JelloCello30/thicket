@@ -89,7 +89,7 @@ export default function HomePage() {
                     <path d="M10.5 10.5L13.5 13.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                   </svg>
                   <span className="text-[0.875rem] text-ink">
-                    where was that apartment with the rooftop?
+                    {LOCAL_ONLY ? "rooftop" : "where was that apartment with the rooftop?"}
                   </span>
                   <Kbd className="ml-auto">↵</Kbd>
                 </div>
@@ -119,9 +119,19 @@ export default function HomePage() {
                 Find the page. Not the title.
               </h2>
               <p className="mt-4 max-w-md text-pretty leading-relaxed text-ink-secondary">
-                Describe what you remember — "the article about local-first software," "that apartment
-                with the rooftop" — and Thicket finds it, even if those words never appeared in the
-                title. Open tabs, closed tabs, last week's research: one search.
+                {LOCAL_ONLY ? (
+                  <>
+                    Type a word you remember — "rooftop", "shinkansen", "idempotency" — and Thicket
+                    looks across your open tabs, your saved workspaces, and every page it has seen,
+                    at once. Same box takes commands: "close duplicates", "clean up".
+                  </>
+                ) : (
+                  <>
+                    Describe what you remember — "the article about local-first software," "that
+                    apartment with the rooftop" — and Thicket finds it, even if those words never
+                    appeared in the title. Open tabs, closed tabs, last week's research: one search.
+                  </>
+                )}
               </p>
               <p className="mt-3 text-[0.8125rem] text-ink-faint">
                 Press <Kbd>⌘</Kbd> <Kbd>K</Kbd> anywhere in the dashboard.
@@ -176,8 +186,8 @@ export default function HomePage() {
               Research without the mess.
             </h2>
             <p className="mt-4 text-pretty leading-relaxed text-ink-secondary">
-              Comparing five cameras across five tabs? Thicket reads what's already on your screen
-              and lays it out side by side. Blank cells stay blank — it never invents a spec.
+              Comparing five cameras across five tabs? Thicket lays them out side by side from what
+              your tabs already say. Blank cells stay blank — it never invents a spec.
             </p>
           </div>
           <div className="mt-8 overflow-x-auto rounded-lg border border-edge bg-raised shadow-md">
@@ -210,8 +220,8 @@ export default function HomePage() {
             </table>
           </div>
           <p className="mt-6 max-w-xl text-[0.9375rem] leading-relaxed text-ink-secondary">
-            Groups also get short summaries: what you're doing, what you've found, what's worth
-            keeping, and a sensible next step. Four lines, not four paragraphs.
+            Groups also get a short summary: how many sites, what's been touched recently, any
+            prices sitting in your tabs, and what's worth keeping. Four lines, not four paragraphs.
           </p>
         </div>
       </section>

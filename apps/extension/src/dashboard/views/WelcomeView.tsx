@@ -10,7 +10,9 @@ import { Button, GroupDot, Mark, Spinner } from "@thicket/ui";
 export function WelcomeView({ state, onDone }: { state: UiState; onDone: () => void }) {
   const [phase, setPhase] = useState<"scanning" | "reveal">("scanning");
   const analysis = state.analysis;
-  const realGroups = (analysis?.groups ?? []).filter((g) => !g.isCatchAll);
+  const realGroups = (analysis?.groups ?? []).filter((g) => !g.isCatchAll && !g.isStale);
+  const groupedTabs = realGroups.reduce((n, g) => n + g.tabIds.length, 0);
+  const leftover = (analysis?.totalTabs ?? 0) - groupedTabs;
   const totalTabs = analysis?.totalTabs ?? 0;
 
   useEffect(() => {
@@ -44,13 +46,13 @@ export function WelcomeView({ state, onDone }: { state: UiState; onDone: () => v
 
           {realGroups.length > 0 ? (
             <ul className="mt-6 space-y-2.5">
-              {realGroups.slice(0, 6).map((group, index) => (
+              {realGroups.map((group, index) => (
                 <li
                   key={group.id}
                   className="flex items-center gap-3 rounded-lg border border-edge bg-raised px-4 py-3 opacity-0"
                   style={{
                     animation: `tm-rise 320ms ease-out forwards`,
-                    animationDelay: `${140 + index * 110}ms`,
+                    animationDelay: `${140 + Math.min(index, 8) * 110}ms`,
                   }}
                 >
                   <GroupDot color={group.color} />
@@ -60,15 +62,23 @@ export function WelcomeView({ state, onDone }: { state: UiState; onDone: () => v
                   </span>
                 </li>
               ))}
+              {leftover > 0 ? (
+                <li className="flex items-center gap-3 px-4 py-2 text-[0.8125rem] text-ink-faint">
+                  <span className="h-1.5 w-1.5 rounded-full bg-ink/20" aria-hidden />
+                  <span className="min-w-0 flex-1">
+                    {leftover} {leftover === 1 ? "tab isn't" : "tabs aren't"} part of anything yet
+                  </span>
+                </li>
+              ) : null}
             </ul>
           ) : null}
 
           <div className="mt-8 flex items-center gap-3">
-            <Button variant="primary" onClick={onDone} data-autofocus>
+            <Button variant="primary" onClick={onDone} data-autofocus className="shrink-0 whitespace-nowrap">
               {realGroups.length > 0 ? "Take me to my tabs" : "Open Thicket"}
             </Button>
             <p className="text-[0.8125rem] text-ink-faint">
-              Titles and addresses stay on this device unless you sign in.
+              Titles and addresses never leave this device.
             </p>
           </div>
         </div>
