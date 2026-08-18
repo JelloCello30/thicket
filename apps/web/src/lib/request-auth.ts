@@ -43,17 +43,33 @@ export function sha256(value: string): string {
   return createHash("sha256").update(value).digest("hex");
 }
 
+/** How long a failing payment keeps Pro while Stripe retries the card. */
+const PAST_DUE_GRACE_MS = 14 * 24 * 60 * 60 * 1000;
+
 export async function resolvePlan(userId: string): Promise<Plan> {
   const rows = await (await db())
-    .select({ plan: subscription.plan, status: subscription.status })
+    .select({
+      plan: subscription.plan,
+      status: subscription.status,
+      currentPeriodEnd: subscription.currentPeriodEnd,
+    })
     .from(subscription)
     .where(eq(subscription.userId, userId))
     .limit(1);
   const row = rows[0];
-  if (!row) return "free";
-  return row.plan === "pro" && ["active", "trialing", "past_due"].includes(row.status)
-    ? "pro"
-    : "free";
+  if (!row || row.plan !== "pro") return "free";
+  if (["active", "trialing"].includes(row.status)) return "pro";
+  /**
+   * past_due is a grace period, not a plan. Keeping Pro while Stripe retries a
+   * card is right; keeping it forever is free Pro for anyone whose card fails,
+   * and whether that ever ends depended on a Stripe dunning setting nothing in
+   * this repo controls. Bound it here instead.
+   */
+  if (row.status === "past_due") {
+    const end = row.currentPeriodEnd?.getTime() ?? 0;
+    return end > Date.now() - PAST_DUE_GRACE_MS ? "pro" : "free";
+  }
+  return "free";
 }
 
 async function loadUser(userId: string, deviceId?: string): Promise<RequestUser> {

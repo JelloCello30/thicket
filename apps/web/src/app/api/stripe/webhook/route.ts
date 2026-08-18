@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
 import type Stripe from "stripe";
 import { NextResponse } from "next/server";
-import { stripeEvent, subscription } from "@thicket/db/schema";
+import { stripeEvent, subscription, user } from "@thicket/db/schema";
 import { serverEnv } from "@thicket/config/env";
 import { db } from "@/lib/db";
 import { intervalForPrice, stripe } from "@/lib/stripe";
@@ -33,14 +33,16 @@ export async function POST(request: Request) {
   }
 
   const database = await db();
-  // Idempotency: replay-safe.
-  const seen = await database
-    .select({ id: stripeEvent.id })
-    .from(stripeEvent)
-    .where(eq(stripeEvent.id, event.id))
-    .limit(1);
-  if (seen.length > 0) return NextResponse.json({ received: true });
-  await database.insert(stripeEvent).values({ id: event.id, type: event.type });
+  /**
+   * Idempotency, claimed atomically. A select-then-insert lets two concurrent
+   * deliveries of the same event both pass the check and both apply it.
+   */
+  const claimed = await database
+    .insert(stripeEvent)
+    .values({ id: event.id, type: event.type })
+    .onConflictDoNothing()
+    .returning({ id: stripeEvent.id });
+  if (claimed.length === 0) return NextResponse.json({ received: true });
 
   try {
     switch (event.type) {
@@ -88,9 +90,50 @@ async function userIdForCustomer(customerId: string): Promise<string | null> {
 
 async function applySubscription(userId: string, sub: Stripe.Subscription): Promise<void> {
   const database = await db();
+
+  /**
+   * The user may be gone. Deleting an account cancels the Stripe subscription,
+   * and Stripe then delivers customer.subscription.deleted for a row that no
+   * longer exists — a foreign-key violation, a 500, and a retry every few
+   * hours for days. Stripe disables endpoints that keep failing, so ONE
+   * deleted customer used to take billing down for everybody. A missing user
+   * is a success: there is nothing left to record.
+   */
+  const stillExists = await database
+    .select({ id: user.id })
+    .from(user)
+    .where(eq(user.id, userId))
+    .limit(1);
+  if (stillExists.length === 0) return;
+
   const item = sub.items.data[0];
   const active = ["active", "trialing", "past_due"].includes(sub.status);
-  const currentPeriodEnd = item?.current_period_end;
+  // Newer API versions moved current_period_end onto the subscription itself.
+  const currentPeriodEnd =
+    item?.current_period_end ?? (sub as unknown as { current_period_end?: number }).current_period_end;
+
+  /**
+   * Ignore events about a subscription the user has already replaced. Stripe
+   * does not guarantee delivery order, so a stale "active" arriving after a
+   * "deleted" would otherwise re-grant Pro to someone who cancelled.
+   */
+  const existing = await database
+    .select({
+      stripeSubscriptionId: subscription.stripeSubscriptionId,
+      status: subscription.status,
+    })
+    .from(subscription)
+    .where(eq(subscription.userId, userId))
+    .limit(1);
+  const current = existing[0];
+  if (
+    current?.stripeSubscriptionId &&
+    current.stripeSubscriptionId !== sub.id &&
+    ["active", "trialing", "past_due"].includes(current.status ?? "")
+  ) {
+    return;
+  }
+
   await database
     .insert(subscription)
     .values({

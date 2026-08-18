@@ -75,10 +75,32 @@ export const GET = handled(async (request) => {
   ];
   const lexical = searchDocs(query, docs, limit);
 
-  const results = new Map<string, SearchResultItem>();
-  for (const doc of lexical) {
-    results.set(doc.url, toItem(doc.ref, doc.url, doc.title, doc.domain, doc.lastSeenAt, doc.score, tabs));
-  }
+  /**
+   * Lexical and semantic scores are not on the same scale — lexical is an
+   * unbounded BM25-ish sum whose weakest returned hit still measures ~6.5,
+   * semantic is 1 - cosine distance, so at most 1.0. Comparing them directly
+   * sorted every vector hit below every keyword hit and then sliced them off
+   * the page, while the response still claimed `semantic: true`. Fuse by rank
+   * instead: scale-free, and a page both layers found outranks one either
+   * found alone.
+   */
+  const RRF_K = 60;
+  const fused = new Map<string, { item: SearchResultItem; score: number }>();
+  const fuse = (url: string, item: SearchResultItem, rank: number, weight: number) => {
+    const contribution = weight / (RRF_K + rank);
+    const existing = fused.get(url);
+    if (existing) existing.score += contribution;
+    else fused.set(url, { item, score: contribution });
+  };
+
+  lexical.forEach((doc, rank) => {
+    fuse(
+      doc.url,
+      toItem(doc.ref, doc.url, doc.title, doc.domain, doc.lastSeenAt, doc.score, tabs),
+      rank,
+      1,
+    );
+  });
 
   let semantic = false;
   if (user.entitlements.semanticSearch && user.aiEnabled && embeddings.available) {
@@ -103,22 +125,34 @@ export const GET = handled(async (request) => {
         .orderBy(sql`${pageRecord.embedding} <=> ${JSON.stringify(queryVector)}::vector`)
         .limit(limit);
       semantic = true;
-      for (const hit of vectorHits) {
-        if (hit.distance > 0.62) continue; // beyond this, matches feel random
-        if (!results.has(hit.url)) {
-          results.set(
+      vectorHits
+        .filter((hit) => hit.distance <= 0.62) // beyond this, matches feel random
+        .forEach((hit, rank) => {
+          fuse(
             hit.url,
-            toItem(`h:${hit.url}`, hit.url, hit.title, hit.domain, hit.lastSeenAt.getTime(), 1 - hit.distance, tabs),
+            toItem(
+              `h:${hit.url}`,
+              hit.url,
+              hit.title,
+              hit.domain,
+              hit.lastSeenAt.getTime(),
+              1 - hit.distance,
+              tabs,
+            ),
+            rank,
+            0.9,
           );
-        }
-      }
+        });
     } catch {
       /* semantic layer is additive — lexical results already collected */
     }
   }
 
   return json({
-    results: [...results.values()].sort((a, b) => b.score - a.score).slice(0, limit),
+    results: [...fused.values()]
+      .sort((a, b) => b.score - a.score)
+      .slice(0, limit)
+      .map((entry) => entry.item),
     semantic,
   });
 });

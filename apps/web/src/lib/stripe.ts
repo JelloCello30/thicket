@@ -6,7 +6,7 @@ import { HttpError } from "./request-auth";
 const env = serverEnv();
 
 export const stripe: Stripe | null = env.STRIPE_SECRET_KEY
-  ? new Stripe(env.STRIPE_SECRET_KEY)
+  ? new Stripe(env.STRIPE_SECRET_KEY, { apiVersion: "2025-08-27.basil" })
   : null;
 
 export function requireStripe(): Stripe {

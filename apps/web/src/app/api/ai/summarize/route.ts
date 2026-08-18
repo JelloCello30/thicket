@@ -21,9 +21,10 @@ export const POST = handled(async (request) => {
   const parsed = aiSummarizeRequest.safeParse(await request.json());
   if (!parsed.success) throw new HttpError(400, "invalid", "Invalid summarize payload.");
   stripExcerptsUnlessAllowed(parsed.data.tabs, user.contentAnalysis);
-  await enforceAiBudget(user, "summarize");
+  const aiClaim = await enforceAiBudget(user, "summarize");
   const { value } = await withAiCache(user, "summarize", parsed.data, () =>
     aiService.summarize(parsed.data),
+    aiClaim,
   );
   return json(value);
 });

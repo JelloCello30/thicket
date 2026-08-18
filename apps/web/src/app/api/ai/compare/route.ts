@@ -21,8 +21,8 @@ export const POST = handled(async (request) => {
   const parsed = aiCompareRequest.safeParse(await request.json());
   if (!parsed.success) throw new HttpError(400, "invalid", "Invalid compare payload.");
   stripExcerptsUnlessAllowed(parsed.data.tabs, user.contentAnalysis);
-  await enforceAiBudget(user, "compare");
-  const { value } = await withAiCache(user, "compare", parsed.data, () => aiService.compare(parsed.data));
+  const aiClaim = await enforceAiBudget(user, "compare");
+  const { value } = await withAiCache(user, "compare", parsed.data, () => aiService.compare(parsed.data), aiClaim);
   // Wire shape: rows carry a values record keyed by column.
   return json({
     subject: value.subject,

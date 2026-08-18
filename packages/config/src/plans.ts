@@ -20,7 +20,6 @@ const FREE: Entitlements = {
   summaries: false,
   compare: false,
   aiCallsPerDay: 20,
-  priorityAi: false,
 };
 
 const PRO: Entitlements = {
@@ -31,7 +30,6 @@ const PRO: Entitlements = {
   summaries: true,
   compare: true,
   aiCallsPerDay: 400,
-  priorityAi: true,
 };
 
 export function entitlementsFor(plan: Plan): Entitlements {
@@ -39,21 +37,27 @@ export function entitlementsFor(plan: Plan): Entitlements {
 }
 
 export const PLAN_FEATURES = {
+  /**
+   * Free lists what the extension does on its own; Pro lists what a server
+   * adds. Summaries and comparisons appear in both because the free versions
+   * are real and run on-device — naming them the same made upgrading look
+   * like it took features away.
+   */
   free: [
     "Automatic tab organization",
     "Automation rules",
     "Up to 3 saved workspaces",
-    "Search your open tabs and recent history",
+    "Keyword search across open tabs and recent history",
+    "Group summaries and comparisons built from your tab titles",
     "Duplicate and stale-tab cleanup",
     "7-day tab memory",
   ],
   pro: [
     "Unlimited saved workspaces",
-    "AI search across your full history",
-    "Workspace summaries",
-    "Compare tabs side by side",
-    "Advanced cleanup",
+    "Meaning-based search — find a page by what it was about, not its title",
+    "AI summaries that read the pages, not just the titles",
+    "AI comparisons with specs pulled from the pages themselves",
     "90-day tab memory",
-    "Priority AI processing",
+    "Sync across every browser you sign in on",
   ],
 } as const;

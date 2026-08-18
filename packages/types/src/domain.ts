@@ -269,7 +269,6 @@ export interface Entitlements {
   compare: boolean;
   /** AI organization/naming/command calls per day. */
   aiCallsPerDay: number;
-  priorityAi: boolean;
 }
 
 export interface UserPreferences {

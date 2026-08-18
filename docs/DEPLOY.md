@@ -74,3 +74,39 @@ Migrations on future schema changes: `pnpm db:generate` locally (commit the SQL)
 - AI result caching + daily caps are DB-backed and scale as-is.
 - PGlite is dev-only; production always requires `DATABASE_URL`
   (the server refuses to boot without it).
+
+---
+
+## Turning the paid tier on
+
+The extension asks its configured server what that deployment supports
+(`GET /api/capabilities`) and shows only what is actually there. The current
+GitHub Pages build is static — no server, so no account, no AI, no billing, and
+nothing paid is offered. That is the honest default, not a bug.
+
+Going live needs three accounts. **These require entering payment and identity
+details, so they have to be created by you — not by Claude.** Each one is
+independent; the capability endpoint turns features on as their keys appear.
+
+| Step | What to do | Turns on |
+|---|---|---|
+| 1. Host | Deploy `apps/web` anywhere that runs Node (Vercel, Fly, Railway). Set `NEXT_PUBLIC_APP_URL` to that origin. | Accounts, sync |
+| 2. Database | Provision Postgres with `pgvector` (Neon or Supabase). Set `DATABASE_URL` to the **pooled** endpoint. Run `pnpm --filter @thicket/db migrate`. | History, workspaces |
+| 3. Anthropic | Create a key at console.anthropic.com. Set `ANTHROPIC_API_KEY`. | AI summaries, comparisons, semantic search |
+| 4. Stripe | Create the product and monthly/yearly prices. Set `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_MONTHLY`, `STRIPE_PRICE_YEARLY`. | Checkout, billing portal |
+
+Then, in the extension: set the production `__APP_URL__` in
+`apps/extension/vite.config.ts` to the server origin from step 1, and add that
+origin to `externally_connectable.matches` in `apps/extension/manifest.json`.
+Until you do, the extension will keep asking a static host and correctly
+conclude there is nothing to sign into.
+
+Two things to set in the Stripe Dashboard that the code cannot set for you:
+
+- **Turn on invoice/receipt emails.** Free, and customers expect them.
+- **Set the dunning schedule** to cancel after retries. The code bounds the
+  `past_due` grace period at 14 days regardless, but the two should agree.
+
+Two required env vars fail closed if unset, by design: `CRON_SECRET` (the
+retention endpoint refuses to run without it) and `THICKET_EXTENSION_IDS`
+(the CORS allowlist refuses unknown extensions in production).

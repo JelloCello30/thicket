@@ -14,7 +14,9 @@ export const dynamic = "force-dynamic";
 export async function GET(request: Request) {
   const secret = process.env.CRON_SECRET;
   const header = request.headers.get("authorization");
-  if (secret && header !== `Bearer ${secret}`) {
+  // Fail closed: an unset secret used to mean "no auth at all", so a
+  // deployment that forgot the env var exposed a delete-heavy endpoint.
+  if (!secret || header !== `Bearer ${secret}`) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 

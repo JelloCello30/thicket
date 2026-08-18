@@ -19,9 +19,10 @@ export const POST = handled(async (request) => {
   const parsed = aiOrganizeRequest.safeParse(await request.json());
   if (!parsed.success) throw new HttpError(400, "invalid", "Invalid organize payload.");
   stripExcerptsUnlessAllowed(parsed.data.tabs, user.contentAnalysis);
-  await enforceAiBudget(user, "organize");
+  const aiClaim = await enforceAiBudget(user, "organize");
   const { value, cached } = await withAiCache(user, "organize", parsed.data, () =>
     aiService.organize(parsed.data),
+    aiClaim,
   );
   return json({ groups: value.groups, cached });
 });

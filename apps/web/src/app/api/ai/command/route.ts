@@ -11,7 +11,7 @@ export const POST = handled(async (request) => {
   requireAiPreference(user);
   const parsed = aiCommandRequest.safeParse(await request.json());
   if (!parsed.success) throw new HttpError(400, "invalid", "Invalid command payload.");
-  await enforceAiBudget(user, "command");
-  const { value } = await withAiCache(user, "command", parsed.data, () => aiService.command(parsed.data));
+  const aiClaim = await enforceAiBudget(user, "command");
+  const { value } = await withAiCache(user, "command", parsed.data, () => aiService.command(parsed.data), aiClaim);
   return json(value);
 });

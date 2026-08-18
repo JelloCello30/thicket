@@ -50,6 +50,7 @@ export async function flushSync(): Promise<void> {
     await refreshCapabilities();
     const { auth, prefs } = await readState("auth", "prefs");
     if (!auth) return;
+    await refreshAccount();
     // Deletions are privacy actions: they propagate even when sync is off.
     await flushPageDeletes();
     if (!prefs.syncEnabled || prefs.paused) return;
@@ -57,6 +58,24 @@ export async function flushSync(): Promise<void> {
     if (prefs.historyEnabled) await flushPages();
   } finally {
     flushing = false;
+  }
+}
+
+/**
+ * Re-read the account from the server. The plan was captured once at link
+ * time and never looked at again, so someone who upgraded on the web kept
+ * hitting free limits in the extension until they unlinked and relinked —
+ * paying without receiving anything. Cheap, and it rides the existing sync.
+ */
+export async function refreshAccount(): Promise<void> {
+  const { auth } = await readState("auth");
+  if (!auth) return;
+  try {
+    const result = await api.me();
+    if (result.user.plan === auth.user.plan && result.user.email === auth.user.email) return;
+    await writeState({ auth: { ...auth, user: result.user } });
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) await handleAuthLoss();
   }
 }
 
