@@ -99,7 +99,9 @@ export type BgRequest =
   | { type: "rules-toggle"; id: string; enabled: boolean }
   | { type: "rules-delete"; id: string }
   | { type: "history-delete"; url: string }
-  | { type: "history-clear" };
+  | { type: "history-clear" }
+  | { type: "data-export" }
+  | { type: "data-wipe" };
 
 export interface BgResponses {
   "get-state": UiState;
@@ -135,6 +137,8 @@ export interface BgResponses {
   "rules-delete": UiState;
   "history-delete": UiState;
   "history-clear": UiState;
+  "data-export": { json: string };
+  "data-wipe": { ok: true };
 }
 
 export interface BgError {

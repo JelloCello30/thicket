@@ -288,8 +288,16 @@ export interface UserPreferences {
   groupingStyle: "calm" | "balanced" | "eager";
   /** Hours before an untouched tab starts counting as done. */
   staleAfterHours: number;
-  /** Focus mode: gentle intercepts known rabbit holes; strict also stops unrelated new sites. */
-  /** Length of a focus-mode break, minutes. */
+  /** Order groups by most recent activity, by size, or alphabetically. */
+  groupSort: "recent" | "size" | "name";
+  /** Show the "Probably done" pile of stale tabs. */
+  showStalePile: boolean;
+  /** Show the "Everything else" pile of tabs that fit nowhere. */
+  showCatchAll: boolean;
+  /** Row height in group lists. */
+  density: "comfortable" | "compact";
+  /** Expand every group's tab list by default. */
+  expandGroups: boolean;
 }
 
 export const DEFAULT_PREFERENCES: UserPreferences = {
@@ -302,6 +310,11 @@ export const DEFAULT_PREFERENCES: UserPreferences = {
   theme: "system",
   groupingStyle: "balanced",
   staleAfterHours: 24,
+  groupSort: "recent",
+  showStalePile: true,
+  showCatchAll: true,
+  density: "comfortable",
+  expandGroups: true,
 };
 
 export interface DeviceInfo {

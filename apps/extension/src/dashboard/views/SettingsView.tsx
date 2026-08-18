@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { UiState } from "../../shared/messages";
 import { Button, Input, Switch } from "@thicket/ui";
+import { ACCOUNTS_ENABLED } from "../../shared/env";
 
 /**
  * The privacy center. Every switch says what it really does; the scary
@@ -14,6 +15,8 @@ export function SettingsView({
   onRequestContent,
   onLink,
   onSignOut,
+  onExport,
+  onWipe,
   linkBusy,
 }: {
   state: UiState;
@@ -23,88 +26,106 @@ export function SettingsView({
   onRequestContent: () => void;
   onLink: (code: string) => void;
   onSignOut: () => void;
+  onExport: () => void;
+  onWipe: () => void;
   linkBusy: boolean;
 }) {
   const [domainDraft, setDomainDraft] = useState("");
+  const [confirmWipe, setConfirmWipe] = useState(false);
   const [codeDraft, setCodeDraft] = useState("");
   const prefs = state.prefs;
 
   return (
     <div className="max-w-xl space-y-8">
-      <Section title="Account">
-        {state.auth ? (
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-sm text-ink">{state.auth.user.email}</p>
-              <p className="text-[0.8125rem] text-ink-secondary">
-                {state.auth.user.plan === "pro" ? "Pro plan" : "Free plan"} · syncing{" "}
-                {prefs.syncEnabled ? "on" : "off"}
+      {ACCOUNTS_ENABLED ? (
+        <Section title="Account">
+          {state.auth ? (
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-sm text-ink">{state.auth.user.email}</p>
+                <p className="text-[0.8125rem] text-ink-secondary">
+                  {state.auth.user.plan === "pro" ? "Pro plan" : "Free plan"} · syncing{" "}
+                  {prefs.syncEnabled ? "on" : "off"}
+                </p>
+              </div>
+              <span className="flex gap-2">
+                {state.auth.user.plan !== "pro" ? (
+                  <Button size="sm" variant="primary" onClick={() => window.open(`${state.appUrl}/pricing`, "_blank")}>
+                    Upgrade
+                  </Button>
+                ) : (
+                  <Button size="sm" onClick={() => window.open(`${state.appUrl}/app/settings`, "_blank")}>
+                    Manage
+                  </Button>
+                )}
+                <Button size="sm" variant="ghost" onClick={onSignOut}>
+                  Sign out
+                </Button>
+              </span>
+            </div>
+          ) : (
+            <div className="space-y-2.5">
+              <p className="text-[0.8125rem] leading-snug text-ink-secondary">
+                Sign in to sync workspaces across devices and unlock AI organization, summaries, and semantic
+                search. Thicket works fully on-device without an account.
               </p>
-            </div>
-            <span className="flex gap-2">
-              {state.auth.user.plan !== "pro" ? (
-                <Button size="sm" variant="primary" onClick={() => window.open(`${state.appUrl}/pricing`, "_blank")}>
-                  Upgrade
+              <div className="flex gap-2">
+                <Button size="sm" variant="primary" onClick={() => window.open(`${state.appUrl}/login?from=extension`, "_blank")}>
+                  Sign in on jellocello30.github.io/thicket
                 </Button>
-              ) : (
-                <Button size="sm" onClick={() => window.open(`${state.appUrl}/app/settings`, "_blank")}>
-                  Manage
+              </div>
+              <form
+                className="flex items-center gap-2"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (codeDraft.trim()) onLink(codeDraft.trim());
+                }}
+              >
+                <Input
+                  value={codeDraft}
+                  onChange={(e) => setCodeDraft(e.target.value)}
+                  placeholder="Or paste a connect code"
+                  aria-label="Connect code"
+                  className="h-8 max-w-[220px] text-[0.8125rem]"
+                />
+                <Button size="sm" type="submit" loading={linkBusy} disabled={!codeDraft.trim()}>
+                  Connect
                 </Button>
-              )}
-              <Button size="sm" variant="ghost" onClick={onSignOut}>
-                Sign out
-              </Button>
-            </span>
-          </div>
-        ) : (
-          <div className="space-y-2.5">
-            <p className="text-[0.8125rem] leading-snug text-ink-secondary">
-              Sign in to sync workspaces across devices and unlock AI organization, summaries, and semantic
-              search. Thicket works fully on-device without an account.
-            </p>
-            <div className="flex gap-2">
-              <Button size="sm" variant="primary" onClick={() => window.open(`${state.appUrl}/login?from=extension`, "_blank")}>
-                Sign in on jellocello30.github.io/thicket
-              </Button>
+              </form>
             </div>
-            <form
-              className="flex items-center gap-2"
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (codeDraft.trim()) onLink(codeDraft.trim());
-              }}
-            >
-              <Input
-                value={codeDraft}
-                onChange={(e) => setCodeDraft(e.target.value)}
-                placeholder="Or paste a connect code"
-                aria-label="Connect code"
-                className="h-8 max-w-[220px] text-[0.8125rem]"
-              />
-              <Button size="sm" type="submit" loading={linkBusy} disabled={!codeDraft.trim()}>
-                Connect
-              </Button>
-            </form>
-          </div>
-        )}
-      </Section>
+          )}
+        </Section>
+      ) : (
+        <Section title="Where your tabs live">
+          <p className="text-[0.8125rem] leading-relaxed text-ink-secondary">
+            Everything Thicket knows — your groups, workspaces, and page memory — is stored
+            in this browser and nowhere else. There is no account to create and no server to
+            sync with, so nothing you browse can leave this machine.
+          </p>
+          <p className="mt-2 text-[0.8125rem] leading-relaxed text-ink-secondary">
+            Clearing the extension's data, or uninstalling it, removes all of it for good.
+          </p>
+        </Section>
+      )}
 
       <Section title="Privacy">
         <Row
           label="Pause Thicket"
-          hint="Stops all observation, grouping, and syncing until you resume."
+          hint="Stops all observation and grouping until you resume. Your existing groups and workspaces are kept."
         >
           <Switch checked={prefs.paused} onChange={(v) => onPref({ paused: v })} aria-label="Pause Thicket" />
         </Row>
-        <Row
-          label="AI processing"
-          hint="Send page titles and web addresses to Thicket's servers for smarter grouping, names, and search. Never page contents unless you turn that on below."
-        >
-          <Switch checked={prefs.aiEnabled} onChange={(v) => onPref({ aiEnabled: v })} aria-label="AI processing" />
-        </Row>
+        {ACCOUNTS_ENABLED ? (
+          <Row
+            label="AI processing"
+            hint="Send page titles and web addresses to Thicket's servers for smarter grouping, names, and search. Never page contents unless you turn that on below."
+          >
+            <Switch checked={prefs.aiEnabled} onChange={(v) => onPref({ aiEnabled: v })} aria-label="AI processing" />
+          </Row>
+        ) : null}
         <Row
           label="Page content"
-          hint="Off by default. When on, Thicket may read the visible text of a page to improve summaries and comparisons. Requires a browser permission."
+          hint="Off by default. When on, Thicket reads the visible text of a page to make its summaries and comparisons more specific. The text is used on this device and never stored or sent. Requires a browser permission."
         >
           {prefs.contentAnalysis && state.contentPermission ? (
             <Switch checked onChange={() => onPref({ contentAnalysis: false })} aria-label="Page content analysis" />
@@ -120,9 +141,11 @@ export function SettingsView({
         >
           <Switch checked={prefs.historyEnabled} onChange={(v) => onPref({ historyEnabled: v })} aria-label="Remember pages" />
         </Row>
-        <Row label="Sync" hint="Back workspaces and history up to your account (signed in only).">
-          <Switch checked={prefs.syncEnabled} onChange={(v) => onPref({ syncEnabled: v })} aria-label="Sync" />
-        </Row>
+        {ACCOUNTS_ENABLED ? (
+          <Row label="Sync" hint="Back workspaces and history up to your account (signed in only).">
+            <Switch checked={prefs.syncEnabled} onChange={(v) => onPref({ syncEnabled: v })} aria-label="Sync" />
+          </Row>
+        ) : null}
       </Section>
 
       <Section title="Excluded sites">
@@ -213,6 +236,64 @@ export function SettingsView({
         </Row>
       </Section>
 
+      <Section title="Display">
+        <Row label="Order groups by" hint="Leftover piles always sit at the bottom.">
+          <div className="flex gap-1">
+            {([["recent", "Recent"], ["size", "Size"], ["name", "Name"]] as const).map(([value, label]) => (
+              <button
+                key={value}
+                onClick={() => onPref({ groupSort: value })}
+                className={
+                  prefs.groupSort === value
+                    ? "rounded-md bg-accent-soft px-2.5 py-1 text-[0.8125rem] font-medium text-accent"
+                    : "rounded-md px-2.5 py-1 text-[0.8125rem] text-ink-secondary hover:bg-sunken"
+                }
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </Row>
+        <Row label="Row height" hint="">
+          <div className="flex gap-1">
+            {([["comfortable", "Comfortable"], ["compact", "Compact"]] as const).map(([value, label]) => (
+              <button
+                key={value}
+                onClick={() => onPref({ density: value })}
+                className={
+                  prefs.density === value
+                    ? "rounded-md bg-accent-soft px-2.5 py-1 text-[0.8125rem] font-medium text-accent"
+                    : "rounded-md px-2.5 py-1 text-[0.8125rem] text-ink-secondary hover:bg-sunken"
+                }
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </Row>
+        <Row label="Open groups expanded" hint="Off shows just the headings, so a big session fits on one screen.">
+          <Switch
+            checked={prefs.expandGroups}
+            onChange={(v) => onPref({ expandGroups: v })}
+            aria-label="Open groups expanded"
+          />
+        </Row>
+        <Row label="Show “Probably done”" hint="The pile of tabs you haven't touched in a while.">
+          <Switch
+            checked={prefs.showStalePile}
+            onChange={(v) => onPref({ showStalePile: v })}
+            aria-label="Show the probably-done pile"
+          />
+        </Row>
+        <Row label="Show “Everything else”" hint="Tabs that don't belong to any activity yet.">
+          <Switch
+            checked={prefs.showCatchAll}
+            onChange={(v) => onPref({ showCatchAll: v })}
+            aria-label="Show the everything-else pile"
+          />
+        </Row>
+      </Section>
+
       <Section title="Behavior">
         <Row label="Mirror groups in the tab strip" hint="Show Thicket's groups as native Chrome tab groups.">
           <Switch
@@ -220,6 +301,11 @@ export function SettingsView({
             onChange={(v) => onPref({ mirrorTabGroups: v })}
             aria-label="Mirror tab groups"
           />
+        </Row>
+        <Row label="Keyboard shortcuts" hint="Chrome owns these — change them on its shortcuts page.">
+          <Button size="sm" onClick={() => window.open("chrome://extensions/shortcuts", "_blank")}>
+            Open shortcuts
+          </Button>
         </Row>
         <Row label="Theme" hint="">
           <div className="flex gap-1">
@@ -241,24 +327,33 @@ export function SettingsView({
       </Section>
 
       <Section title="Your data">
-        <p className="text-[0.8125rem] leading-snug text-ink-secondary">
-          Export or permanently delete everything Thicket knows —{" "}
-          {state.auth ? (
+        <p className="text-[0.8125rem] leading-relaxed text-ink-secondary">
+          Everything Thicket knows lives in this browser. Take a copy whenever you like, or
+          erase all of it — groups, workspaces, page memory, rules and settings — in one go.
+        </p>
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <Button size="sm" onClick={onExport}>
+            Export a copy
+          </Button>
+          {confirmWipe ? (
             <>
-              manage it from{" "}
+              <Button size="sm" variant="danger" onClick={onWipe}>
+                Yes, erase everything
+              </Button>
               <button
-                className="text-accent hover:underline"
-                onClick={() => window.open(`${state.appUrl}/app/settings#data`, "_blank")}
+                className="text-[0.8125rem] text-ink-secondary hover:text-ink"
+                onClick={() => setConfirmWipe(false)}
               >
-                your account settings
+                Cancel
               </button>
-              .
             </>
           ) : (
-            "signed out, everything lives in this browser's local storage and is removed when you uninstall the extension."
+            <Button size="sm" variant="ghost" onClick={() => setConfirmWipe(true)}>
+              Erase everything…
+            </Button>
           )}
-        </p>
-        <p className="mt-2 text-[0.75rem] text-ink-faint">Thicket v{state.version}</p>
+        </div>
+        <p className="mt-3 text-[0.75rem] text-ink-faint">Thicket v{state.version}</p>
       </Section>
     </div>
   );

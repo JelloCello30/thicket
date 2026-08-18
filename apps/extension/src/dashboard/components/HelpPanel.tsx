@@ -39,7 +39,7 @@ const TOPICS: HelpTopic[] = [
     title: "Save a group for later",
     keywords: "save workspace keep remember store project",
     explain:
-      "Hover any group and press Save. The group becomes a workspace — every page in it survives closing the tabs, syncs when you're signed in, and comes back with one click from the Workspaces screen.",
+      "Hover any group and press Save. The group becomes a workspace — every page in it survives closing the tabs, and comes back with one click from the Workspaces screen.",
     steps: [
       { anchor: "group", text: "Hover a group here — the actions appear on the right.", route: "now" },
     ],
@@ -86,7 +86,7 @@ const TOPICS: HelpTopic[] = [
     title: "Find any page again",
     keywords: "search find command bar lost page article history semantic",
     explain:
-      "⌘K opens the command bar. Describe what you remember — “that apartment with the rooftop” — and it searches open tabs, workspaces, and history at once. It also takes commands in plain words.",
+      "⌘K opens the command bar. Type words you remember from a page — “rooftop”, “shinkansen” — and it searches your open tabs, saved workspaces, and page history at once. It also takes commands: “close duplicates”, “clean up”, “summarize”.",
     steps: [{ anchor: "command", text: "Or click here — same thing as ⌘K.", route: "now" }],
     action: { label: "Open the command bar", run: (a) => a.openCommandBar() },
   },
@@ -107,19 +107,11 @@ const TOPICS: HelpTopic[] = [
     action: { label: "Open Settings", run: (a) => a.navigate("settings") },
   },
   {
-    id: "sync",
-    title: "Sync across devices",
-    keywords: "sync account sign in connect devices login cloud",
-    explain:
-      "Sign in at jellocello30.github.io/thicket, then connect this extension — workspaces sync everywhere and AI naming, summaries, and semantic search unlock. Thicket works fully without it.",
-    action: { label: "Sign in", run: (a) => a.openAccount() },
-  },
-  {
     id: "forget",
     title: "Delete history",
     keywords: "delete history forget clear remove erase page memory wipe",
     explain:
-      "Hover any entry in History and click × to forget that page — gone from history and search, on this device and your account. “Clear history…” at the top forgets everything at once. Deleting your whole account lives in Settings → Your data.",
+      "Hover any entry in History and click × to forget that page — it disappears from history and from search. “Clear history…” at the top forgets everything at once. Nothing is kept anywhere else, so forgotten really means gone.",
     action: { label: "Open History", run: (a) => a.navigate("history") },
   },
 ];

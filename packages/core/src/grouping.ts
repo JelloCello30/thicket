@@ -30,6 +30,8 @@ export interface GroupingOptions {
    * title and color, never split, renamed, or judged stale.
    */
   nativeGroups?: { id: number; title: string; color: GroupColor }[];
+  /** How the user wants groups ordered on screen. */
+  sort?: "recent" | "size" | "name";
   idFactory?: () => string;
 }
 
@@ -207,7 +209,7 @@ export function groupAnalyzedTabs(
   }
 
   disambiguateNames(groups, tabs);
-  sortGroups(groups, tabs);
+  sortGroups(groups, tabs, options.sort ?? "recent");
 
   return { groups, tabs, analyzedAt, totalTabs };
 
@@ -287,9 +289,12 @@ function mergeDuplicateTopicDrafts(
       for (let j = i + 1; j < drafts.length; j++) {
         const b = drafts[j]!;
         if (b.isCatchAll || SPECIAL_NAMES.has(b.name)) continue;
-        // A shared *topic* name means one activity; a shared *bucket* label
-        // ("Shopping", "Work") means only that both fell back to the same word.
-        const sameName = a.name.toLowerCase() === b.name.toLowerCase() && !GENERIC_NAMES.has(a.name);
+        // Two groups showing the same name are one group as far as the user is
+        // concerned — including fallback labels like "Research" or "Watching".
+        // Seeing the same heading twice reads as broken, and the founder has
+        // asked for merging rather than renaming. Better naming above means
+        // groups rarely land on the same label in the first place.
+        const sameName = a.name.toLowerCase() === b.name.toLowerCase();
         // Sharing an entity is only evidence of one activity when the two
         // drafts are the same KIND of activity. "Los Angeles" is the entity of
         // both an apartment hunt and a flight search, and those are two
@@ -441,7 +446,11 @@ function dominantKind(members: AnalyzedTab[]): GroupKind {
   return top && top[1] >= members.length / 2 ? top[0] : "project";
 }
 
-function sortGroups(groups: TabGroup[], tabs: AnalyzedTab[]): void {
+function sortGroups(
+  groups: TabGroup[],
+  tabs: AnalyzedTab[],
+  sort: "recent" | "size" | "name" = "recent",
+): void {
   const byTabId = new Map(tabs.map((t) => [t.tabId, t]));
   const recency = (g: TabGroup): number => {
     let max = 0;
@@ -453,10 +462,14 @@ function sortGroups(groups: TabGroup[], tabs: AnalyzedTab[]): void {
     return max;
   };
   groups.sort((a, b) => {
+    // The leftover piles always sink, whatever the chosen order — they are
+    // where you look last by definition.
     const rank = (g: TabGroup) => (g.isStale && g.kind === "stale" ? 3 : g.isCatchAll ? 2 : g.isStale ? 1 : 0);
     const ra = rank(a);
     const rb = rank(b);
     if (ra !== rb) return ra - rb;
+    if (sort === "size") return b.tabIds.length - a.tabIds.length || recency(b) - recency(a);
+    if (sort === "name") return a.name.localeCompare(b.name);
     return recency(b) - recency(a);
   });
 }

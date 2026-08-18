@@ -12,13 +12,10 @@ export function CommandBar({
   open,
   onClose,
   onOutcome,
-  aiAvailable,
 }: {
   open: boolean;
   onClose: () => void;
   onOutcome: (outcome: CommandOutcome) => void;
-  /** Signed in with AI on — free-form asks can escalate to the server. */
-  aiAvailable: boolean;
 }) {
   const [input, setInput] = useState("");
   const [results, setResults] = useState<SearchOutcome | null>(null);
@@ -128,8 +125,8 @@ export function CommandBar({
                 else void runCommand();
               }
             }}
-            placeholder={aiAvailable ? "Ask Thicket or find anything…" : "Search tabs, history, workspaces — or type a command…"}
-            aria-label="Search or ask Thicket"
+            placeholder="Search your tabs, or type a command…"
+            aria-label="Search your tabs, or type a command"
             className="h-12 w-full bg-transparent text-[0.9375rem] text-ink placeholder:text-ink-faint outline-none"
           />
           {running ? <Spinner size={16} className="text-ink-faint" /> : <Kbd>esc</Kbd>}
@@ -172,25 +169,21 @@ export function CommandBar({
         ) : input.trim().length >= 2 && results ? (
           <div className="px-3.5 py-4">
             <p className="text-sm text-ink-secondary">
-              Nothing in your open tabs, workspaces, or recent history.
+              Nothing matching “{input.trim()}” in your open tabs, workspaces, or history.
             </p>
             <p className="mt-1 text-[0.8125rem] text-ink-faint">
-              {aiAvailable ? (
-                <>
-                  Press <Kbd>↵</Kbd> and Thicket will work out what you meant.
-                </>
-              ) : (
-                "Commands still work on Enter — and signing in adds AI search across everything you've closed."
-              )}
+              Search looks at page titles and addresses. Commands still work — try “close
+              duplicates”, “clean up”, or “help”.
             </p>
           </div>
         ) : (
           <div className="flex flex-wrap gap-1.5 px-3.5 py-3">
             {[
-              "close tabs I don't need",
-              "save everything about this trip",
-              "summarize my research",
-              "reopen yesterday's tabs",
+              "close duplicates",
+              "clean up",
+              "summarize",
+              "compare",
+              "help",
             ].map((hint) => (
               <button
                 key={hint}

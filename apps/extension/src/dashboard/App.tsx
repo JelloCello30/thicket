@@ -4,6 +4,7 @@ import { Kbd, Lockup, Spinner, ToastViewport, cn, useToasts } from "@thicket/ui"
 import { TIMING } from "@thicket/config";
 import type { CommandOutcome } from "../shared/messages";
 import { sendBg } from "../shared/messages";
+import { ACCOUNTS_ENABLED } from "../shared/env";
 import { useHashRoute, useTheme, useUiState } from "./state";
 import { CommandBar } from "./components/CommandBar";
 import { CleanupDialog, CompareDialog, SummaryDialog } from "./components/dialogs";
@@ -80,19 +81,7 @@ export function App() {
   const fail = useCallback(
     (e: unknown) => {
       const err = e as Error & { code?: string };
-      if (err.code === "auth-required") {
-        push({
-          message: "Sign in to use AI features.",
-          action: { label: "Sign in", onClick: () => window.open(`${state?.appUrl}/login?from=extension`, "_blank") },
-        });
-      } else if (err.code === "pro-required") {
-        push({
-          message: err.message,
-          action: { label: "See Pro", onClick: () => window.open(`${state?.appUrl}/pricing`, "_blank") },
-        });
-      } else {
-        push({ message: err.message || "Something went wrong." });
-      }
+      push({ message: err.message || "Something went wrong." });
     },
     [push, state?.appUrl],
   );
@@ -200,7 +189,7 @@ export function App() {
       if (first) actions.save(first.id);
       else push({ message: "No groups to save yet — open a few tabs first." });
     },
-    openAccount: () => window.open(`${state?.appUrl}/login?from=extension`, "_blank"),
+    openAccount: () => window.open(`${state?.appUrl}/`, "_blank"),
   };
 
   if (error) {
@@ -294,14 +283,7 @@ export function App() {
           </a>
           {state.auth ? (
             <p className="truncate px-2.5 py-1 text-[0.75rem] text-ink-faint">{state.auth.user.email}</p>
-          ) : (
-            <a
-              href="#/settings"
-              className="px-2.5 py-1 text-[0.75rem] text-accent hover:underline underline-offset-2"
-            >
-              Sign in to sync
-            </a>
-          )}
+          ) : null}
         </div>
       </aside>
 
@@ -416,6 +398,27 @@ export function App() {
                   .finally(() => setBusy(null));
               }}
               onSignOut={() => void sendBg({ type: "sign-out" }).then(refresh).catch(fail)}
+              onExport={() =>
+                void sendBg({ type: "data-export" })
+                  .then(({ json }) => {
+                    const url = URL.createObjectURL(new Blob([json], { type: "application/json" }));
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = `thicket-data-${new Date().toISOString().slice(0, 10)}.json`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    push({ message: "Exported." });
+                  })
+                  .catch(fail)
+              }
+              onWipe={() =>
+                void sendBg({ type: "data-wipe" })
+                  .then(() => {
+                    push({ message: "Erased. Thicket is starting fresh." });
+                    void refresh();
+                  })
+                  .catch(fail)
+              }
             />
           ) : null}
         </div>
@@ -425,7 +428,6 @@ export function App() {
         open={commandOpen}
         onClose={() => setCommandOpen(false)}
         onOutcome={handleOutcome}
-        aiAvailable={Boolean(state.auth) && state.prefs.aiEnabled}
       />
       <CleanupDialog
         plan={cleanupPlan}

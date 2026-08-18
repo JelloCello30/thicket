@@ -136,13 +136,60 @@ export function nameCluster(members: AnalyzedTab[], features: TabFeatures[]): Na
     return { name: clip(titleCase(q)), kind: "research", signals };
   }
 
-  if (domDominant && domDominant.count >= members.length * 0.7) {
+  /**
+   * The words the tabs actually share beat both the site name and the category
+   * label. Six YouTube tabs about cello practice are "Cello Vibrato", not
+   * "YouTube" and not "Watching" — and naming them properly is also what stops
+   * two such groups from colliding on one meaningless label.
+   */
+  const subject = sharedSubject(members);
+  if (subject) return { name: clip(titleCase(subject)), kind, signals };
+
+  // A site name only works when the site means one activity. Hubs and
+  // marketplaces host everything, so "YouTube" or "Amazon" names nothing.
+  if (domDominant && domDominant.count >= members.length * 0.7 && !isMultiTopicHost(domDominant.value)) {
     const site = members.find((t) => t.domain === domDominant.value)?.siteName ?? domDominant.value;
     return { name: clip(site), kind, signals };
   }
 
   // Last resort: category label — still human, never "Miscellaneous".
   return { name: kindLabel(kind), kind, signals };
+}
+
+/** Sites that host many unrelated things, so their name describes no activity. */
+const MULTI_TOPIC_HOSTS = new Set([
+  "youtube.com", "reddit.com", "google.com", "wikipedia.org", "x.com", "twitter.com",
+  "arxiv.org", "github.com", "amazon.com", "ebay.com", "etsy.com", "medium.com",
+  "substack.com", "pinterest.com", "quora.com", "stackoverflow.com", "linkedin.com",
+]);
+
+function isMultiTopicHost(domain: string): boolean {
+  return MULTI_TOPIC_HOSTS.has(domain);
+}
+
+/**
+ * The most distinctive phrase the members genuinely share. Requires the words
+ * to appear in most of the group (so it describes the whole thing, not one
+ * tab) and to carry meaning on their own.
+ */
+function sharedSubject(members: AnalyzedTab[]): string | undefined {
+  if (members.length < 2) return undefined;
+  const need = Math.max(2, Math.ceil(members.length * 0.6));
+  const counts = new Map<string, number>();
+  for (const tab of members) {
+    for (const token of new Set(tab.tokens)) {
+      if (token.length < 4) continue;
+      counts.set(token, (counts.get(token) ?? 0) + 1);
+    }
+  }
+  const shared = [...counts.entries()]
+    .filter(([, n]) => n >= need)
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .map(([t]) => t);
+  if (shared.length === 0) return undefined;
+  // Two words read as a subject ("cello vibrato"); one is fine if that is all
+  // they share. More than two starts sounding like a sentence.
+  return shared.slice(0, 2).join(" ");
 }
 
 function inferKindFromCategories(members: AnalyzedTab[]): GroupKind {

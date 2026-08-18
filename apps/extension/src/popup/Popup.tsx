@@ -50,7 +50,7 @@ export function Popup() {
         onClick={() => openDashboard("now", true)}
         className="mx-4 mt-3 flex w-[calc(100%-2rem)] items-center justify-between rounded-md border border-edge px-3 py-2 text-left text-[0.8125rem] text-ink-faint hover:border-edge-strong"
       >
-        Ask Thicket or find anything…
+        Search your tabs…
         <span className="text-[0.6875rem]">⌘⇧K</span>
       </button>
 

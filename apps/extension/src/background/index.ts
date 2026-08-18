@@ -295,6 +295,25 @@ async function handle(request: BgRequest): Promise<unknown> {
       notifyUi();
       return uiState();
     }
+    case "data-export": {
+      // Everything Thicket holds, as one readable file. No server involved,
+      // so this is the whole picture — not a partial copy of a cloud record.
+      const all = await chrome.storage.local.get(null);
+      return {
+        json: JSON.stringify(
+          { exportedAt: new Date().toISOString(), version: EXT_VERSION, data: all },
+          null,
+          2,
+        ),
+      };
+    }
+    case "data-wipe": {
+      const { wipeLocalData } = await import("./history");
+      await wipeLocalData();
+      await runAnalysis();
+      notifyUi();
+      return { ok: true };
+    }
     case "history-clear": {
       const { clearHistory } = await import("./history");
       await clearHistory();

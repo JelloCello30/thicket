@@ -23,7 +23,12 @@ export function NowView({
   };
 }) {
   const analysis = state.analysis;
-  const groups = analysis?.groups ?? [];
+  const prefs = state.prefs;
+  const groups = (analysis?.groups ?? []).filter((g) => {
+    if (g.isCatchAll) return prefs.showCatchAll;
+    if (g.isStale && g.kind === "stale") return prefs.showStalePile;
+    return true;
+  });
   const realGroups = groups.filter((g) => !g.isCatchAll && !g.isStale);
   const totalTabs = analysis?.totalTabs ?? 0;
 
@@ -76,6 +81,8 @@ export function NowView({
           <GroupSection
             key={group.id}
             helpAnchor={index === 0}
+            compact={prefs.density === "compact"}
+            defaultExpanded={prefs.expandGroups}
             group={group}
             analysis={analysis}
             busy={busy}

@@ -12,6 +12,8 @@ export function GroupSection({
   analysis,
   busy,
   helpAnchor,
+  compact,
+  defaultExpanded,
   onFocusTab,
   onFocusGroup,
   onSave,
@@ -27,6 +29,8 @@ export function GroupSection({
   analysis: AnalysisResult;
   busy?: string | null;
   helpAnchor?: boolean;
+  compact?: boolean;
+  defaultExpanded?: boolean;
   onFocusTab: (tabId: number) => void;
   onFocusGroup: (groupId: string) => void;
   onSave: (groupId: string) => void;
@@ -39,7 +43,9 @@ export function GroupSection({
   saved: boolean;
 }) {
   const favicon = useFavicon();
-  const [expanded, setExpanded] = useState(!group.isStale && !group.isCatchAll);
+  const [expanded, setExpanded] = useState(
+    (defaultExpanded ?? true) && !group.isStale && !group.isCatchAll,
+  );
   const [renaming, setRenaming] = useState(false);
   const [draft, setDraft] = useState(group.name);
   const [dropActive, setDropActive] = useState(false);
@@ -185,7 +191,10 @@ export function GroupSection({
                 e.dataTransfer.setData("thicket/from-group", group.id);
                 e.dataTransfer.effectAllowed = "move";
               }}
-              className="group/tab flex cursor-default items-center gap-2.5 rounded-md py-[0.3rem] pl-[3.25rem] pr-2 hover:bg-sunken"
+              className={cn(
+                "group/tab flex cursor-default items-center gap-2.5 rounded-md pl-[3.25rem] pr-2 hover:bg-sunken",
+                compact ? "py-[0.15rem]" : "py-[0.3rem]",
+              )}
             >
               <Favicon domain={tab.domain} src={tab.excluded ? undefined : favicon(tab.url)} size={16} />
               <button

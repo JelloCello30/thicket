@@ -77,6 +77,7 @@ async function doAnalyze(): Promise<AnalysisResult> {
     lockedAssignments: new Map(Object.entries(state.corrections.locks)),
     tuning: GROUPING_STYLES[state.prefs.groupingStyle] ?? GROUPING_STYLES.balanced,
     nativeGroups: userNativeGroups,
+    sort: state.prefs.groupSort,
   };
 
   const result = groupTabs(
