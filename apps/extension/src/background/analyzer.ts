@@ -8,7 +8,7 @@ import { TIMING } from "@thicket/config";
 import { api } from "../shared/api";
 import { readState, writeState, type RememberedGroup } from "../shared/storage";
 import { collectTabs } from "./tabs";
-import { mirrorGroups, readMirrorMap } from "./mirror";
+import { mirrorGroups, resolveOurGroupIds } from "./mirror";
 import { track } from "./analytics";
 import { runAutomations } from "./automations";
 
@@ -53,16 +53,28 @@ export async function runAnalysis(): Promise<AnalysisResult> {
 }
 
 async function doAnalyze(): Promise<AnalysisResult> {
-  const [snapshots, state, allNativeGroups, mirrorMap] = await Promise.all([
+  const [snapshots, state, allNativeGroups] = await Promise.all([
     collectTabs(),
     readState("prefs", "excludedDomains", "groupMemory", "corrections", "workspaces", "auth"),
     chrome.tabGroups.query({}).catch(() => [] as chrome.tabGroups.TabGroup[]),
-    readMirrorMap(),
   ]);
 
-  // Native groups Thicket didn't create belong to the user — honor them as
-  // locked groups (their title, their color, never split or renamed).
-  const ours = new Set(Object.values(mirrorMap));
+  /**
+   * Native groups Thicket didn't create belong to the user — honor them as
+   * locked groups (their title, their color, never split or renamed).
+   *
+   * Getting this wrong in the other direction is the expensive mistake: if
+   * Thicket fails to recognise its OWN group it hands it to the user, stops
+   * putting related tabs in it, and renders a duplicate beside it. So
+   * ownership is resolved against a durable record that survives restarts and
+   * mirroring passes that skipped a group, not against the last pass's map.
+   */
+  const tabsByGroup = new Map<number, string[]>();
+  for (const tab of snapshots) {
+    if (tab.groupId == null || tab.groupId < 0) continue;
+    tabsByGroup.set(tab.groupId, [...(tabsByGroup.get(tab.groupId) ?? []), tab.url]);
+  }
+  const ours = await resolveOurGroupIds(allNativeGroups, tabsByGroup);
   const userNativeGroups = allNativeGroups
     .filter((g) => !ours.has(g.id))
     .map((g) => ({

@@ -282,6 +282,40 @@ async function main() {
     checks["native group untouched in strip"] = false;
   }
 
+  // ————— Thicket must never mistake its OWN groups for the user's —————
+  // This is the bug behind "it flags groups it created as created by user and
+  // leaves them": ownership used to be inferred from the last mirroring pass,
+  // so a skipped pass — or a restart, which renumbers every group — handed
+  // Thicket's own groups to the user, froze them, and drew duplicates beside.
+  const ownership = await dashboard.evaluate(async () => {
+    const countAdopted = async () => {
+      const s = await chrome.runtime.sendMessage({ type: "analyze-now" });
+      return (s.analysis?.groups ?? []).filter((g) => g.nativeGroupId != null).length;
+    };
+
+    // Baseline: only the one group the harness made by hand should be native.
+    const baseline = await countAdopted();
+
+    // (a) A mirroring pass that skipped a group must not surrender it.
+    await chrome.storage.local.remove("mirrorMap");
+    const afterMapLoss = await countAdopted();
+
+    // (b) A browser restart renumbers groups. Rewrite the remembered ids to
+    // bogus values, leaving only title + member URLs to recognise them by.
+    const { ownedGroups = [] } = await chrome.storage.local.get("ownedGroups");
+    await chrome.storage.local.set({
+      ownedGroups: ownedGroups.map((o, i) => ({ ...o, chromeGroupId: 90000 + i })),
+    });
+    const afterRenumber = await countAdopted();
+
+    return { baseline, afterMapLoss, afterRenumber, remembered: ownedGroups.length };
+  });
+  console.log("OWNERSHIP:", JSON.stringify(ownership));
+  checks["own groups survive a lost mirror map"] =
+    ownership.afterMapLoss === ownership.baseline;
+  checks["own groups survive a restart renumbering"] =
+    ownership.remembered > 0 && ownership.afterRenumber === ownership.baseline;
+
   console.log("checks:", JSON.stringify(checks, null, 2));
   const failed = Object.entries(checks).filter(([, ok]) => !ok);
 
