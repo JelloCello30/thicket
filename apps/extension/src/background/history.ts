@@ -20,6 +20,18 @@ export async function recordVisit(tabId: number, url: string, title: string): Pr
     excludedDomains: new Set(excludedDomains),
   });
   if (!verdict.ok) return;
+  /**
+   * An excluded site is excluded, full stop. This used to record the page
+   * locally and merely refuse to SYNC it — a distinction that meant nothing
+   * once there was no server, and that broke the promise Settings makes in so
+   * many words: "never grouped, never remembered, never leave this device".
+   * Excluding chase.com and then finding it in search, History, and the data
+   * export is the single worst thing this extension could do.
+   */
+  if (verdict.sensitive) {
+    lastKnown.delete(tabId);
+    return;
+  }
 
   const normalized = normalizeUrl(verdict.url);
   const domain = new URL(verdict.url).hostname.replace(/^www\./, "");

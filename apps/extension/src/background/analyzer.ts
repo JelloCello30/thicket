@@ -141,7 +141,7 @@ function attachLocalInsights(result: AnalysisResult): void {
     } else {
       if (domains.size > 0) parts.push(`${domains.size} ${domains.size === 1 ? "site" : "sites"}`);
       if (lastActive > 0) parts.push(`active ${relativeTime(lastActive)}`);
-      if (group.signals[0]) parts.push(group.signals[0].toLowerCase());
+      if (group.signals[0]) parts.push(group.signals[0]);
     }
     if (parts.length > 0 && !group.insight) {
       group.insight = { text: sentence(parts), source: "local", generatedAt: Date.now() };
@@ -150,6 +150,8 @@ function attachLocalInsights(result: AnalysisResult): void {
 }
 
 function sentence(parts: string[]): string {
+  // Join as written — lowercasing the whole line used to mangle the names it
+  // contains ("all around echo park", "mostly google docs").
   const joined = parts.join(" · ");
   return joined.charAt(0).toUpperCase() + joined.slice(1);
 }

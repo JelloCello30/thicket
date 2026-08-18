@@ -303,7 +303,7 @@ export function SettingsView({
           />
         </Row>
         <Row label="Keyboard shortcuts" hint="Chrome owns these — change them on its shortcuts page.">
-          <Button size="sm" onClick={() => window.open("chrome://extensions/shortcuts", "_blank")}>
+          <Button size="sm" onClick={() => void chrome.tabs.create({ url: "chrome://extensions/shortcuts" })}>
             Open shortcuts
           </Button>
         </Row>

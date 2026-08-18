@@ -149,6 +149,7 @@ async function handle(request: BgRequest): Promise<unknown> {
         request.patch.paused === false ||
         request.patch.mirrorTabGroups === true ||
         request.patch.groupingStyle !== undefined ||
+        request.patch.groupSort !== undefined ||
         request.patch.staleAfterHours !== undefined
       ) {
         await runAnalysis();
@@ -160,6 +161,23 @@ async function handle(request: BgRequest): Promise<unknown> {
       const domain = normalizeExcludedDomainInput(request.domain);
       if (domain) {
         await updateState("excludedDomains", (list) => [...new Set([...list, domain])]);
+        // Excluding a site retroactively forgets it. Otherwise "never
+        // remembered" would only apply to pages visited after the moment the
+        // user thought to add it, which is not what anyone means by excluding.
+        const matches = (url: string) => {
+          try {
+            return new URL(url).hostname.replace(/^www\./, "").endsWith(domain);
+          } catch {
+            return false;
+          }
+        };
+        await updateState("localHistory", (pages) => pages.filter((p) => !matches(p.url)));
+        await updateState("recentlyClosed", (closed) => closed.filter((c) => !matches(c.url)));
+        await updateState("closedBatches", (batches) =>
+          batches
+            .map((b) => ({ ...b, tabs: b.tabs.filter((t) => !matches(t.url)) }))
+            .filter((b) => b.tabs.length > 0),
+        );
         await runAnalysis();
       }
       return uiState();

@@ -166,6 +166,13 @@ export function CommandBar({
               );
             })}
           </ul>
+        ) : input.trim().length >= 2 && looksLikeCommand(input) ? (
+          <div className="flex items-center gap-2 px-3.5 py-4 text-sm text-ink-secondary">
+            <Kbd>↵</Kbd>
+            <span>
+              Run <span className="font-medium text-ink">{input.trim()}</span>
+            </span>
+          </div>
         ) : input.trim().length >= 2 && results ? (
           <div className="px-3.5 py-4">
             <p className="text-sm text-ink-secondary">
@@ -187,7 +194,10 @@ export function CommandBar({
             ].map((hint) => (
               <button
                 key={hint}
-                onClick={() => setInput(hint)}
+                onClick={() => {
+                  setInput(hint);
+                  inputRef.current?.focus();
+                }}
                 className="rounded-full border border-edge px-2.5 py-1 text-[0.75rem] text-ink-secondary hover:border-edge-strong hover:text-ink"
               >
                 {hint}
