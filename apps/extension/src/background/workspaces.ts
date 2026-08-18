@@ -1,5 +1,7 @@
 import type { AnalysisResult, WorkspaceData, WorkspaceTabData } from "@thicket/types";
 import { entitlementsFor } from "@thicket/config";
+import { ACCOUNTS_ENABLED } from "../shared/env";
+import { rememberMirroredGroup } from "./mirror";
 import { readState, updateState, writeState, type ClosedBatch } from "../shared/storage";
 import { faviconFor } from "./tabs";
 import { recordClosed } from "./history";
@@ -28,11 +30,17 @@ export async function saveWorkspaceFromGroup(
   const { workspaces, auth } = await readState("workspaces", "auth");
   const existing = workspaces.find((w) => w.id === group.savedWorkspaceId);
 
-  if (!existing) {
+  /**
+   * The workspace cap only means something when there is a plan to upgrade to.
+   * With no account and no server, every workspace is a few KB in this
+   * browser's own storage — capping it would block the product's central
+   * promise ("close it, we'll remember it") to sell something that does not
+   * exist. Restored when accounts ship.
+   */
+  if (!existing && ACCOUNTS_ENABLED) {
     const plan = auth?.user.plan ?? "free";
     const cap = entitlementsFor(plan).maxWorkspaces;
-    const activeCount = workspaces.length;
-    if (cap != null && activeCount >= cap) {
+    if (cap != null && workspaces.length >= cap) {
       throw new LimitError(
         auth
           ? `The free plan keeps ${cap} workspaces. Upgrade to Pro for unlimited.`
@@ -191,6 +199,10 @@ export async function undoBatch(batchId: string): Promise<number> {
           title: entry.name,
           color: (entry.color as chrome.tabGroups.ColorEnum) ?? "grey",
         });
+        // Claim it. Without this the next analysis finds a native group it
+        // doesn't recognise, decides the user made it, and locks it — so the
+        // group stops absorbing related tabs and loses its saved link.
+        await rememberMirroredGroup(groupId, chromeGroupId);
       } catch {
         /* grouping is cosmetic; the locks still land them correctly */
       }
@@ -228,6 +240,11 @@ export async function restoreWorkspace(workspaceId: string): Promise<number> {
         title: workspace.title,
         color: workspace.color as chrome.tabGroups.ColorEnum,
       });
+      // Thicket made this group two seconds ago — claim it, or the next
+      // analysis mistakes it for one the user built by hand and freezes it.
+      if (workspace.originGroupId) {
+        await rememberMirroredGroup(workspace.originGroupId, chromeGroupId);
+      }
     } catch {
       /* grouping is cosmetic */
     }

@@ -23,8 +23,21 @@ interface MirrorMap {
   [groupId: string]: number;
 }
 
+export async function rememberMirroredGroup(groupId: string, chromeGroupId: number): Promise<void> {
+  const map = await readMirrorMap();
+  map[groupId] = chromeGroupId;
+  await chrome.storage.local.set({ mirrorMap: map });
+}
+
 export async function readMirrorMap(): Promise<MirrorMap> {
-  const raw = await chrome.storage.session.get("mirrorMap");
+  /**
+   * Deliberately storage.local, not storage.session. Session storage is wiped
+   * when the browser restarts, and on the next analysis Thicket would find its
+   * OWN native tab groups, fail to recognise them, and treat them as groups the
+   * user made by hand — locking them, refusing to absorb new tabs into them,
+   * and rendering a second group with the same name beside them.
+   */
+  const raw = await chrome.storage.local.get("mirrorMap");
   return (raw.mirrorMap as MirrorMap | undefined) ?? {};
 }
 
@@ -80,7 +93,7 @@ export async function mirrorGroups(result: AnalysisResult): Promise<void> {
     }
   }
 
-  await chrome.storage.session.set({ mirrorMap: nextMap });
+  await chrome.storage.local.set({ mirrorMap: nextMap });
 }
 
 async function groupStillExists(chromeGroupId: number): Promise<boolean> {
@@ -104,5 +117,5 @@ export async function unmirrorAll(): Promise<void> {
       /* already gone */
     }
   }
-  await chrome.storage.session.set({ mirrorMap: {} });
+  await chrome.storage.local.set({ mirrorMap: {} });
 }

@@ -16,10 +16,11 @@ on:
       - ".github/workflows/pages.yml"
   workflow_dispatch:
 
+# The job commits the built site to the gh-pages branch, so it needs write
+# access to repository contents. (It was `contents: read`, which builds fine
+# and then fails on the push — the site never updated.)
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 # Never let two deploys race; always finish the newest.
 concurrency:
@@ -68,5 +69,8 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
-          git commit -q -m "Deploy site from ${GITHUB_SHA::7}"
-          git push -qf "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git" gh-pages
+          git commit -q -m "Deploy site from ${GITHUB_SHA::7}" || {
+            echo "Nothing changed in the built site; skipping deploy."
+            exit 0
+          }
+          git push -f "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git" gh-pages
