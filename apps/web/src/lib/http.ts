@@ -40,7 +40,7 @@ export function handled(
 
 /**
  * CORS for the extension: its origin is chrome-extension://<id>. Allowed IDs
- * come from TABMIND_EXTENSION_IDS; in development any extension origin is
+ * come from THICKET_EXTENSION_IDS; in development any extension origin is
  * allowed so unpacked builds (whose IDs churn) can talk to localhost.
  */
 /** Best-effort caller identity for rate limiting. */
@@ -54,12 +54,12 @@ export function withCors(request: Request, response: NextResponse): NextResponse
   const origin = request.headers.get("origin");
   if (!origin?.startsWith("chrome-extension://")) return response;
   const env = serverEnv();
-  const allowed = env.TABMIND_EXTENSION_IDS.split(",").map((s) => s.trim()).filter(Boolean);
+  const allowed = env.THICKET_EXTENSION_IDS.split(",").map((s) => s.trim()).filter(Boolean);
   const id = origin.replace("chrome-extension://", "");
   /**
    * In production the allowlist is authoritative, INCLUDING when it is empty.
    * The old condition (`allowed.length > 0 && ...`) meant an unset
-   * TABMIND_EXTENSION_IDS handed access-control-allow-origin to any extension
+   * THICKET_EXTENSION_IDS handed access-control-allow-origin to any extension
    * that asked — a hostile one could then read the API as the signed-in user.
    * Fail closed: no allowlist, no cross-origin access.
    */

@@ -81,5 +81,5 @@ product captures, not mockups.
 3. ⚠️ Complete the privacy disclosures above; submit for review (typically 1–3 days;
    the optional `<all_urls>` host permission may trigger a longer review — the
    justification above is written for it).
-4. After approval: copy the extension ID into `TABMIND_EXTENSION_IDS` (Vercel) and
+4. After approval: copy the extension ID into `THICKET_EXTENSION_IDS` (Vercel) and
    `chromeStoreUrl` in `packages/config/src/brand.ts`; redeploy the web app.

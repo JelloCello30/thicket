@@ -44,7 +44,7 @@ const serverEnvSchema = z.object({
   POSTHOG_HOST: z.string().url().default("https://us.i.posthog.com"),
 
   /** Comma-separated extension IDs allowed for device linking + CORS. */
-  TABMIND_EXTENSION_IDS: z.string().default(""),
+  THICKET_EXTENSION_IDS: z.string().default(""),
 });
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>;

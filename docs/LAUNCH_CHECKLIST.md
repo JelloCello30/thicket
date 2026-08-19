@@ -33,7 +33,7 @@ external-account and judgment steps a human must perform.
 - [ ] Chrome Web Store developer account ($5)
 - [ ] Upload `apps/extension/release/thicket-0.1.0.zip` with the listing kit in
       docs/CHROME_WEB_STORE.md (copy, screenshots, privacy disclosures are ready)
-- [ ] After approval: put the assigned ID into `TABMIND_EXTENSION_IDS` (Vercel) and
+- [ ] After approval: put the assigned ID into `THICKET_EXTENSION_IDS` (Vercel) and
       `chromeStoreUrl` in `packages/config/src/brand.ts`; redeploy
 
 ## 5. Verify the loop (15 min, with the store build)

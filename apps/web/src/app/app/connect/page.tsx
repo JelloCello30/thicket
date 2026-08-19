@@ -5,7 +5,7 @@ export const metadata = { title: "Connect extension" };
 
 export default async function ConnectPage() {
   await requireSessionUser();
-  const extensionIds = (process.env.TABMIND_EXTENSION_IDS ?? "")
+  const extensionIds = (process.env.THICKET_EXTENSION_IDS ?? "")
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean);
