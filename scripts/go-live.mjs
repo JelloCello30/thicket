@@ -2,7 +2,8 @@
 /**
  * Go-live tooling for a Thicket *server* deployment (the paid tier).
  *
- *   node scripts/go-live.mjs check              audit the environment, test every key that is set
+ *   node scripts/go-live.mjs setup   guided, one question at a time (start here)
+  go-live.mjs check              audit the environment, test every key that is set
  *   node scripts/go-live.mjs stripe             create/reuse the Thicket Pro product, prices, webhook
  *   node scripts/go-live.mjs migrate            apply migrations to DATABASE_URL
  *
@@ -937,6 +938,10 @@ async function main() {
   };
 
   switch (command) {
+    case "setup": {
+      const { runSetup } = await import("./setup.mjs");
+      return runSetup(ROOT);
+    }
     case "check":
       return commandCheck(options);
     case "stripe":
