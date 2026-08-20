@@ -21,6 +21,10 @@ export async function markWorkspacesDirty(ids: string[]): Promise<void> {
  * answers, which correctly leaves the paid tier hidden.
  */
 export async function refreshCapabilities(force = false): Promise<void> {
+  // Local-only build: there is no server to ask, and asking would be an
+  // outbound request on every install and every hour — the one thing the
+  // listing promises does not happen.
+  if (__LOCAL_ONLY__) return;
   const { capabilitiesCheckedAt } = await readState("capabilitiesCheckedAt");
   if (!force && Date.now() - capabilitiesCheckedAt < 60 * 60_000) return;
   try {

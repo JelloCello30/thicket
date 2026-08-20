@@ -34,8 +34,8 @@ export default function PrivacyPage() {
             <p>
               To group your tabs, the extension reads the titles and web addresses of the tabs you
               have open. That reading happens inside your browser and the result is written to your
-              browser&rsquo;s local storage. There is no network request carrying it, because there
-              is nowhere for it to go.
+              browser&rsquo;s local storage. No network request carries it anywhere: the extension is
+              built without the code to make one, and you can confirm that from its Network tab.
             </p>
             <p>
               Private windows are never observed. Banking and healthcare sites are excluded
@@ -43,9 +43,14 @@ export default function PrivacyPage() {
               excluding a site also erases whatever Thicket had already stored about it.
             </p>
             <p>
-              Page <em>contents</em> are only read if you switch on &ldquo;Page content&rdquo; in
-              Settings, which asks for a separate browser permission. That text is used to write a
-              summary on your machine and is never stored.
+              Thicket never reads the <em>contents</em> of a page. It holds no permission to run
+              on any website, so the text, images, and form fields on the pages you visit are
+              not available to it at all.
+            </p>
+            <p>
+              Pages Thicket has seen are remembered for 7 days so a tab you closed on Monday is
+              still findable, and then deleted. You can erase that record sooner, in whole or one
+              page at a time, from the History screen.
             </p>
           </Section>
           <Section title="Your control">

@@ -214,7 +214,7 @@ const CATALOG = [
 
   { name: "THICKET_EXTENSION_IDS", level: "optional", group: "extension", public: true,
     turnsOn: "The CORS + device-linking allowlist. In production it is authoritative INCLUDING when empty: unset means no extension may talk to the API.",
-    action: "Set it to the Chrome Web Store extension ID once the store assigns one. Note the legacy TABMIND_ prefix — the code has not been renamed." },
+    action: "Set it to the Chrome Web Store extension ID once the store assigns one." },
 
   { name: "STATIC_EXPORT", level: "forbidden", group: "forbidden", public: true,
     turnsOn: 'Flips next.config.ts to output:"export" and drops the security headers. GitHub Pages only.',

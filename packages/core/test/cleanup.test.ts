@@ -69,3 +69,24 @@ describe("buildCleanupPlan", () => {
     expect(saved!.reason).toBe("saved");
   });
 });
+
+describe("buildCleanupPlan privacy", () => {
+  it("never offers to close a private or excluded tab", () => {
+    /**
+     * Private and excluded tabs have a blanked url, and a blank url reads as
+     * an empty tab — so before the guard, cleanup listed someone's private
+     * window under "empty tabs" and offered to close it.
+     */
+    const tabs = analyzeTabs(
+      [
+        snap({ id: 1, url: "https://example.com/secret", title: "Secret", incognito: true } as never),
+        snap({ id: 2, url: "https://chase.com/accounts", title: "Checking" }),
+        snap({ id: 3, url: "chrome://newtab/", title: "New Tab" }),
+      ],
+      { ...ctx, excludedDomains: new Set(["chase.com"]) },
+    );
+    const plan = buildCleanupPlan(tabs);
+    expect(plan.candidates.map((c) => c.tabId)).toEqual([3]);
+    expect(plan.counts.newtab).toBe(1);
+  });
+});

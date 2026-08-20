@@ -122,21 +122,29 @@ export function SettingsView({
             <Switch checked={prefs.aiEnabled} onChange={(v) => onPref({ aiEnabled: v })} aria-label="AI processing" />
           </Row>
         ) : null}
-        <Row
-          label="Page content"
-          hint="Off by default. When on, Thicket reads the visible text of a page to make its summaries and comparisons more specific. The text is used on this device and never stored or sent. Requires a browser permission."
-        >
-          {prefs.contentAnalysis && state.contentPermission ? (
-            <Switch checked onChange={() => onPref({ contentAnalysis: false })} aria-label="Page content analysis" />
-          ) : (
-            <Button size="sm" onClick={onRequestContent}>
-              Turn on…
-            </Button>
-          )}
-        </Row>
+        {/*
+          Page content only ever fed the server summarizer. This build has no
+          server, asks for no host permission, and never reads a page — so the
+          switch is not offered. Offering it would mean asking for access to
+          every site for a feature that then does nothing.
+        */}
+        {state.capabilities.ai ? (
+          <Row
+            label="Page content"
+            hint="Off by default. When on, Thicket sends an excerpt of the visible text of the pages in a group to Thicket's servers to write a sharper summary. The excerpt is not stored. Requires a browser permission."
+          >
+            {prefs.contentAnalysis && state.contentPermission ? (
+              <Switch checked onChange={() => onPref({ contentAnalysis: false })} aria-label="Page content analysis" />
+            ) : (
+              <Button size="sm" onClick={onRequestContent}>
+                Turn on…
+              </Button>
+            )}
+          </Row>
+        ) : null}
         <Row
           label="Remember pages"
-          hint="Keep a local history of pages Thicket has seen so closed tabs stay findable."
+          hint="Keep a local record of pages Thicket has seen so closed tabs stay findable. Kept for 7 days, then deleted."
         >
           <Switch checked={prefs.historyEnabled} onChange={(v) => onPref({ historyEnabled: v })} aria-label="Remember pages" />
         </Row>

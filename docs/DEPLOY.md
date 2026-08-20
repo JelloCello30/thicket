@@ -126,8 +126,8 @@ throws nothing — the feature just quietly never turns on:
 
 - `STRIPE_PRICE_PRO_MONTHLY` / `STRIPE_PRICE_PRO_YEARLY` — note the `PRO` infix
   (`packages/config/src/env.ts:37-38`). Drop it and billing stays off.
-- `THICKET_EXTENSION_IDS`, not `THICKET_EXTENSION_IDS`
-  (`packages/config/src/env.ts:47`). The legacy prefix survived the rename.
+- `THICKET_EXTENSION_IDS` — comma-separated, no spaces, no `chrome-extension://`
+  prefix (`packages/config/src/env.ts:47`).
 
 Also ignore §2's `https://jellocello30.github.io/thicket` for `BETTER_AUTH_URL`
 and `NEXT_PUBLIC_APP_URL`. That is the Pages URL and it carries a subpath. A

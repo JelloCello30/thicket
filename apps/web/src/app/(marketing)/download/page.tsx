@@ -106,9 +106,17 @@ export default function DownloadPage() {
             Your groups, workspaces, and page memory live in the extension's local storage on your
             machine.
           </Permission>
-          <Permission name="Optional: read page content">
-            Off by default, and Chrome asks separately if you ever enable it. Only used to make
-            summaries and comparisons better.
+          <Permission name="Alarms">
+            Two scheduled jobs: a housekeeping flush, and a daily pass that deletes page memory
+            older than 7 days. A background extension cannot hold a timer while it sleeps.
+          </Permission>
+          <Permission name="Site icons">
+            Draws each site's icon next to its tab, using the copy Chrome already has. No favicon
+            service is contacted, so no list of the sites you visit is sent anywhere.
+          </Permission>
+          <Permission name="Not requested: access to websites">
+            Thicket asks for no access to any site, optional or otherwise. It cannot read the
+            contents of a page, and Chrome will not show it on the permission list.
           </Permission>
         </dl>
       </section>

@@ -58,6 +58,14 @@ export function buildCleanupPlan(tabs: AnalyzedTab[], ctx: CleanupContext = {}):
 
   for (const tab of tabs) {
     if (tab.pinned || tab.active || tab.audible) continue;
+    /**
+     * Private and excluded tabs have had their url and title deliberately
+     * blanked, and a blank url reads as an empty tab — so without this guard
+     * cleanup would list someone's private window under "empty tabs" and
+     * offer to close it. Only browser-internal tabs (which is what a real new
+     * tab page is) may fall through to the check below.
+     */
+    if (tab.excluded && tab.excludedReason !== "internal") continue;
     if (isNewTabPage(tab.url, tab.title)) {
       push({ tabId: tab.tabId, url: tab.url, title: tab.title || "New tab", domain: "", reason: "newtab" });
       continue;

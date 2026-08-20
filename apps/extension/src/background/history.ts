@@ -12,12 +12,24 @@ import { faviconFor } from "./tabs";
 
 const lastKnown = new Map<number, { url: string; title: string; domain: string }>();
 
-export async function recordVisit(tabId: number, url: string, title: string): Promise<void> {
+export async function recordVisit(
+  tabId: number,
+  url: string,
+  title: string,
+  incognito = false,
+): Promise<void> {
   const { prefs, excludedDomains } = await readState("prefs", "excludedDomains");
   if (prefs.paused || !prefs.historyEnabled) return;
 
+  /**
+   * A private window is never observed. The privacy layer has always had the
+   * guard, but the flag never reached it from here — so with "Allow in
+   * Incognito" on, private URLs and titles were written to page memory while
+   * the policy page said they were not. It is passed explicitly now.
+   */
   const verdict = sanitizeForStorage(url, title, {
     excludedDomains: new Set(excludedDomains),
+    incognito,
   });
   if (!verdict.ok) return;
   /**

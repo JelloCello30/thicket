@@ -23,12 +23,8 @@
     "page": "dashboard.html#/settings",
     "open_in_tab": true
   },
-  "permissions": ["tabs", "tabGroups", "storage", "alarms", "favicon", "scripting", "unlimitedStorage"],
-  "optional_host_permissions": ["<all_urls>"],
+  "permissions": ["tabs", "tabGroups", "storage", "alarms", "favicon"],
   "host_permissions": [],
-  "externally_connectable": {
-    "matches": ["https://jellocello30.github.io/thicket/*", "http://localhost:3000/*"]
-  },
   "commands": {
     "_execute_action": {
       "suggested_key": { "default": "Ctrl+Shift+Space", "mac": "Command+Shift+Space" },

@@ -288,7 +288,7 @@ export default function HomePage() {
                 LOCAL_ONLY
                   ? {
                       title: "There is no account, and no server",
-                      body: "Nothing is uploaded because there is nowhere to upload it. Grouping, search, summaries and comparisons all run in your browser.",
+                      body: "Nothing is uploaded: the extension ships without the code to make a network request. Grouping, search, summaries and comparisons all run in your browser.",
                     }
                   : {
                       title: "AI is opt-in, and it sees titles — not pages",

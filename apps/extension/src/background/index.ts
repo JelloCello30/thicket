@@ -33,16 +33,27 @@ chrome.runtime.onInstalled.addListener((details) => {
     // The aha moment: open the dashboard immediately and analyze what's there.
     void chrome.tabs.create({ url: chrome.runtime.getURL("dashboard.html#/welcome") });
   }
-  void chrome.alarms.create("thicket-sync", { periodInMinutes: 1 });
-  void chrome.alarms.create("thicket-daily", { periodInMinutes: 60 * 24 });
+  createAlarms();
   scheduleAnalysis("installed");
   void refreshCapabilities(true);
 });
 
 chrome.runtime.onStartup.addListener(() => {
-  void chrome.alarms.create("thicket-sync", { periodInMinutes: 1 });
+  createAlarms();
   scheduleAnalysis("startup");
 });
+
+/**
+ * The daily alarm is the retention pass — it is what makes "kept for 7 days,
+ * then deleted" true, so it is re-created on every startup rather than
+ * trusted to survive. The one-minute alarm only drives account sync: without
+ * a server it would wake the service worker every minute to do nothing, which
+ * costs the user battery and costs the `alarms` justification its honesty.
+ */
+function createAlarms(): void {
+  void chrome.alarms.create("thicket-daily", { periodInMinutes: 60 * 24 });
+  if (!__LOCAL_ONLY__) void chrome.alarms.create("thicket-sync", { periodInMinutes: 1 });
+}
 
 chrome.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name === "thicket-sync") {
@@ -63,10 +74,10 @@ chrome.alarms.onAlarm.addListener((alarm) => {
 chrome.tabs.onCreated.addListener(() => scheduleAnalysis("created"));
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (changeInfo.status === "complete" && tab.url) {
-    void recordVisit(tabId, tab.url, tab.title ?? "");
+    void recordVisit(tabId, tab.url, tab.title ?? "", tab.incognito);
     scheduleAnalysis("updated");
   } else if (changeInfo.title && tab.url) {
-    void recordVisit(tabId, tab.url, changeInfo.title);
+    void recordVisit(tabId, tab.url, changeInfo.title, tab.incognito);
   }
 });
 chrome.tabs.onRemoved.addListener((tabId) => {
@@ -86,18 +97,25 @@ chrome.commands.onCommand.addListener((command) => {
 
 /* ─────────────────── device linking (web → ext) ─────────────────── */
 
-chrome.runtime.onMessageExternal.addListener((message, _sender, sendResponse) => {
-  if (message?.type === "thicket:link" && typeof message.code === "string") {
-    void linkDevice(message.code)
-      .then((auth) => sendResponse({ ok: true, email: auth.user.email }))
-      .catch((error: Error) => sendResponse({ ok: false, error: error.message }));
-    return true;
-  }
-  if (message?.type === "thicket:ping") {
-    sendResponse({ ok: true, version: EXT_VERSION });
-  }
-  return undefined;
-});
+/**
+ * Device linking from the web app. The local-only build ships no
+ * `externally_connectable` key, so no page can reach this — registering the
+ * listener anyway would only invite a reviewer to ask why.
+ */
+if (!__LOCAL_ONLY__) {
+  chrome.runtime.onMessageExternal.addListener((message, _sender, sendResponse) => {
+    if (message?.type === "thicket:link" && typeof message.code === "string") {
+      void linkDevice(message.code)
+        .then((auth) => sendResponse({ ok: true, email: auth.user.email }))
+        .catch((error: Error) => sendResponse({ ok: false, error: error.message }));
+      return true;
+    }
+    if (message?.type === "thicket:ping") {
+      sendResponse({ ok: true, version: EXT_VERSION });
+    }
+    return undefined;
+  });
+}
 
 async function linkDevice(code: string) {
   const platform = await chrome.runtime.getPlatformInfo();
@@ -296,6 +314,16 @@ async function handle(request: BgRequest): Promise<unknown> {
       return { ok: true };
     }
     case "request-content-permission": {
+      /**
+       * This build declares no host permissions at all — page-text capture
+       * only ever fed the server summarizer, which does not exist here. The
+       * request also could never have succeeded from the service worker:
+       * chrome.permissions.request needs a user gesture in the calling
+       * context, and a gesture does not survive sendMessage. Settings no
+       * longer offers the switch; this stays only so an older open tab that
+       * still shows it gets an honest answer instead of a thrown error.
+       */
+      if (__LOCAL_ONLY__) return { granted: false };
       const granted = await chrome.permissions.request({ origins: ["<all_urls>"] });
       if (granted) {
         const { prefs } = await readState("prefs");

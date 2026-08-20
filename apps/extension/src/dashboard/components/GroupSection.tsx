@@ -244,7 +244,13 @@ export function GroupSection({
                 className="min-w-0 flex-1 truncate text-left text-[0.8125rem] text-ink hover:text-accent"
                 title={tab.excluded ? "Excluded from Thicket" : tab.title}
               >
-                {tab.excluded ? <span className="italic text-ink-faint">Private page ({tab.domain || "excluded"})</span> : tab.title}
+                {tab.excluded ? (
+                  <span className="italic text-ink-faint">
+                    {tab.domain ? `Private page (${tab.domain})` : "Private page"}
+                  </span>
+                ) : (
+                  tab.title
+                )}
               </button>
               {tab.pinned ? <span className="text-[0.6875rem] text-ink-faint">pinned</span> : null}
               {otherGroups.length > 0 ? (

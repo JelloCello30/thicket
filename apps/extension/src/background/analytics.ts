@@ -38,6 +38,13 @@ export async function flushEvents(): Promise<void> {
 }
 
 export async function reportError(error: unknown, context: string): Promise<void> {
+  if (__LOCAL_ONLY__) {
+    // No server, so nothing to report to — and a crash reporter that phones
+    // home would contradict "nothing leaves this device". The service worker
+    // console is where this belongs.
+    console.warn(`[thicket] ${context}`, error);
+    return;
+  }
   try {
     const err = error instanceof Error ? error : new Error(String(error));
     await api.reportError({

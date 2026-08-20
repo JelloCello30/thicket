@@ -64,7 +64,7 @@ async function request<T>(path: string, init: RequestInit & { auth?: boolean } =
   return (await response.json()) as T;
 }
 
-export const api = {
+const serverApi = {
   capabilities: () =>
     request<{ accounts: boolean; ai: boolean; embeddings: boolean; billing: boolean }>(
       "/api/capabilities",
@@ -109,3 +109,37 @@ export const api = {
   reportError: (body: { message: string; stack?: string; context?: string; version?: string; at: number }) =>
     request<{ ok: true }>("/api/errors", { method: "POST", body: JSON.stringify(body), auth: false }),
 };
+
+export type ServerApi = typeof serverApi;
+
+/**
+ * The local-only build has no server. Every endpoint above is compiled out
+ * (Rollup folds the constant below and drops the unused object, taking the
+ * `/api/...` paths and `fetch` with it), so the artifact uploaded to the
+ * Chrome Web Store contains no upload path at all — which is what makes the
+ * "collects nothing" declaration checkable rather than merely true today.
+ * The callers already treat a network failure as "carry on locally".
+ */
+function noServer(): never {
+  throw new ApiError(0, "network", "Thicket is running entirely on this device.");
+}
+
+const offlineApi: ServerApi = {
+  capabilities: noServer,
+  linkDevice: noServer,
+  me: noServer,
+  revokeSelf: noServer,
+  syncWorkspaces: noServer,
+  pullWorkspaces: noServer,
+  syncPages: noServer,
+  deletePages: noServer,
+  search: noServer,
+  aiOrganize: noServer,
+  aiSummarize: noServer,
+  aiCompare: noServer,
+  aiCommand: noServer,
+  trackEvents: noServer,
+  reportError: noServer,
+};
+
+export const api: ServerApi = __LOCAL_ONLY__ ? offlineApi : serverApi;

@@ -41,7 +41,18 @@ export function analyzeTab(tab: TabSnapshot, ctx: AnalyzeContext): AnalyzedTab {
     return { ...base, excluded: true, excludedReason: "paused" };
   }
   if (tab.incognito) {
-    return { ...base, url: "", normalizedUrl: "", title: "", excluded: true, excludedReason: "incognito" };
+    // Nothing about a private tab survives analysis — not the address, not the
+    // title, and not the domain, which used to ride along into the session
+    // snapshot and render in the dashboard as "Private page (domain.com)".
+    return {
+      ...base,
+      url: "",
+      normalizedUrl: "",
+      title: "",
+      domain: "",
+      excluded: true,
+      excludedReason: "incognito",
+    };
   }
   if (isBrowserInternal(tab.url) || isNewTabPage(tab.url, tab.title)) {
     return { ...base, excluded: true, excludedReason: "internal" };
@@ -53,9 +64,17 @@ export function analyzeTab(tab: TabSnapshot, ctx: AnalyzeContext): AnalyzedTab {
     return { ...base, excluded: true, excludedReason: "sensitive-url" };
   }
   if (verdict.sensitive) {
-    // Visible locally but never leaves the device; also never grouped, so the
-    // group payloads that sync stay clean.
-    return { ...base, excluded: true, excludedReason: "excluded-domain" };
+    // Never grouped, and the address and title are dropped here rather than
+    // carried into the cached analysis snapshot. The domain stays so the user
+    // can see which of their own exclusions is in play.
+    return {
+      ...base,
+      url: "",
+      normalizedUrl: "",
+      title: "",
+      excluded: true,
+      excludedReason: "excluded-domain",
+    };
   }
 
   const hostname = getHostname(tab.url);

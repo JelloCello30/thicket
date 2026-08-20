@@ -51,61 +51,65 @@ async function groupFeatures(analysis: AnalysisResult, groupId: string, withCont
 }
 
 export async function summarizeGroup(analysis: AnalysisResult, groupId: string): Promise<GroupSummary> {
-  // No account / AI off? The local engine answers instantly instead of erroring.
-  if (!(await aiAvailable())) return localGroupSummary(analysis, groupId);
-  const { prefs } = await readState("prefs");
-  const withContent = prefs.contentAnalysis && (await hasContentPermission());
-  const { group, tabs, members } = await groupFeatures(analysis, groupId, withContent);
-  try {
-    const result = await api.aiSummarize({ title: group.name, tabs });
-    const byKey = new Map(members.map((m) => [String(m.tabId), m]));
-    return {
-      doing: result.doing,
-      findings: result.findings,
-      keep: result.keep
-        .map((k) => {
-          const tab = byKey.get(k.key);
-          return tab ? { url: tab.url, title: tab.title, why: k.why } : null;
-        })
-        .filter((k): k is NonNullable<typeof k> => k !== null),
-      nextStep: result.nextStep,
-      source: "ai",
-    };
-  } catch (error) {
-    // Server said no (plan, outage, offline)? Degrade to the local version —
-    // a real answer now beats an error toast.
-    const translated = translate(error);
-    if (translated instanceof FeatureError) return localGroupSummary(analysis, groupId);
-    throw translated;
+  // No server, no account, or AI off? The local engine answers instantly
+  // instead of erroring. In the local-only build that is the only branch that
+  // survives compilation, which is what removes page-text capture entirely.
+  if (!__LOCAL_ONLY__ && (await aiAvailable())) {
+    const { prefs } = await readState("prefs");
+    const withContent = prefs.contentAnalysis && (await hasContentPermission());
+    const { group, tabs, members } = await groupFeatures(analysis, groupId, withContent);
+    try {
+      const result = await api.aiSummarize({ title: group.name, tabs });
+      const byKey = new Map(members.map((m) => [String(m.tabId), m]));
+      return {
+        doing: result.doing,
+        findings: result.findings,
+        keep: result.keep
+          .map((k) => {
+            const tab = byKey.get(k.key);
+            return tab ? { url: tab.url, title: tab.title, why: k.why } : null;
+          })
+          .filter((k): k is NonNullable<typeof k> => k !== null),
+        nextStep: result.nextStep,
+        source: "ai",
+      };
+    } catch (error) {
+      // Server said no (plan, outage, offline)? Degrade to the local version —
+      // a real answer now beats an error toast.
+      const translated = translate(error);
+      if (!(translated instanceof FeatureError)) throw translated;
+    }
   }
+  return localGroupSummary(analysis, groupId);
 }
 
 export async function compareGroup(analysis: AnalysisResult, groupId: string): Promise<ComparisonTable> {
-  if (!(await aiAvailable())) return localComparison(analysis, groupId);
-  const { prefs } = await readState("prefs");
-  const withContent = prefs.contentAnalysis && (await hasContentPermission());
-  const { tabs, members } = await groupFeatures(analysis, groupId, withContent);
-  if (tabs.length < 2) throw new Error("Comparing needs at least two tabs.");
-  try {
-    const result = await api.aiCompare({ tabs });
-    const byKey = new Map(members.map((m) => [String(m.tabId), m]));
-    return {
-      subject: result.subject,
-      columns: result.columns,
-      rows: result.rows
-        .map((row) => {
-          const tab = byKey.get(row.key);
-          if (!tab) return null;
-          return { url: tab.url, title: tab.title, values: row.values };
-        })
-        .filter((r): r is NonNullable<typeof r> => r !== null),
-      source: "ai",
-    };
-  } catch (error) {
-    const translated = translate(error);
-    if (translated instanceof FeatureError) return localComparison(analysis, groupId);
-    throw translated;
+  if (!__LOCAL_ONLY__ && (await aiAvailable())) {
+    const { prefs } = await readState("prefs");
+    const withContent = prefs.contentAnalysis && (await hasContentPermission());
+    const { tabs, members } = await groupFeatures(analysis, groupId, withContent);
+    if (tabs.length < 2) throw new Error("Comparing needs at least two tabs.");
+    try {
+      const result = await api.aiCompare({ tabs });
+      const byKey = new Map(members.map((m) => [String(m.tabId), m]));
+      return {
+        subject: result.subject,
+        columns: result.columns,
+        rows: result.rows
+          .map((row) => {
+            const tab = byKey.get(row.key);
+            if (!tab) return null;
+            return { url: tab.url, title: tab.title, values: row.values };
+          })
+          .filter((r): r is NonNullable<typeof r> => r !== null),
+        source: "ai",
+      };
+    } catch (error) {
+      const translated = translate(error);
+      if (!(translated instanceof FeatureError)) throw translated;
+    }
   }
+  return localComparison(analysis, groupId);
 }
 
 function translate(error: unknown): Error {
@@ -123,6 +127,9 @@ function translate(error: unknown): Error {
 /* ─────────────────── content capture (strictly opt-in) ─────────────────── */
 
 export async function hasContentPermission(): Promise<boolean> {
+  // The shipped manifest declares no host permissions, optional or otherwise,
+  // so there is nothing to hold and nothing to ask Chrome about.
+  if (__LOCAL_ONLY__) return false;
   return chrome.permissions.contains({ origins: ["<all_urls>"] });
 }
 

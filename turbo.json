@@ -24,7 +24,7 @@
         "EMAIL_FROM",
         "POSTHOG_KEY",
         "POSTHOG_HOST",
-        "TABMIND_EXTENSION_IDS"
+        "THICKET_EXTENSION_IDS"
       ]
     },
     "dev": {

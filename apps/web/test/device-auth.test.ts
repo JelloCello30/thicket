@@ -97,13 +97,46 @@ describe("link/complete brute-force surface", () => {
   });
 });
 
-describe("CORS default when TABMIND_EXTENSION_IDS is unset in production", () => {
-  it("does NOT hand an allow-origin to an arbitrary extension", () => {
-    const prev = { node: process.env.NODE_ENV, ids: process.env.TABMIND_EXTENSION_IDS };
+describe("CORS allowlist honors THICKET_EXTENSION_IDS in production", () => {
+  it("hands an allow-origin to the listed extension and to no other", () => {
+    const prev = { node: process.env.NODE_ENV, ids: process.env.THICKET_EXTENSION_IDS };
+    const listed = "abcdefghijklmnopabcdefghijklmnop";
     try {
       // @ts-expect-error test override
       process.env.NODE_ENV = "production";
-      process.env.TABMIND_EXTENSION_IDS = "";
+      process.env.THICKET_EXTENSION_IDS = listed;
+      process.env.DATABASE_URL = "postgres://x/y";
+      process.env.BETTER_AUTH_SECRET = "x".repeat(40);
+      process.env.BETTER_AUTH_URL = "https://example.com";
+      __resetEnvCache();
+      const ask = (id: string) =>
+        withCors(
+          new Request("https://example.com/api/me", { headers: { origin: `chrome-extension://${id}` } }),
+          NextResponse.json({ ok: true }),
+        ).headers.get("access-control-allow-origin");
+      // Reads the variable the code actually reads: this case passed for years
+      // against TABMIND_EXTENSION_IDS, which nothing had read since the rename.
+      expect(ask(listed)).toBe(`chrome-extension://${listed}`);
+      expect(ask("zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz")).toBeNull();
+    } finally {
+      // @ts-expect-error test restore
+      process.env.NODE_ENV = prev.node;
+      process.env.THICKET_EXTENSION_IDS = prev.ids ?? "";
+      delete process.env.DATABASE_URL;
+      delete process.env.BETTER_AUTH_SECRET;
+      delete process.env.BETTER_AUTH_URL;
+      __resetEnvCache();
+    }
+  });
+});
+
+describe("CORS default when THICKET_EXTENSION_IDS is unset in production", () => {
+  it("does NOT hand an allow-origin to an arbitrary extension", () => {
+    const prev = { node: process.env.NODE_ENV, ids: process.env.THICKET_EXTENSION_IDS };
+    try {
+      // @ts-expect-error test override
+      process.env.NODE_ENV = "production";
+      process.env.THICKET_EXTENSION_IDS = "";
       process.env.DATABASE_URL = "postgres://x/y";
       process.env.BETTER_AUTH_SECRET = "x".repeat(40);
       process.env.BETTER_AUTH_URL = "https://example.com";
@@ -118,7 +151,7 @@ describe("CORS default when TABMIND_EXTENSION_IDS is unset in production", () =>
     } finally {
       // @ts-expect-error test restore
       process.env.NODE_ENV = prev.node;
-      process.env.TABMIND_EXTENSION_IDS = prev.ids ?? "";
+      process.env.THICKET_EXTENSION_IDS = prev.ids ?? "";
       delete process.env.DATABASE_URL;
       delete process.env.BETTER_AUTH_SECRET;
       delete process.env.BETTER_AUTH_URL;
