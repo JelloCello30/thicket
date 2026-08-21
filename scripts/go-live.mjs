@@ -942,6 +942,11 @@ async function main() {
       const { runSetup } = await import("./setup.mjs");
       return runSetup(ROOT);
     }
+    case "paste": {
+      const { runPaste } = await import("./setup.mjs");
+      const target = parsed.positionals[1] ?? "STRIPE_SECRET_KEY";
+      return runPaste(ROOT, target);
+    }
     case "check":
       return commandCheck(options);
     case "stripe":

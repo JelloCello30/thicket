@@ -172,6 +172,49 @@ async function createStripeProduct(workspace, envPath, secretKey) {
   else say(`  ${YELLOW}product created, but price ids need pasting by hand${RESET}`);
 }
 
+/**
+ * Non-interactive alternative to the prompt: take the value straight off the
+ * system clipboard. The point is what it avoids — the value never appears in
+ * an argument list (so never in shell history), never in a chat, and never in
+ * this process's output. It is validated by the same rule as the prompt.
+ */
+export async function runPaste(workspace, keyName) {
+  const envPath = join(workspace, "apps/web/.env.local");
+  const step = STEPS.find((s) => s.key === keyName);
+  if (!step) {
+    say(`  ${YELLOW}unknown setting: ${keyName}${RESET}`);
+    say(`  known: ${STEPS.filter((s) => !s.generate).map((s) => s.key).join(", ")}`);
+    return 2;
+  }
+
+  const read = spawnSync(
+    process.platform === "darwin" ? "pbpaste" : "xclip",
+    process.platform === "darwin" ? [] : ["-selection", "clipboard", "-o"],
+    { encoding: "utf8" },
+  );
+  if (read.status !== 0) {
+    say(`  ${YELLOW}couldn't read the clipboard${RESET}`);
+    return 1;
+  }
+
+  const value = (read.stdout ?? "").trim();
+  if (!value) {
+    say(`  ${YELLOW}clipboard is empty${RESET} — copy the value first, then re-run`);
+    return 1;
+  }
+  const problem = step.validate?.(value);
+  if (problem) {
+    say(`  ${YELLOW}${problem}${RESET}`);
+    say(`  ${DIM}(read ${value.length} characters from the clipboard)${RESET}`);
+    return 1;
+  }
+
+  writeEnvValue(envPath, keyName, value);
+  ok(`${keyName} saved from clipboard`);
+  if (step.after) await step.after(workspace, envPath, value);
+  return 0;
+}
+
 export async function runSetup(workspace) {
   const envPath = join(workspace, "apps/web/.env.local");
   const rl = createInterface({ input: process.stdin, output: process.stdout });
