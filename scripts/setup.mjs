@@ -8,7 +8,7 @@
  */
 import { createInterface } from "node:readline/promises";
 import { randomBytes } from "node:crypto";
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 
@@ -131,8 +131,46 @@ const STEPS = [
       }
       return v.startsWith("sk_test_") ? null : "Stripe test keys start with sk_test_";
     },
+    after: createStripeProduct,
   },
 ];
+
+/**
+ * The key alone is not a configured Stripe — the product and its two prices
+ * have to exist, and their ids have to land in the env. Doing it here means
+ * one paste finishes the whole leg instead of leaving two more commands and a
+ * copy-paste of generated ids.
+ */
+async function createStripeProduct(workspace, envPath, secretKey) {
+  say();
+  note("creating the Thicket Pro product and prices in your Stripe account...");
+  const run = spawnSync(process.execPath, ["scripts/stripe-setup.mjs"], {
+    cwd: join(workspace, "apps/web"),
+    env: { ...process.env, STRIPE_SECRET_KEY: secretKey },
+    encoding: "utf8",
+  });
+  const output = `${run.stdout ?? ""}${run.stderr ?? ""}`;
+  if (run.status !== 0) {
+    say(`  ${YELLOW}couldn't create the product${RESET}`);
+    for (const line of output.trim().split("\n").slice(-4)) note(line);
+    note("Your key is saved. Run: node --env-file=apps/web/.env.local scripts/go-live.mjs stripe");
+    return;
+  }
+
+  let wrote = 0;
+  for (const key of ["STRIPE_PRICE_PRO_MONTHLY", "STRIPE_PRICE_PRO_YEARLY"]) {
+    const found = output.match(new RegExp(`^${key}=(price_\\w+)$`, "m"));
+    if (found) {
+      writeEnvValue(envPath, key, found[1]);
+      wrote += 1;
+    }
+  }
+  for (const line of output.split("\n")) {
+    if (/^[+=~] (created|reused|updated)/.test(line.trim())) note(line.trim());
+  }
+  if (wrote === 2) ok("product and both prices ready, ids saved");
+  else say(`  ${YELLOW}product created, but price ids need pasting by hand${RESET}`);
+}
 
 export async function runSetup(workspace) {
   const envPath = join(workspace, "apps/web/.env.local");
@@ -212,6 +250,7 @@ export async function runSetup(workspace) {
       writeEnvValue(envPath, step.key, value);
       ok("saved");
       configured += 1;
+      if (step.after) await step.after(workspace, envPath, value);
       break;
     }
     if (inputClosed) break;
