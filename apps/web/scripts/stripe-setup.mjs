@@ -22,6 +22,14 @@ const API_VERSION = "2025-08-27.basil";
 
 // Mirrors PRICING.pro in packages/config/src/plans.ts:8-13 ($8/mo, $72/yr).
 const PRODUCT_ID = "thicket_pro";
+/**
+ * What a subscriber sees on their card statement, appended to the account's
+ * shortened descriptor — so a Thicket charge reads "TAILORIZE* THICKET"
+ * rather than a bare account name the customer won't recognize. Unrecognized
+ * descriptors are a leading cause of chargebacks. Requires the shortened
+ * descriptor to be set on the account (Settings -> Business -> Public details).
+ */
+const STATEMENT_DESCRIPTOR = "THICKET";
 const PRODUCT_NAME = "Thicket Pro";
 const CURRENCY = "usd";
 // Exactly the events switched on in apps/web/src/app/api/stripe/webhook/route.ts:48-66.
@@ -68,6 +76,10 @@ async function ensureProduct() {
       await stripe.products.update(PRODUCT_ID, { active: true });
       console.log(`~ reactivated product ${PRODUCT_ID}`);
     } else {
+      if (existing.statement_descriptor !== STATEMENT_DESCRIPTOR) {
+        await stripe.products.update(PRODUCT_ID, { statement_descriptor: STATEMENT_DESCRIPTOR });
+        console.log(`~ set descriptor   ${STATEMENT_DESCRIPTOR} on ${PRODUCT_ID}`);
+      }
       console.log(`= reused product   ${PRODUCT_ID} (${existing.name})`);
     }
     return existing;
@@ -79,6 +91,7 @@ async function ensureProduct() {
       id: PRODUCT_ID,
       name: PRODUCT_NAME,
       description: "Unlimited workspaces, AI summaries and comparisons, 90-day tab memory, sync.",
+      statement_descriptor: STATEMENT_DESCRIPTOR,
       metadata: { app: "thicket", plan: "pro" },
     },
     { idempotencyKey: `thicket-product-${PRODUCT_ID}` },
